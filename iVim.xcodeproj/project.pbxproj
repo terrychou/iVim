@@ -1,0 +1,539 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DE531AF61F20941100D71DB3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531AF51F20941100D71DB3 /* AppDelegate.swift */; };
+		DE531AF81F20941100D71DB3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531AF71F20941100D71DB3 /* ViewController.swift */; };
+		DE531AFB1F20941100D71DB3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DE531AF91F20941100D71DB3 /* Main.storyboard */; };
+		DE531AFD1F20941100D71DB3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE531AFC1F20941100D71DB3 /* Assets.xcassets */; };
+		DE531B001F20941100D71DB3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DE531AFE1F20941100D71DB3 /* LaunchScreen.storyboard */; };
+		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
+		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DE531B071F20941200D71DB3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DE531AEA1F20941100D71DB3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DE531AF11F20941100D71DB3;
+			remoteInfo = iVim;
+		};
+		DE531B121F20941200D71DB3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DE531AEA1F20941100D71DB3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DE531AF11F20941100D71DB3;
+			remoteInfo = iVim;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		DE531AF21F20941100D71DB3 /* iVim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iVim.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE531AF51F20941100D71DB3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DE531AF71F20941100D71DB3 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		DE531AFA1F20941100D71DB3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		DE531AFC1F20941100D71DB3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DE531AFF1F20941100D71DB3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		DE531B011F20941100D71DB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DE531B061F20941200D71DB3 /* iVimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iVimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE531B0A1F20941200D71DB3 /* iVimTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iVimTests.swift; sourceTree = "<group>"; };
+		DE531B0C1F20941200D71DB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DE531B111F20941200D71DB3 /* iVimUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iVimUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE531B151F20941200D71DB3 /* iVimUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iVimUITests.swift; sourceTree = "<group>"; };
+		DE531B171F20941200D71DB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DE531AEF1F20941100D71DB3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE531B031F20941200D71DB3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE531B0E1F20941200D71DB3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DE531AE91F20941100D71DB3 = {
+			isa = PBXGroup;
+			children = (
+				DE531AF41F20941100D71DB3 /* iVim */,
+				DE531B091F20941200D71DB3 /* iVimTests */,
+				DE531B141F20941200D71DB3 /* iVimUITests */,
+				DE531AF31F20941100D71DB3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DE531AF31F20941100D71DB3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DE531AF21F20941100D71DB3 /* iVim.app */,
+				DE531B061F20941200D71DB3 /* iVimTests.xctest */,
+				DE531B111F20941200D71DB3 /* iVimUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DE531AF41F20941100D71DB3 /* iVim */ = {
+			isa = PBXGroup;
+			children = (
+				DE531AF51F20941100D71DB3 /* AppDelegate.swift */,
+				DE531AF71F20941100D71DB3 /* ViewController.swift */,
+				DE531AF91F20941100D71DB3 /* Main.storyboard */,
+				DE531AFC1F20941100D71DB3 /* Assets.xcassets */,
+				DE531AFE1F20941100D71DB3 /* LaunchScreen.storyboard */,
+				DE531B011F20941100D71DB3 /* Info.plist */,
+			);
+			path = iVim;
+			sourceTree = "<group>";
+		};
+		DE531B091F20941200D71DB3 /* iVimTests */ = {
+			isa = PBXGroup;
+			children = (
+				DE531B0A1F20941200D71DB3 /* iVimTests.swift */,
+				DE531B0C1F20941200D71DB3 /* Info.plist */,
+			);
+			path = iVimTests;
+			sourceTree = "<group>";
+		};
+		DE531B141F20941200D71DB3 /* iVimUITests */ = {
+			isa = PBXGroup;
+			children = (
+				DE531B151F20941200D71DB3 /* iVimUITests.swift */,
+				DE531B171F20941200D71DB3 /* Info.plist */,
+			);
+			path = iVimUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DE531AF11F20941100D71DB3 /* iVim */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE531B1A1F20941200D71DB3 /* Build configuration list for PBXNativeTarget "iVim" */;
+			buildPhases = (
+				DE531AEE1F20941100D71DB3 /* Sources */,
+				DE531AEF1F20941100D71DB3 /* Frameworks */,
+				DE531AF01F20941100D71DB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iVim;
+			productName = iVim;
+			productReference = DE531AF21F20941100D71DB3 /* iVim.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DE531B051F20941200D71DB3 /* iVimTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE531B1D1F20941200D71DB3 /* Build configuration list for PBXNativeTarget "iVimTests" */;
+			buildPhases = (
+				DE531B021F20941200D71DB3 /* Sources */,
+				DE531B031F20941200D71DB3 /* Frameworks */,
+				DE531B041F20941200D71DB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE531B081F20941200D71DB3 /* PBXTargetDependency */,
+			);
+			name = iVimTests;
+			productName = iVimTests;
+			productReference = DE531B061F20941200D71DB3 /* iVimTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DE531B101F20941200D71DB3 /* iVimUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE531B201F20941200D71DB3 /* Build configuration list for PBXNativeTarget "iVimUITests" */;
+			buildPhases = (
+				DE531B0D1F20941200D71DB3 /* Sources */,
+				DE531B0E1F20941200D71DB3 /* Frameworks */,
+				DE531B0F1F20941200D71DB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE531B131F20941200D71DB3 /* PBXTargetDependency */,
+			);
+			name = iVimUITests;
+			productName = iVimUITests;
+			productReference = DE531B111F20941200D71DB3 /* iVimUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DE531AEA1F20941100D71DB3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0830;
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = Boogaloo;
+				TargetAttributes = {
+					DE531AF11F20941100D71DB3 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = LGM6M9XA5D;
+						ProvisioningStyle = Automatic;
+					};
+					DE531B051F20941200D71DB3 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = LGM6M9XA5D;
+						ProvisioningStyle = Automatic;
+						TestTargetID = DE531AF11F20941100D71DB3;
+					};
+					DE531B101F20941200D71DB3 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = LGM6M9XA5D;
+						ProvisioningStyle = Automatic;
+						TestTargetID = DE531AF11F20941100D71DB3;
+					};
+				};
+			};
+			buildConfigurationList = DE531AED1F20941100D71DB3 /* Build configuration list for PBXProject "iVim" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DE531AE91F20941100D71DB3;
+			productRefGroup = DE531AF31F20941100D71DB3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DE531AF11F20941100D71DB3 /* iVim */,
+				DE531B051F20941200D71DB3 /* iVimTests */,
+				DE531B101F20941200D71DB3 /* iVimUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DE531AF01F20941100D71DB3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE531B001F20941100D71DB3 /* LaunchScreen.storyboard in Resources */,
+				DE531AFD1F20941100D71DB3 /* Assets.xcassets in Resources */,
+				DE531AFB1F20941100D71DB3 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE531B041F20941200D71DB3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE531B0F1F20941200D71DB3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DE531AEE1F20941100D71DB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE531AF81F20941100D71DB3 /* ViewController.swift in Sources */,
+				DE531AF61F20941100D71DB3 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE531B021F20941200D71DB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE531B0D1F20941200D71DB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DE531B081F20941200D71DB3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DE531AF11F20941100D71DB3 /* iVim */;
+			targetProxy = DE531B071F20941200D71DB3 /* PBXContainerItemProxy */;
+		};
+		DE531B131F20941200D71DB3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DE531AF11F20941100D71DB3 /* iVim */;
+			targetProxy = DE531B121F20941200D71DB3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		DE531AF91F20941100D71DB3 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DE531AFA1F20941100D71DB3 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		DE531AFE1F20941100D71DB3 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DE531AFF1F20941100D71DB3 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DE531B181F20941200D71DB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DE531B191F20941200D71DB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DE531B1B1F20941200D71DB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				INFOPLIST_FILE = iVim/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.iVim;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		DE531B1C1F20941200D71DB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				INFOPLIST_FILE = iVim/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.iVim;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+		DE531B1E1F20941200D71DB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				INFOPLIST_FILE = iVimTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.iVimTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iVim.app/iVim";
+			};
+			name = Debug;
+		};
+		DE531B1F1F20941200D71DB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				INFOPLIST_FILE = iVimTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.iVimTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iVim.app/iVim";
+			};
+			name = Release;
+		};
+		DE531B211F20941200D71DB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				INFOPLIST_FILE = iVimUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.iVimUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_TARGET_NAME = iVim;
+			};
+			name = Debug;
+		};
+		DE531B221F20941200D71DB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				INFOPLIST_FILE = iVimUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.iVimUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_TARGET_NAME = iVim;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DE531AED1F20941100D71DB3 /* Build configuration list for PBXProject "iVim" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE531B181F20941200D71DB3 /* Debug */,
+				DE531B191F20941200D71DB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE531B1A1F20941200D71DB3 /* Build configuration list for PBXNativeTarget "iVim" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE531B1B1F20941200D71DB3 /* Debug */,
+				DE531B1C1F20941200D71DB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		DE531B1D1F20941200D71DB3 /* Build configuration list for PBXNativeTarget "iVimTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE531B1E1F20941200D71DB3 /* Debug */,
+				DE531B1F1F20941200D71DB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		DE531B201F20941200D71DB3 /* Build configuration list for PBXNativeTarget "iVimUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE531B211F20941200D71DB3 /* Debug */,
+				DE531B221F20941200D71DB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DE531AEA1F20941100D71DB3 /* Project object */;
+}
