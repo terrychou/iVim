@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>iVimShare.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
@@ -23,6 +28,11 @@
 			<true/>
 		</dict>
 		<key>DE531B101F20941200D71DB3</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DEEAD1791F23005500B4CAC9</key>
 		<dict>
 			<key>primary</key>
 			<true/>

@@ -1,0 +1,111 @@
+*ios_commands.txt*	For Vim version 7.4	Last change: 2017 Jul 31
+
+			iVim REFERENCE MANUAL	by Terry Chou
+
+						*ios-commands* *icommands*
+
+This file describes the details of the ex commands added by iVim to support 
+its features.
+
+1. Font Management		|font-management-icommands|
+2. Share			|share-icommands|
+
+==============================================================================
+1. Font Management				*font-management-icommands*
+
+iVim adds two commands to assist the font management |ios-font-management|.
+
+:ifo[nt] [fnum|fname] [fsize]				*:ifo* *:ifont*
+		Without arguments, it shows all available fonts. Example: 
+
+			*1	s	SourceCodePro-Regular	14.0 ~
+			2	s	Menlo-Regular ~
+			3	u	LucidaConsole ~
+
+		The first column shows the order number of each font. The 
+		currently used font has a `*` prepended to its number. The
+		second column is the type indicator of the font:
+			s  system font
+			u  user font
+
+		The third column stands for the font name. Also, the current
+		font will have an extra column indicating its size. After
+		new fonts are imported or existing ones deleted, this list
+		will change accordingly.
+
+		To set the current font, give the font number or font name as
+		the argument. Example: >
+			:ifont 3		"set the font to LucidaConsole
+			:ifont Menlo-Regular	"set the font to Menlo-Regular
+			:ifont Sou		"set the font to
+						"SourceCodePro-Regular
+<		Prefix can be given as the font name, the first matched font
+		will be set.
+		After the font number or name, a number can be given to set
+		the font size at the same time. Example: >
+			:ifont 3 12		"set the font to LucidaConsole
+						"and to size 12.0
+<		If the font size is not an integer, its fractional part will 
+		be cut.
+		You can use `_` as the font name to indicate that you want to
+		keep the current font. Example: >
+			:ifont _ 12		"keep the current font and set
+						"its size to 12.0
+<
+		Note: the font setting of |:ifont| is temporary, it will 
+		change back to the default one at next app launch. To set the 
+		font permanently, add `set guifont={fname}:h{fsize}` into 
+		vimrc.
+
+:idel[etefont] [fnum|fname]				*:idel* *:ideletefont*
+		Like |:ifont|, it shows all available fonts when no arguments
+		are following.
+
+		To delete a font, indicate the font number or font name as the
+		target. Example: >
+			:idel 3			"delete font LucidaConsole
+			:idel Luc		"delete font LucidaConsole
+<		If the current font is deleted, the first system font will be
+		used.
+
+		Note that only user fonts can be deleted.
+
+
+==============================================================================
+2. Share						*share-icommands*
+
+iVim has two commands for sharing |ios-share|.
+
+:[range]ish[are] [fname]				*:ish* *:ishare*
+		Share files or text with other apps via the share extension.
+		
+		When [range] is given, text of lines in it of current buffer
+		will be shared. Example: >
+			:3,8ishare		"share text of line 3 thro 8
+<
+		Otherwise, the file represented by [fname] will be shared: >
+			:ishare todo		"share file `todo` under 
+						"current directory
+			:ishare			"share file of current window 
+<
+		Note: only one file can be shared at a time.
+
+:idoc[uments] [open|import]				*:idoc* *:idocuments*
+		Pick documents from iCloud Drive or other document provider
+		apps via the document picker.
+
+		When the option is `open` or omitted, the picked document will
+		be edited in place, meaning that the modifications will be
+		saved back to the original document directly. Example: >
+			:idoc			"open the document picker
+						"and edit the picked file
+						"in place
+<		If the option is `import`, the picked document will be copied
+		into iVim's `Documents` directory and opened for further
+		editing. 
+
+		Note: the imported file will be renamed if there has been 
+		a file already possesses that name.
+
+
+ vim:tw=78:ts=8:ft=help:norl:

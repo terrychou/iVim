@@ -1,0 +1,9 @@
+"System vimrc file for iVim
+
+syntax on
+set nocompatible
+set guioptions-=rm
+
+set guioptions=
+set backspace=start,eol,indent
+set encoding=utf-8

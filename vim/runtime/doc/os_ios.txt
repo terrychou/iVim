@@ -1,0 +1,191 @@
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Jul 31
+
+			iVim REFERENCE MANUAL	by Terry Chou
+
+
+							*ios* *iOS*
+
+This file documents the particularities of the iOS port of Vim.
+
+ACKNOWLEGEMENT
+
+This project stands on the shoulders of two precendent projects:
+1. Vim port from Applidium: https://github.com/applidium/Vim
+
+Although it has been inactive for a while, it is a pioneer of porting Vim to 
+iOS. Itself and its opened source code inspires many followers.
+
+2. VimIOS - A port of Vim to iOS 9+: https://github.com/larki/VimIOS
+
+Based on the above project, it includes many features to take advantage of 
+the newer iOS systems. This project started from it.
+
+==============================================================================
+
+1. File system				|ios-file-system|
+2. Font management			|ios-font-management|
+3. Extended keyboard			|ios-extended-keyboard|
+4. Multi-stage language support		|ios-multistage-language|
+5. Share				|ios-share|
+6. Miscellaneous			|ios-miscellaneous|
+
+==============================================================================
+1. File system				*ios-file-system*
+
+For security purpose, an iOS app can only access files within its sandbox 
+environment. Normally, user-generated contents are stored in the `Documents`
+directory under its data container. Therefore, this directory is set as the 
+default `$HOME` for iVim. You can find or create all the user-specific files 
+under it.
+
+The Inbox directory ~
+
+Under the `Documents` directory, there would also be a subdirectory named 
+`Inbox`. Its role is to save the files shared with iVim by other apps. As a 
+result, the files in this directory are readonly. You cannot create files 
+under it.
+
+The file browser ~
+
+Because iOS systems don't have any shell available, you cannot browse the 
+file system via external Unix commands.
+However, iVim comes with a `netrw` file browser plugin. You can type ":edit ."
+to get started. It provides an intuitive way to navigate the file system 
+structure. Type ":help netrw" to get the help on how to use it.
+
+Besides the file editing within its sandbox, iVim can edit text from other 
+apps via |ios-share|.
+
+
+==============================================================================
+2. Font management			*ios-font-management*
+
+There are two types of fonts are available: 
+
+a. system fonts
+
+Besides the fonts available in iOS, the font `Source Code Pro` is embedded 
+into iVim.
+
+b. user fonts
+
+iVim also allows users to import and use their own fonts.
+Currently, fonts of type `ttf` or `otf` are supported. You can copy them from 
+other apps to iVim via the share extension. The imported fonts will be 
+automatically moved into directory `Library/Fonts/`.
+
+The font commands ~
+
+iVim has added two commands to manipulate the fonts. |:ifont| is for listing 
+available fonts and changing the current one. |:ideletefont| is for deleting 
+user fonts. Type ":help :ifont" or ":help :ideletefont" for more information.
+
+Note that only monospace fonts are well supported.
+
+
+==============================================================================
+3. Extended keyboard			*ios-extended-keyboard*
+
+An efficient use of Vim requires quick symbol input. However, the iOS system 
+keyboard 'hides' them into other pages to save the screen real-estate. 
+Moreover, some necessary keys are just not available in iOS.
+
+To offer a more productive input, iVim adds an extended keyboard.
+
+The compact button ~
+
+In order to cover as many keys as possible in limited space, compact buttons 
+are used in the extended keyboard.
+The key in the center of the button is the primary key, and a simple tapping 
+will trigger its input. Some optional keys may circle around the primary one. 
+To input an optional key, drag it towards the center and release. For example,
+if you want to input the key sitting at the top left corner, you make a drag 
+right and down. The start point doesn't really matter.
+
+The Ctrl key ~
+
+Some keys are sticky. For example, the Ctrl key needs to be held down while 
+pressing other keys. Thus it is set up as a sticky key: triggering it once 
+will keep it in held state ever since, and tapping it again to restore its 
+state.
+
+Hide and show ~ 
+
+You can toggle the extended keyboard by long pressing the screen. 
+The extended keyboard will show at launch by default.
+
+
+==============================================================================
+4. Multi-stage language support		*ios-multistage-language*
+
+iVim adds support to multistage input languages such as Chinese or Japanese.
+
+During a multistage input session, the keys that have been input will be 
+inserted at the cursor. The candidates will be listed at the top of the 
+keyboard. When a candidate is confirmed, it will replace the existing keys 
+and this session ends.
+
+Pressing ESC will cancel current multistage input session and all input keys 
+will be deleted.
+
+Tapping on screen or pressing arrow keys will end current multistage input 
+session and the existing keys will be confirmed as the result.
+
+Note: The key pressings will be translated into normal ones if it is not in 
+INSERT mode.
+
+
+==============================================================================
+5. Share				*ios-share*
+
+Sharing makes iVim's editing power available to more apps. 
+
+Importing ~
+
+If an app supports sharing text files or selected text, you can find iVim in 
+its share panel. The picked file will be copied into the sandbox of iVim.
+
+Through the document picker invoked by ":idocuments import", you can also 
+import text files from iCloud Drive or other document providers. This way,
+you don't have to leave iVim to do the importing.
+
+The imported file or text will be opened in a new tab for further editing.
+
+Exporting ~
+
+You can invoke iVim's share panel via the command |:ishare|, therefore share 
+files or text with other apps.
+
+Editing in place ~
+
+The document picker |:idocuments| also allows you to edit files directly in 
+iCloud Drive or other document provider apps. All the modifications will be 
+saved into the original files even though this is normally not allowed because 
+they are in different sandbox environments.
+
+Type ":help :ishare" or ":help :idocuments" for more detailed information.
+
+
+==============================================================================
+6. Miscellaneous			*ios-miscellaneous* *ios-misc*
+
+Touch support ~
+
+iVim adds support to basic touch gestures to make operations more intuitive 
+and efficient.
+
+a. Single tapping is like mouse left click on computers: it can change cursor 
+position, window or select specific tab.
+
+b. Single finger dragging can select text within a window, or resize a window 
+when the fingers are on its status bar.
+
+c. Two fingers dragging will scroll text in a window.
+
+Autosave ~
+
+Because of the mechanism of terminating apps in iOS, iVim won't save opened 
+files automatically. All unsaved changes will be lost when iVim terminates.
+
+
+ vim:tw=78:ts=8:ft=help:norl
