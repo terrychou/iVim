@@ -28,6 +28,10 @@ Via the document picker, users can also import or edit text files in iCloud Driv
 
 ## How to install it
 
+### App Store
+iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=8)
+
+### Source code
 1. Open iVim.xcodeproj in Xcode
 2. In General > Identity of target iVim and iVimShare, change their bundle identities to your own unique ones, and select your Apple ID to sign them. As to the App Group, it requires a paid Apple ID. If yours is, change the App Group identifier for these two targets to your own; if not, just turn them off (the only difference is that you cannot share text to iVim when it is off)
 3. Connect your device via USB to your computer, and select it as the Destination of iVim
