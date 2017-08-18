@@ -159,7 +159,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     private func addToInputBuffer(_ text: String) {
         let length = text.utf8Length
         add_to_input_buf(text, Int32(length))
-//        self.flush()
         self.markNeedsDisplay()
     }
     
@@ -178,7 +177,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func insertText(_ text: String) {
-//        self.becomeFirstResponder()
         self.addToInputBuffer(self.escapingText(text))
     }
     
