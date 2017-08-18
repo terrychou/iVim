@@ -19,7 +19,6 @@ enum blink_state {
 final class VimViewController: UIViewController, UIKeyInput, UITextInput, UITextInputTraits {
     var vimView: VimView?
     var hasBeenFlushedOnce = false
-    var lastKeyPress = Date()
     
     var blink_wait: CLong = 1000
     var blink_on: CLong = 1000
@@ -160,11 +159,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     private func addToInputBuffer(_ text: String) {
         let length = text.utf8Length
         add_to_input_buf(text, Int32(length))
-        self.flush()
+//        self.flush()
         self.markNeedsDisplay()
     }
     
-    var hasText : Bool {
+    var hasText: Bool {
         return true
     }
     
@@ -179,7 +178,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func insertText(_ text: String) {
-        self.becomeFirstResponder()
+//        self.becomeFirstResponder()
         self.addToInputBuffer(self.escapingText(text))
     }
     
@@ -232,19 +231,16 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func waitForChars(_ wtime: Int) -> Bool {
-        let passed = Date().timeIntervalSince(self.lastKeyPress) * 1000.0
-        var wait = wtime
-        if passed < 1000 {
-            wait = 10
-        } else if wtime < 0 {
-            wait = 4000
-        }
+        if input_available() > 0 { return true }
+        let expirationDate = wtime > -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
+        repeat {
+            RunLoop.current.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
+            if input_available() > 0 {
+                return true
+            }
+        } while expirationDate > Date()
         
-        let expirationDate = Date(timeIntervalSinceNow: Double(wait) / 1000.0)
-        RunLoop.current.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
-        let delay = expirationDate.timeIntervalSinceNow
-        
-        return delay >= 0
+        return false
     }
     
     func pan(_ sender: UIPanGestureRecognizer) {

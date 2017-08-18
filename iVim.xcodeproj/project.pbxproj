@@ -7119,6 +7119,7 @@
 				DEEAD1861F23005500B4CAC9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
