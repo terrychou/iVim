@@ -17,6 +17,7 @@
 //#import "ui.c"
 #import "iVim-Swift.h"
 #import <AudioToolbox/AudioToolbox.h>
+#import <UIKit/UIKit.h>
 
 int getCTRLKeyCode(NSString * s) {
     if([s isEqualToString:@"["])
@@ -1048,16 +1049,72 @@ gui_mch_mousehide(int hide)
 
 // -- Clip ----
 //
+
+static NSString * PboardTypeVim = @"PboardTypeVim";
+
     void
 clip_mch_request_selection(VimClipboard *cbd)
 {
-//    printf("%s\n",__func__);  
+//    printf("%s\n",__func__);
+    UIPasteboard * pb = [UIPasteboard generalPasteboard];
+    int motionType = MAUTO;
+    NSString * str = nil;
+    
+    if([pb containsPasteboardTypes:[NSArray arrayWithObject:PboardTypeVim]]) {
+        id plist = [pb valueForPasteboardType:PboardTypeVim];
+        if([plist isKindOfClass:[NSArray class]] && [plist count] == 2) {
+            id obj = [plist objectAtIndex:1];
+            if([obj isKindOfClass:[NSString class]]) {
+                motionType = [[plist objectAtIndex:0] intValue];
+                str = obj;
+            }
+        }
+    }
+    
+    if(!str) {
+        NSMutableString * mstr = [NSMutableString stringWithString:[pb string]];
+        NSRange range = {0, [mstr length]};
+        [mstr replaceOccurrencesOfString:@"\r" withString:@"\n" options:0 range:range];
+        str = mstr;
+    }
+    
+    if(!(motionType == MCHAR || motionType == MLINE || motionType == MBLOCK || motionType == MAUTO)) {
+        motionType = MAUTO;
+    }
+    
+    char_u * utf8Str = (char_u *)[str UTF8String];
+    long len = [str lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    if(utf8Str) {
+        clip_yank_selection(motionType, utf8Str, len, cbd);
+    }
 }
 
     void
 clip_mch_set_selection(VimClipboard *cbd)
 {
-//    printf("%s\n",__func__);  
+//    printf("%s\n",__func__);
+    //fill the '*' register if not yet
+    cbd->owned = TRUE;
+    clip_get_selection(cbd);
+    cbd->owned = FALSE;
+    
+    long_u llen = 0;
+    char_u * str = nil;
+    int motionType = clip_convert_selection(&str, &llen, cbd);
+    if (motionType < 0) {
+        return;
+    }
+    
+    if(llen > 0) {
+        NSString * string = [[NSString alloc] initWithBytes:str length:llen encoding:NSUTF8StringEncoding];
+        UIPasteboard * pb = [UIPasteboard generalPasteboard];
+        NSNumber * motion = [NSNumber numberWithInt:motionType];
+        NSArray * plist = [NSArray arrayWithObjects:motion, string, nil];
+        [pb setValue:plist forPasteboardType:PboardTypeVim];
+        [pb setString:string];
+    }
+    
+    vim_free(str);
 }
 
    void
