@@ -139,36 +139,8 @@ CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
     return cgColor;
 }
 
-
-//void inputSpecialKey(specialKey key) {
-//    char escapeString[] = {CAR,0};
-//    NSString * text = [NSString stringWithUTF8String:escapeString];
-//    int length = [text lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-//    add_to_input_buf( (char_u)*[text UTF8String], length);
-//}
-
 #pragma mark -
 #pragma mark Vim C functions
-
-/*
- * Parse the GUI related command-line arguments.  Any arguments used are
- * deleted from argv, and *argc is decremented accordingly.  This is called
- * when vim is started, whether or not the GUI has been started.
- * NOTE: This function will be called twice if the Vim process forks.
- */
-
-void vimHelper(int argc, NSString *file)
-{
-    char * argv[2] = {"vim", nil};
-    if(file != nil) {
-        char* filename = (char *)[file UTF8String];
-        argv[1] = filename;
-        argc++;
-    }
-       // NSLog(@"%s", argv[1]);
-    VimMain(argc, argv);
-}
-
 /*
  * Show error message *err_msg*
  */
@@ -367,6 +339,13 @@ BOOL file_is_in_buffer_list(NSString * path) {
 BOOL is_in_normal_mode(void) {
     return State & NORMAL;
 }
+
+/*
+ * Parse the GUI related command-line arguments.  Any arguments used are
+ * deleted from argv, and *argc is decremented accordingly.  This is called
+ * when vim is started, whether or not the GUI has been started.
+ * NOTE: This function will be called twice if the Vim process forks.
+ */
 
     void
 gui_mch_prepare(int *argc, char **argv)

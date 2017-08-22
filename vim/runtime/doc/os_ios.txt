@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Jul 31
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Aug 22
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -27,7 +27,8 @@ the newer iOS systems. This project started from it.
 3. Extended keyboard			|ios-extended-keyboard|
 4. Multi-stage language support		|ios-multistage-language|
 5. Share				|ios-share|
-6. Miscellaneous			|ios-miscellaneous|
+6. Settings				|ios-settings|
+7. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -167,7 +168,26 @@ Type ":help :ishare" or ":help :idocuments" for more detailed information.
 
 
 ==============================================================================
-6. Miscellaneous			*ios-miscellaneous* *ios-misc*
+6. Settings						*ios-settings*
+
+Because there are scenarios where vim's options cannot cover, iVim also
+provides some setting options in the system's Settings app.
+
+Launch Option ~
+
+This settings group allows users indicate launch arguments for vim.
+
+a. Arguments
+You can give the arguments in this field. When iVim launches, this line will 
+be parsed and taken by vim as its command line arguments.
+
+b. Always
+This switch tells iVim about the term of validity of the launch arguments.
+If YES, iVim will take the arguments every time it launches.
+If NO, iVim will only launch with the arguments once, then remove them.
+
+==============================================================================
+7. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 

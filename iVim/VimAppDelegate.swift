@@ -39,7 +39,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let workingDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         vim_setenv("HOME", workingDir)
         FileManager.default.changeCurrentDirectoryPath(workingDir)
-        vimHelper(0, nil)
+        let args = ["vim"] + LaunchArgumentsParser().parse()
+        var argv = args.map { strdup($0) }
+        VimMain(Int32(args.count), &argv)
+        argv.forEach { free($0) }
     }
     
     private func showIntroMessage() {

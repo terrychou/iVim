@@ -85,6 +85,10 @@
 		DE7BA7E41F21F74000705E67 /* vimrc in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E31F21F74000705E67 /* vimrc */; };
 		DE7BA7E61F22037C00705E67 /* beep-07.wav in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E51F22037C00705E67 /* beep-07.wav */; };
 		DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41F1F209661007AFD63 /* VimFunctions.swift */; };
+		DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */; };
+		DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */; };
+		DEE31E961F4BF712000CA9E8 /* Stack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E941F4BF712000CA9E8 /* Stack.swift */; };
+		DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E971F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift */; };
 		DEEAD17D1F23005500B4CAC9 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAD17C1F23005500B4CAC9 /* ShareViewController.swift */; };
 		DEEAD1801F23005500B4CAC9 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DEEAD17E1F23005500B4CAC9 /* MainInterface.storyboard */; };
 		DEEAD1841F23005500B4CAC9 /* iVimShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DEEAD17A1F23005500B4CAC9 /* iVimShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -2799,6 +2803,10 @@
 		DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.ttf"; sourceTree = "<group>"; };
 		DE7BA7E31F21F74000705E67 /* vimrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vimrc; sourceTree = "<group>"; };
 		DE7BA7E51F22037C00705E67 /* beep-07.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "beep-07.wav"; sourceTree = "<group>"; };
+		DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandTokenizer.swift; sourceTree = "<group>"; };
+		DEE31E941F4BF712000CA9E8 /* Stack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stack.swift; sourceTree = "<group>"; };
+		DEE31E971F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchArgumentsParser.swift; sourceTree = "<group>"; };
 		DEEAD17A1F23005500B4CAC9 /* iVimShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = iVimShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEEAD17C1F23005500B4CAC9 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		DEEAD17F1F23005500B4CAC9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
@@ -6423,6 +6431,7 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DEE31E921F4BF54E000CA9E8 /* Launch Arguments */,
 				DEEAD18B1F23014E00B4CAC9 /* iVim.entitlements */,
 				DE7BA7DE1F21F53D00705E67 /* Resources */,
 				DE7BA7A81F21DA7000705E67 /* runtime */,
@@ -6438,6 +6447,7 @@
 				DE44D4241F209661007AFD63 /* URLSchemeWorker.swift */,
 				DE44D4251F209661007AFD63 /* GlobalConfiguration.swift */,
 				DE44DC011F209A93007AFD63 /* gui_ios.m */,
+				DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */,
 				DE7BA7A71F21AFD300705E67 /* iVim-Bridging-Header.h */,
 				DE531AF91F20941100D71DB3 /* Main.storyboard */,
 				DE531AFC1F20941100D71DB3 /* Assets.xcassets */,
@@ -6499,6 +6509,16 @@
 				DE7BA7E51F22037C00705E67 /* beep-07.wav */,
 			);
 			name = Sounds;
+			sourceTree = "<group>";
+		};
+		DEE31E921F4BF54E000CA9E8 /* Launch Arguments */ = {
+			isa = PBXGroup;
+			children = (
+				DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */,
+				DEE31E941F4BF712000CA9E8 /* Stack.swift */,
+				DEE31E971F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift */,
+			);
+			name = "Launch Arguments";
 			sourceTree = "<group>";
 		};
 		DEEAD17B1F23005500B4CAC9 /* iVimShare */ = {
@@ -6667,6 +6687,7 @@
 				DE7BA7A31F21A85700705E67 /* Assets.xcassets in Resources */,
 				DE7BA7A91F21DA7000705E67 /* runtime in Resources */,
 				DE7BA7A41F21A85700705E67 /* LaunchScreen.storyboard in Resources */,
+				DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */,
 				DE7BA7E61F22037C00705E67 /* beep-07.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6716,6 +6737,7 @@
 				DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */,
 				DE7BA7BE1F21EE6600705E67 /* spell.c in Sources */,
 				DE7BA7D01F21F1B900705E67 /* regexp.c in Sources */,
+				DEE31E961F4BF712000CA9E8 /* Stack.swift in Sources */,
 				DE7BA7D31F21F20E00705E67 /* memfile.c in Sources */,
 				DE7BA7C71F21EF9900705E67 /* fileio.c in Sources */,
 				DE7BA7AE1F21E6B700705E67 /* version.c in Sources */,
@@ -6723,6 +6745,7 @@
 				DE7BA7941F21A75400705E67 /* VimMainView.swift in Sources */,
 				DE7BA7B41F21E87800705E67 /* mbyte.c in Sources */,
 				DE7BA7B31F21E83D00705E67 /* charset.c in Sources */,
+				DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */,
 				DE7BA7BB1F21EB7C00705E67 /* term.c in Sources */,
 				DE7BA7AD1F21E63400705E67 /* misc1.c in Sources */,
 				DE7BA7951F21A75400705E67 /* URLSchemeWorker.swift in Sources */,
@@ -6735,6 +6758,7 @@
 				DE7BA7B81F21EB0400705E67 /* main.c in Sources */,
 				DE7BA7D71F21F28900705E67 /* crypt.c in Sources */,
 				DE7BA7CE1F21F17200705E67 /* fold.c in Sources */,
+				DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */,
 				DE7BA7971F21A76100705E67 /* OptionalButton.swift in Sources */,
 				DE7BA7981F21A76400705E67 /* OptionalButtonsBar.swift in Sources */,
 				DE7BA7DC1F21F33100705E67 /* pty.c in Sources */,

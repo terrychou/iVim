@@ -6710,6 +6710,7 @@ ios-font-management	os_ios.txt	/*ios-font-management*
 ios-misc	os_ios.txt	/*ios-misc*
 ios-miscellaneous	os_ios.txt	/*ios-miscellaneous*
 ios-multistage-language	os_ios.txt	/*ios-multistage-language*
+ios-settings	os_ios.txt	/*ios-settings*
 ios-share	os_ios.txt	/*ios-share*
 ios_commands.txt	ios_commands.txt	/*ios_commands.txt*
 ip	motion.txt	/*ip*
