@@ -46,7 +46,7 @@ However, there are some points worth mentioning due to iOS system's personality:
 2. iVim is sandboxed. It means you don't have direct access to files of other apps if not via the sharing feature.
 3. iVim don't do autosave. Because the system could terminate apps without notifying at any time, iVim won't save its opened files automatically for the users.
 
-## Gaints' shoulders
+## Giants' shoulders
 
 iVim was inspired by and based on 3 projects:
 1. [vim - the official Vim repository](https://github.com/vim/vim)
