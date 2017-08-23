@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Aug 22
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Aug 23
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -106,9 +106,15 @@ right and down. The start point doesn't really matter.
 The Ctrl key ~
 
 Some keys are sticky. For example, the Ctrl key needs to be held down while 
-pressing other keys. Thus it is set up as a sticky key: triggering it once 
-will keep it in held state ever since, and tapping it again to restore its 
-state.
+pressing other keys. Thus it is set up as a sticky key:
+
+a. triggering it once will enter the one-off state. After inputting a `C-`
+combination, it will restore automatically.
+
+b. triggering it twice will make it into the held state. It will keep being
+held until it is tapped again. This is good for continuous `C-` inputs.
+
+c. tapping it in any of the above state will restore its state.
 
 Hide and show ~ 
 

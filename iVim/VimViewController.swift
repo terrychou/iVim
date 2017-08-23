@@ -28,7 +28,10 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var documentController: UIDocumentInteractionController?
     
-    var ctrlEnabled = false
+    weak var ctrlButton: OptionalButton?
+    var ctrlEnabled: Bool {
+        return self.ctrlButton?.isOn ?? false
+    }
     
     var textTokenizer: UITextInputStringTokenizer!
     var markedInfo: MarkedInfo?
@@ -168,6 +171,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     func escapingText(_ text: String) -> String {
         if self.ctrlEnabled {
+            self.ctrlButton?.tryRestore()
             return text.uppercased().ctrlModified
         } else if text == "\n" {
             return keyCAR.unicoded

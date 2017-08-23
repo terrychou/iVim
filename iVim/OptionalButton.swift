@@ -22,7 +22,8 @@ class OptionalButton: UIView {
     var effectiveInfo: OptionInfo?
     var initTranslation: CGPoint?
     var startLocation: CGPoint!
-    var isOn = false
+    fileprivate(set) var isOn = false
+    fileprivate var isHeld = false
     var primaryFontSize: CGFloat!
     var optionalFontSize: CGFloat!
     
@@ -108,7 +109,7 @@ extension OptionalButton {
         l.alignmentMode = kCAAlignmentCenter
         self.setFontSize(fontSize, of: l)
         self.layer.addSublayer(l)
-        let oi = OptionInfo(layer: l, action: option.action)
+        let oi = OptionInfo(layer: l, action: option.action, isSticky: option.isSticky)
         self.info[anchorPoint.key] = oi
     }
     
@@ -131,22 +132,24 @@ extension OptionalButton {
 
 extension OptionalButton {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if self.isOn { return }
         let t = touches.first!
         self.startLocation = t.location(in: self)
+        if self.isOn { return }
         self.layer.backgroundColor = UIColor.lightGray.cgColor
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if self.isOn { return }
-        let t = touches.first!
-        let l = t.location(in: self)
-        let tl = CGPoint(l.x - self.startLocation.x, l.y - self.startLocation.y)
+        let tl = self.translation(for: touches.first!)
         self.scale(for: tl)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.doAction()
+        if self.effectiveInfo?.isSticky ?? false {
+            self.toggleHeld(with: touches.first!)
+            self.toggleSticky()
+        }
         if !self.isOn { self.restore() }
     }
     
@@ -156,6 +159,33 @@ extension OptionalButton {
     
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         return false
+    }
+    
+    private func translation(for touch: UITouch) -> CGPoint {
+        let l = touch.location(in: self)
+        
+        return CGPoint(l.x - self.startLocation.x, l.y - self.startLocation.y)
+    }
+    
+    private func toggleHeld(with touch: UITouch) {
+        if self.isHeld {
+            self.isHeld = false
+            return
+        }
+        guard self.isOn,
+            let key = self.key(for: self.translation(for: touch)),
+            self.info[key]?.layer == self.effectiveInfo?.layer else { return }
+        self.isHeld = true
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        self.layer.backgroundColor = UIColor.darkGray.cgColor
+        self.effectiveInfo?.layer.foregroundColor = UIColor.white.cgColor
+        CATransaction.commit()
+    }
+    
+    private func toggleSticky() {
+        guard !self.isHeld else { return }
+        self.isOn = !self.isOn
     }
     
     fileprivate var primaryInfo: OptionInfo? {
@@ -208,6 +238,12 @@ extension OptionalButton {
     private func restore() {
         self.layer.backgroundColor = UIColor.white.cgColor
         self.reset()
+    }
+    
+    func tryRestore() {
+        guard !self.isHeld else { return }
+        self.isOn = false
+        self.restore()
     }
     
     private func info(for translation: CGPoint) -> OptionInfo? {
@@ -272,9 +308,17 @@ typealias Action = (OptionalButton) -> Void
 struct ButtonOption {
     let title: String
     let action: Action?
+    let isSticky: Bool
+    
+    init(title: String, action: Action?, isSticky: Bool = false) {
+        self.title = title
+        self.action = action
+        self.isSticky = isSticky
+    }
 }
 
 struct OptionInfo {
     let layer: CATextLayer
     let action: Action?
+    let isSticky: Bool
 }

@@ -17,9 +17,9 @@ extension VimViewController {
         return ButtonOption(title: title, action: { _ in self.insertText(key.unicoded) })
     }
     
-    private func feedKeysOption(for title: String, keys: String) -> ButtonOption {
-        return ButtonOption(title: title, action: { _ in gFeedKeys(keys) })
-    }
+//    private func feedKeysOption(for title: String, keys: String) -> ButtonOption {
+//        return ButtonOption(title: title, action: { _ in gFeedKeys(keys) })
+//    }
     
     private func markedTextConflictOption(for title: String, action: Action?) -> ButtonOption {
         return ButtonOption(title: title, action: { b in
@@ -43,9 +43,9 @@ extension VimViewController {
                     }
                 }),
                 ButtonOption(title: "ctrl", action: { b in
-                    self.ctrlEnabled = !b.isOn
-                    b.isOn = self.ctrlEnabled
-                })],
+                    guard self.ctrlButton != b else { return }
+                    self.ctrlButton = b
+                }, isSticky: true)],
             [
                 self.keyOption(for: "tab", key: keyTAB),
                 self.markedTextConflictOption(for: "↓", action: { _ in gFeedKeys("Down".escaped) }),
