@@ -1198,7 +1198,7 @@ struct dictitem_S
 {
     typval_T	di_tv;		/* type and value of the variable */
     char_u	di_flags;	/* flags (only used for variable) */
-    char_u	di_key[30];	/* key (actually longer!)<- YOU FUCKERS! this used to be di_key[1] and broke vim with XCode 7.3 */
+    char_u	di_key[1];	/* key (actually longer!) */
 };
 
 typedef struct dictitem_S dictitem_T;

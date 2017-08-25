@@ -141,6 +141,15 @@ CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
 
 #pragma mark -
 #pragma mark Vim C functions
+/* 
+ * Copy string and avoid the compiler from checking the destination size
+ */
+char * istrcpy(char * dst, char * src) {
+    char * tmp = dst;
+    return strcpy(tmp, src);
+}
+
+
 /*
  * Show error message *err_msg*
  */

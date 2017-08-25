@@ -1549,7 +1549,12 @@ typedef UINT32_TYPEDEF UINT32_T;
  * (vim_strchr() and vim_strrchr() are now in alloc.c)
  */
 #define STRLEN(s)	    strlen((char *)(s))
+#ifdef TARGET_OS_IPHONE
+// keep the compiler from checking the destination size  
+#define STRCPY(d, s)        istrcpy((char *)(d), (char *)(s))
+#else
 #define STRCPY(d, s)	    strcpy((char *)(d), (char *)(s))
+#endif
 #define STRNCPY(d, s, n)    strncpy((char *)(d), (char *)(s), (size_t)(n))
 #define STRCMP(d, s)	    strcmp((char *)(d), (char *)(s))
 #define STRNCMP(d, s, n)    strncmp((char *)(d), (char *)(s), (size_t)(n))

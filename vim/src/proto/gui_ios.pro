@@ -1,4 +1,5 @@
 /* gui_ios.m */
+char * istrcpy __ARGS((char * dst, char * src));
 void gui_mch_prepare __ARGS((int *argc, char **argv));
 int gui_mch_init_check __ARGS((void));
 int gui_mch_init __ARGS((void));
