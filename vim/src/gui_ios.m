@@ -1060,21 +1060,22 @@ clip_mch_request_selection(VimClipboard *cbd)
     }
     
     if(!str) {
-        NSMutableString * mstr = [NSMutableString stringWithString:[pb string]];
+        NSString * s = [pb string];
+        if(!s) { return; }
+        NSMutableString * mstr = [NSMutableString stringWithString:s];
         NSRange range = {0, [mstr length]};
         [mstr replaceOccurrencesOfString:@"\r" withString:@"\n" options:0 range:range];
         str = mstr;
     }
     
+    char_u * utf8Str = (char_u *)[str UTF8String];
+    if(!utf8Str) { return; }
+    
     if(!(motionType == MCHAR || motionType == MLINE || motionType == MBLOCK || motionType == MAUTO)) {
         motionType = MAUTO;
     }
-    
-    char_u * utf8Str = (char_u *)[str UTF8String];
     long len = [str lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    if(utf8Str) {
-        clip_yank_selection(motionType, utf8Str, len, cbd);
-    }
+    clip_yank_selection(motionType, utf8Str, len, cbd);
 }
 
     void

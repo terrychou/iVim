@@ -240,6 +240,10 @@ extension OptionalButton {
         self.reset()
     }
     
+    func isOn(withTitle title: String) -> Bool {
+        return self.isOn && (self.effectiveInfo?.layer.string as? String) == title
+    }
+    
     func tryRestore() {
         guard !self.isHeld else { return }
         self.isOn = false

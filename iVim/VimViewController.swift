@@ -30,7 +30,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     weak var ctrlButton: OptionalButton?
     var ctrlEnabled: Bool {
-        return self.ctrlButton?.isOn ?? false
+        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
     }
     
     var textTokenizer: UITextInputStringTokenizer!
