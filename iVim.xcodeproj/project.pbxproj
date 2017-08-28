@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
+		DE7364851F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */; };
 		DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4201F209661007AFD63 /* VimViewController.swift */; };
 		DE7BA7921F21A75400705E67 /* VimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4211F209661007AFD63 /* VimView.swift */; };
 		DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4221F209661007AFD63 /* VimAppDelegate.swift */; };
@@ -2797,6 +2798,7 @@
 		DE531B171F20941200D71DB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DE531B241F20949100D71DB3 /* VimFontsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VimFontsManager.swift; sourceTree = "<group>"; };
 		DE531B251F20949100D71DB3 /* systemFonts.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = systemFonts.plist; sourceTree = "<group>"; };
+		DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+ExternalKeyboard.swift"; sourceTree = "<group>"; };
 		DE7BA7A71F21AFD300705E67 /* iVim-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "iVim-Bridging-Header.h"; sourceTree = "<group>"; };
 		DE7BA7A81F21DA7000705E67 /* runtime */ = {isa = PBXFileReference; lastKnownFileType = folder; name = runtime; path = vim/runtime; sourceTree = SOURCE_ROOT; };
 		DE7BA7AA1F21DC8700705E67 /* ios_prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios_prefix.h; sourceTree = "<group>"; };
@@ -6431,6 +6433,7 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DE7364831F53A5D4006ACE4C /* External Keyboard Support */,
 				DEE31E921F4BF54E000CA9E8 /* Launch Arguments */,
 				DEEAD18B1F23014E00B4CAC9 /* iVim.entitlements */,
 				DE7BA7DE1F21F53D00705E67 /* Resources */,
@@ -6484,6 +6487,14 @@
 				DE531B251F20949100D71DB3 /* systemFonts.plist */,
 			);
 			name = "Font Management";
+			sourceTree = "<group>";
+		};
+		DE7364831F53A5D4006ACE4C /* External Keyboard Support */ = {
+			isa = PBXGroup;
+			children = (
+				DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */,
+			);
+			name = "External Keyboard Support";
 			sourceTree = "<group>";
 		};
 		DE7BA7DE1F21F53D00705E67 /* Resources */ = {
@@ -6790,6 +6801,7 @@
 				DE7BA7DB1F21F31500705E67 /* digraph.c in Sources */,
 				DE7BA7CC1F21F05400705E67 /* popupmnu.c in Sources */,
 				DE7BA7D51F21F24500705E67 /* memline.c in Sources */,
+				DE7364851F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift in Sources */,
 				DE7BA7A11F21A7A000705E67 /* gui_ios.m in Sources */,
 				DE7BA7C91F21EFD600705E67 /* quickfix.c in Sources */,
 			);

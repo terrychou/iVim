@@ -43,6 +43,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var pendingWork: (() -> Void)?
     
+    lazy var externalKeys: [UIKeyCommand] = self.generateExternalKeys()
+    
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: .UIKeyboardWillChangeFrame, object: nil)
@@ -78,11 +80,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.toggleExtendedBar()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        #if  FEAT_GUI
-        //print("Hallo!")
-        #endif
-    }
+//    override func viewDidAppear(_ animated: Bool) {
+//        #if  FEAT_GUI
+//        //print("Hallo!")
+//        #endif
+//    }
     
     func resetKeyboard() {
         self.shouldTuneFrame = false
@@ -149,17 +151,17 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
 
     
-   override var canBecomeFirstResponder : Bool {
+    override var canBecomeFirstResponder: Bool {
         return self.hasBeenFlushedOnce
     }
     
-    override var canResignFirstResponder : Bool {
+    override var canResignFirstResponder: Bool {
         return true
     }
     
     
-   // MARK: UIKeyInput
-    private func addToInputBuffer(_ text: String) {
+    //MARK: UIKeyInput
+    func addToInputBuffer(_ text: String) {
         let length = text.utf8Length
         add_to_input_buf(text, Int32(length))
         self.markNeedsDisplay()
@@ -188,7 +190,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.insertText(keyBS.unicoded)
     }
     
-    // Mark: UITextInputTraits
+    //MARK: UITextInputTraits
     
     var autocapitalizationType = UITextAutocapitalizationType.none
     var keyboardType = UIKeyboardType.default

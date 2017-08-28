@@ -21,26 +21,33 @@ extension VimViewController {
 //        return ButtonOption(title: title, action: { _ in gFeedKeys(keys) })
 //    }
     
-    private func markedTextConflictOption(for title: String, action: Action?) -> ButtonOption {
-        return ButtonOption(title: title, action: { b in
-            if self.markedInfo != nil {
-                self.resetKeyboard()
-                self.unmarkText()
-            } else {
-                action?(b)
-            }
-        })
+//    private func markedTextConflictOption(for title: String, action: Action?) -> ButtonOption {
+//        return ButtonOption(title: title, action: { b in
+//        })
+//    }
+    
+    func pressArrow(_ title: String) {
+        if self.markedInfo != nil {
+            self.resetKeyboard()
+            self.unmarkText()
+        } else {
+            gFeedKeys(title.escaped)
+        }
+    }
+    
+    func pressESC() {
+        if self.markedInfo == nil {
+            self.insertText(keyESC.unicoded)
+        } else {
+            self.cancelCurrentMarkedText()
+        }
     }
     
     private var buttons: [[ButtonOption]] {
         return [
             [
                 ButtonOption(title: "esc", action: { _ in
-                    if self.markedInfo == nil {
-                        self.insertText(keyESC.unicoded)
-                    } else {
-                        self.cancelCurrentMarkedText()
-                    }
+                    self.pressESC()
                 }),
                 ButtonOption(title: "ctrl", action: { b in
                     guard self.ctrlButton != b else { return }
@@ -48,10 +55,10 @@ extension VimViewController {
                 }, isSticky: true)],
             [
                 self.keyOption(for: "tab", key: keyTAB),
-                self.markedTextConflictOption(for: "↓", action: { _ in gFeedKeys("Down".escaped) }),
-                self.markedTextConflictOption(for: "←", action: { _ in gFeedKeys("Left".escaped) }),
-                self.markedTextConflictOption(for: "→", action: { _ in gFeedKeys("Right".escaped) }),
-                self.markedTextConflictOption(for: "↑", action: { _ in gFeedKeys("Up".escaped) }) ],
+                ButtonOption(title: "↓", action: { _ in self.pressArrow("Down") }),
+                ButtonOption(title: "←", action: { _ in self.pressArrow("Left") }),
+                ButtonOption(title: "→", action: { _ in self.pressArrow("Right") }),
+                ButtonOption(title: "↑", action: { _ in self.pressArrow("Up") }) ],
             [
                 self.inputOption(for: "0"),
                 self.inputOption(for: "1"),
