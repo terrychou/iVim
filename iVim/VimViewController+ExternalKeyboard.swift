@@ -22,7 +22,8 @@ extension VimViewController {
                  UIKeyInputDownArrow,
                  UIKeyInputLeftArrow,
                  UIKeyInputRightArrow].map { self.keyCommand(input: $0) }
-        keys += self.keyCommands(keys: keysToModify, modifierFlags: [[.control]])
+        keys += self.keyCommands(keys: keysToModify, modifierFlags: [[.control], [.alternate]])
+        keys += [self.keyCommand(input: "\t", modifierFlags: [.shift])]
         
         return keys
     }
@@ -58,7 +59,11 @@ extension VimViewController {
             }
         case UIKeyModifierFlags.control.rawValue:
             self.ctrlButton?.tryRestore()
-            self.addToInputBuffer(sender.input.uppercased().ctrlModified)
+            self.addToInputBuffer(sender.input.ctrlModified)
+        case UIKeyModifierFlags.alternate.rawValue:
+            self.addToInputBuffer(sender.input.altModified)
+        case UIKeyModifierFlags.shift.rawValue:
+            gFeedKeys("S-Tab".escaped)
         default: break
         }
     }

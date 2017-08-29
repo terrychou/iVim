@@ -17,67 +17,74 @@
 //#import "ui.c"
 #import "iVim-Swift.h"
 #import <AudioToolbox/AudioToolbox.h>
-#import <UIKit/UIKit.h>
 
-int getCTRLKeyCode(NSString * s) {
-    if([s isEqualToString:@"["])
-        return ESC;
-    if([s isEqualToString:@"]"])
-        return Ctrl_RSB;
-    if([s isEqualToString:@"A"])
-        return Ctrl_A;
-    if([s isEqualToString:@"B"])
-        return Ctrl_B;
-    if([s isEqualToString:@"C"])
-        return Ctrl_C;
-    if([s isEqualToString:@"D"])
-        return Ctrl_D;
-    if([s isEqualToString:@"E"])
-        return Ctrl_E;
-    if([s isEqualToString:@"F"])
-        return Ctrl_F;
-    if([s isEqualToString:@"G"])
-        return Ctrl_G;
-    if([s isEqualToString:@"H"])
-        return Ctrl_H;
-    if([s isEqualToString:@"I"])
-        return Ctrl_I;
-    if([s isEqualToString:@"J"])
-        return Ctrl_J;
-    if([s isEqualToString:@"K"])
-        return Ctrl_K;
-    if([s isEqualToString:@"L"])
-        return Ctrl_L;
-    if([s isEqualToString:@"M"])
-        return Ctrl_M;
-    if([s isEqualToString:@"N"])
-        return Ctrl_N;
-    if([s isEqualToString:@"O"])
-        return Ctrl_O;
-    if([s isEqualToString:@"P"])
-        return Ctrl_P;
-    if([s isEqualToString:@"Q"])
-        return Ctrl_Q;
-    if([s isEqualToString:@"R"])
-        return Ctrl_R;
-    if([s isEqualToString:@"S"])
-        return Ctrl_S;
-    if([s isEqualToString:@"T"])
-        return Ctrl_T;
-    if([s isEqualToString:@"U"])
-        return Ctrl_U;
-    if([s isEqualToString:@"V"])
-        return Ctrl_V;
-    if([s isEqualToString:@"W"])
-        return Ctrl_W;
-    if([s isEqualToString:@"X"])
-        return Ctrl_X;
-    if([s isEqualToString:@"Y"])
-        return Ctrl_Y;
-    if([s isEqualToString:@"Z"])    
-        return Ctrl_Z;
-    return 0;
-    
+//int getCTRLKeyCode(NSString * s) {
+//    if([s isEqualToString:@"["])
+//        return ESC;
+//    if([s isEqualToString:@"]"])
+//        return Ctrl_RSB;
+//    if([s isEqualToString:@"A"])
+//        return Ctrl_A;
+//    if([s isEqualToString:@"B"])
+//        return Ctrl_B;
+//    if([s isEqualToString:@"C"])
+//        return Ctrl_C;
+//    if([s isEqualToString:@"D"])
+//        return Ctrl_D;
+//    if([s isEqualToString:@"E"])
+//        return Ctrl_E;
+//    if([s isEqualToString:@"F"])
+//        return Ctrl_F;
+//    if([s isEqualToString:@"G"])
+//        return Ctrl_G;
+//    if([s isEqualToString:@"H"])
+//        return Ctrl_H;
+//    if([s isEqualToString:@"I"])
+//        return Ctrl_I;
+//    if([s isEqualToString:@"J"])
+//        return Ctrl_J;
+//    if([s isEqualToString:@"K"])
+//        return Ctrl_K;
+//    if([s isEqualToString:@"L"])
+//        return Ctrl_L;
+//    if([s isEqualToString:@"M"])
+//        return Ctrl_M;
+//    if([s isEqualToString:@"N"])
+//        return Ctrl_N;
+//    if([s isEqualToString:@"O"])
+//        return Ctrl_O;
+//    if([s isEqualToString:@"P"])
+//        return Ctrl_P;
+//    if([s isEqualToString:@"Q"])
+//        return Ctrl_Q;
+//    if([s isEqualToString:@"R"])
+//        return Ctrl_R;
+//    if([s isEqualToString:@"S"])
+//        return Ctrl_S;
+//    if([s isEqualToString:@"T"])
+//        return Ctrl_T;
+//    if([s isEqualToString:@"U"])
+//        return Ctrl_U;
+//    if([s isEqualToString:@"V"])
+//        return Ctrl_V;
+//    if([s isEqualToString:@"W"])
+//        return Ctrl_W;
+//    if([s isEqualToString:@"X"])
+//        return Ctrl_X;
+//    if([s isEqualToString:@"Y"])
+//        return Ctrl_Y;
+//    if([s isEqualToString:@"Z"])    
+//        return Ctrl_Z;
+//    return 0;
+//    
+//}
+
+int get_ctrl_modified_key(const char * c) {
+    return Ctrl_chr(*c);
+}
+
+int get_alt_modified_key(const char * c) {
+    return Meta(*c);
 }
 
 NSInteger const keyCAR = CAR;
@@ -122,6 +129,7 @@ AppDelegate * app_delegate() {
 VimViewController * getViewController() {
     return (VimViewController*)[[app_delegate() window] rootViewController];
 }
+
 VimView * getView() {
     return [getViewController() vimView];
 }
@@ -148,7 +156,6 @@ char * istrcpy(char * dst, char * src) {
     char * tmp = dst;
     return strcpy(tmp, src);
 }
-
 
 /*
  * Show error message *err_msg*

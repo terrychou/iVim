@@ -36,7 +36,9 @@ int do_cmdline_cmd(const unsigned char *cmd);
 
 void add_to_input_buf(const unsigned char  *s, int len);
 void add_to_input_buf_csi(const unsigned char *s, int len);
-int getCTRLKeyCode(NSString * s);
+int get_ctrl_modified_key(const char * c);
+int get_alt_modified_key(const char * c);
+//int getCTRLKeyCode(NSString * s);
 int input_available(void);
 
 void move_cursor_left(long times);

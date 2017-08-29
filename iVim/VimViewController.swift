@@ -80,12 +80,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.toggleExtendedBar()
     }
     
-//    override func viewDidAppear(_ animated: Bool) {
-//        #if  FEAT_GUI
-//        //print("Hallo!")
-//        #endif
-//    }
-    
     func resetKeyboard() {
         self.shouldTuneFrame = false
         self.resignFirstResponder()
@@ -174,7 +168,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     func escapingText(_ text: String) -> String {
         if self.ctrlEnabled {
             self.ctrlButton?.tryRestore()
-            return text.uppercased().ctrlModified
+            return text.ctrlModified
         } else if text == "\n" {
             return keyCAR.unicoded
         } else {
@@ -325,8 +319,12 @@ extension String {
     }
     
     var ctrlModified: String {
-        let c = getCTRLKeyCode(self)
-        return c != 0 ? c.unicoded : ""
+        let c = get_ctrl_modified_key(self)
+        return c >= 0 && c < 32 ? c.unicoded : ""
+    }
+    
+    var altModified: String {
+        return get_alt_modified_key(self).unicoded
     }
     
     var nsstring: NSString {
@@ -348,7 +346,7 @@ extension String {
 
 private extension Int {
     var unicoded: String {
-        return UnicodeScalar(self)!.description
+        return UnicodeScalar(self)?.description ?? ""
     }
 }
 
