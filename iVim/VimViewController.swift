@@ -166,7 +166,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     func escapingText(_ text: String) -> String {
         if self.ctrlEnabled {
             self.ctrlButton?.tryRestore()
-            gFeedKeys("C-\(text)".escaped)
+            input_special_name("<C-\(text)>")
             return ""
         } else if text == "\n" {
             return keyCAR.unicoded
@@ -180,7 +180,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func deleteBackward() {
-        gFeedKeys("BS".escaped)
+        input_special_key(keyBS)
     }
     
     //MARK: UITextInputTraits

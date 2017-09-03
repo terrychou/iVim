@@ -14,6 +14,7 @@
 int const keyCAR;
 int const keyESC;
 int const keyTAB;
+int const keyBS;
 int const keyF1;
 int const keyUP;
 int const keyDOWN;
@@ -24,6 +25,7 @@ int const mouseDRAG;
 int const mouseRELEASE;
 
 void input_special_key(int key);
+void input_special_name(const char * name);
 
 int VimMain(int argc, char ** argv);
 void gui_resize_shell(int pixel_width, int pixel_height);

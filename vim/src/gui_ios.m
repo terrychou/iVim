@@ -90,6 +90,7 @@
 NSInteger const keyCAR = CAR;
 NSInteger const keyESC = ESC;
 NSInteger const keyTAB = TAB;
+NSInteger const keyBS = K_BS;
 NSInteger const keyF1 = 0x7E;
 NSInteger const keyUP = K_UP;
 NSInteger const keyDOWN = K_DOWN;
@@ -105,6 +106,19 @@ NSInteger const mouseRELEASE = MOUSE_RELEASE;
 void input_special_key(int key) {
     char_u s[3] = {CSI, K_SECOND(key), K_THIRD(key)};
     add_to_input_buf(s, 3);
+}
+
+/*
+ * put a special <> *name* (such as <C-W>) into the input buffer
+ */
+void input_special_name(const char * name) {
+    char_u * n = (char_u *)name;
+    char_u re[6];
+    int len = trans_special(&n, re, TRUE);
+    for (int i = 0; i < len; i += 3) {
+        if (re[i] == K_SPECIAL) { re[i] = CSI; }
+    }
+    add_to_input_buf(re, len);
 }
 
 NSString *lookupStringConstant(NSString *constantName) {

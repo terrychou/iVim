@@ -22,15 +22,16 @@ extension VimViewController {
     }
     
     static let externalKeys: [UIKeyCommand] =
+        [VimViewController.keyCommand(input: "\u{0d}", modifierFlags: .control)] +
         [VimViewController.keyCommand(
             input: "",
             modifierFlags: .alphaShift)] +
         VimViewController.keyCommands(
             inputs: specialKeys,
-            modifierFlags: [[], .control, .alternate, .command, .alphaShift]) +
+            modifierFlags: [[], .control, .command, .alternate, .alphaShift]) +
         VimViewController.keyCommands(
             keys: alphabetaKeys + numericKeys + symbolKeys,
-            modifierFlags: [.control, .alternate, .command, .alphaShift]) +
+            modifierFlags: [.control, .command, .alphaShift]) +
         VimViewController.keyCommands(
             keys: escapedKeys,
             modifierFlags: [.control, .alternate, .command, .shift, .alphaShift])
@@ -139,7 +140,7 @@ extension VimViewController {
             case "\r": keys.append("CR")
             default: keys.append(command.input)
             }
-            gFeedKeys(keys.escaped)
+            input_special_name("<\(keys)>")
         }
     }
     
