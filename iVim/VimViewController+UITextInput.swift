@@ -295,7 +295,8 @@ extension MarkedInfo {
     }
     
     private func deleteBackward(for times: Int) {
-        gAddTextToInputBuffer(keyBS.unicoded, for: times)
+//        gAddTextToInputBuffer(keyBS.unicoded, for: times)
+        gFeedKeys("BS".escaped, for: times)
     }
     
     private func deleteOldMarkedText() {

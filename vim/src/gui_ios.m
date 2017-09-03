@@ -88,7 +88,6 @@
 //}
 
 NSInteger const keyCAR = CAR;
-NSInteger const keyBS = BS;
 NSInteger const keyESC = ESC;
 NSInteger const keyTAB = TAB;
 NSInteger const keyF1 = 0x7E;

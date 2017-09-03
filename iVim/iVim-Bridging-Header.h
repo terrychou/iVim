@@ -12,7 +12,6 @@
 #import <Foundation/Foundation.h>
 
 int const keyCAR;
-int const keyBS;
 int const keyESC;
 int const keyTAB;
 int const keyF1;

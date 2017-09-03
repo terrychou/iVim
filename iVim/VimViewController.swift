@@ -180,7 +180,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func deleteBackward() {
-        self.insertText(keyBS.unicoded)
+        gFeedKeys("BS".escaped)
     }
     
     //MARK: UITextInputTraits
