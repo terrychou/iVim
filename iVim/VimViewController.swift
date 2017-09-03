@@ -43,8 +43,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var pendingWork: (() -> Void)?
     
-    lazy var externalKeys: [UIKeyCommand] = self.generateExternalKeys()
-    
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: .UIKeyboardWillChangeFrame, object: nil)
@@ -168,7 +166,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     func escapingText(_ text: String) -> String {
         if self.ctrlEnabled {
             self.ctrlButton?.tryRestore()
-            return text.ctrlModified
+            gFeedKeys("C-\(text)".escaped)
+            return ""
         } else if text == "\n" {
             return keyCAR.unicoded
         } else {
@@ -272,11 +271,13 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
             sender.setTranslation(CGPoint(x: 0, y: translation.y - floor(diffY) * charHeight), in: v)
         }
         while diffY <= -1 {
-            self.addToInputBuffer("E".ctrlModified)
+//            self.addToInputBuffer("E".ctrlModified)
+            gFeedKeys("C-e".escaped)
             diffY += 1
         }
         while diffY >= 1 {
-            self.addToInputBuffer("Y".ctrlModified)
+//            self.addToInputBuffer("Y".ctrlModified)
+            gFeedKeys("C-y".escaped)
             diffY -= 1
         }
     }
@@ -318,15 +319,11 @@ extension String {
         return "\\<\(self)>"
     }
     
-    var ctrlModified: String {
-        let c = get_ctrl_modified_key(self)
-        return c >= 0 && c < 32 ? c.unicoded : ""
-    }
-    
-    var altModified: String {
-        return get_alt_modified_key(self).unicoded
-    }
-    
+//    var ctrlModified: String {
+//        let c = get_ctrl_modified_key(self)
+//        return c >= 0 && c < 32 ? c.unicoded : ""
+//    }
+//    
     var nsstring: NSString {
         return self as NSString
     }

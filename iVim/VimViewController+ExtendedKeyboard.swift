@@ -26,12 +26,12 @@ extension VimViewController {
 //        })
 //    }
     
-    func pressArrow(_ title: String) {
+    func pressArrow(_ key: Int32) {
         if self.markedInfo != nil {
             self.resetKeyboard()
             self.unmarkText()
         } else {
-            gFeedKeys(title.escaped)
+            input_special_key(key)
         }
     }
     
@@ -55,10 +55,10 @@ extension VimViewController {
                 }, isSticky: true)],
             [
                 self.keyOption(for: "tab", key: keyTAB),
-                ButtonOption(title: "↓", action: { _ in self.pressArrow("Down") }),
-                ButtonOption(title: "←", action: { _ in self.pressArrow("Left") }),
-                ButtonOption(title: "→", action: { _ in self.pressArrow("Right") }),
-                ButtonOption(title: "↑", action: { _ in self.pressArrow("Up") }) ],
+                ButtonOption(title: "↓", action: { _ in self.pressArrow(keyDOWN) }),
+                ButtonOption(title: "←", action: { _ in self.pressArrow(keyLEFT) }),
+                ButtonOption(title: "→", action: { _ in self.pressArrow(keyRIGHT) }),
+                ButtonOption(title: "↑", action: { _ in self.pressArrow(keyUP) }) ],
             [
                 self.inputOption(for: "0"),
                 self.inputOption(for: "1"),

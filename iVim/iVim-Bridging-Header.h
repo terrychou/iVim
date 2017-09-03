@@ -24,6 +24,8 @@ int const mouseLEFT;
 int const mouseDRAG;
 int const mouseRELEASE;
 
+void input_special_key(int key);
+
 int VimMain(int argc, char ** argv);
 void gui_resize_shell(int pixel_width, int pixel_height);
 void gui_update_cursor(int force, int clear_selection);
@@ -36,8 +38,8 @@ int do_cmdline_cmd(const unsigned char *cmd);
 
 void add_to_input_buf(const unsigned char  *s, int len);
 void add_to_input_buf_csi(const unsigned char *s, int len);
-int get_ctrl_modified_key(const char * c);
-int get_alt_modified_key(const char * c);
+//int get_ctrl_modified_key(const char * c);
+//int get_alt_modified_key(const char * c);
 //int getCTRLKeyCode(NSString * s);
 int input_available(void);
 

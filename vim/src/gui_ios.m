@@ -79,13 +79,13 @@
 //    
 //}
 
-int get_ctrl_modified_key(const char * c) {
-    return Ctrl_chr(*c);
-}
-
-int get_alt_modified_key(const char * c) {
-    return Meta(*c);
-}
+//int get_ctrl_modified_key(const char * c) {
+//    return Ctrl_chr(*c);
+//}
+//
+//int get_alt_modified_key(const char * c) {
+//    return Meta(*c);
+//}
 
 NSInteger const keyCAR = CAR;
 NSInteger const keyBS = BS;
@@ -100,7 +100,13 @@ NSInteger const mouseDRAG = MOUSE_DRAG;
 NSInteger const mouseLEFT = MOUSE_LEFT;
 NSInteger const mouseRELEASE = MOUSE_RELEASE;
 
-
+/*
+ * put special key char *key* (TERMCAP2KEY) into the input buffer
+ */
+void input_special_key(int key) {
+    char_u s[3] = {CSI, K_SECOND(key), K_THIRD(key)};
+    add_to_input_buf(s, 3);
+}
 
 NSString *lookupStringConstant(NSString *constantName) {
     void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetMainBundle(), (__bridge CFStringRef)constantName);
