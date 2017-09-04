@@ -22,10 +22,10 @@ extension VimViewController {
     }
     
     static let externalKeys: [UIKeyCommand] =
-        [VimViewController.keyCommand(input: "\u{0d}", modifierFlags: .control)] +
-        [VimViewController.keyCommand(
-            input: "",
-            modifierFlags: .alphaShift)] +
+//        [VimViewController.keyCommand(input: "\u{0d}", modifierFlags: .control)] +
+//        [VimViewController.keyCommand(
+//            input: "",
+//            modifierFlags: .alphaShift)] +
         VimViewController.keyCommands(
             inputs: specialKeys,
             modifierFlags: [[], .control, .command, .alternate, .alphaShift]) +
@@ -97,9 +97,9 @@ extension VimViewController {
     }
     
     func keyCommandTriggered(_ sender: UIKeyCommand) {
-//        DispatchQueue.main.async {
+        DispatchQueue.main.async {
             self.handleKeyCommand(sender)
-//        }
+        }
     }
         
     private func handleKeyCommand(_ command: UIKeyCommand) {
@@ -111,7 +111,7 @@ extension VimViewController {
             case UIKeyInputDownArrow: self.pressArrow(keyDOWN)
             case UIKeyInputLeftArrow: self.pressArrow(keyLEFT)
             case UIKeyInputRightArrow: self.pressArrow(keyRIGHT)
-            default: self.insertText(command.input)
+            default: break//self.insertText(command.input)
             }
         } else if flags.contains(.alphaShift) {
             self.handleCapsLock(with: command)
