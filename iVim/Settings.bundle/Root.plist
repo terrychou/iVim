@@ -11,6 +11,8 @@
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
 			<string>Launch Options</string>
+			<key>FooterText</key>
+			<string>Arguments passed to vim at startup. See &quot;:h startup-options&quot;. Effective at every launch if &apos;Always&apos; is on; one-off otherwise.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -39,34 +41,6 @@
 			<string>kUDAlwaysLaunchWithArguments</string>
 			<key>DefaultValue</key>
 			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>External Keyboard</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSMultiValueSpecifier</string>
-			<key>Title</key>
-			<string>Map &apos;caps lock&apos; As</string>
-			<key>Key</key>
-			<string>kUDCapsLockMapping</string>
-			<key>DefaultValue</key>
-			<string>none</string>
-			<key>Titles</key>
-			<array>
-				<string>none</string>
-				<string>esc</string>
-				<string>ctrl</string>
-			</array>
-			<key>Values</key>
-			<array>
-				<string>none</string>
-				<string>esc</string>
-				<string>ctrl</string>
-			</array>
 		</dict>
 	</array>
 </dict>

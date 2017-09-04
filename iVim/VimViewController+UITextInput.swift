@@ -301,7 +301,7 @@ extension MarkedInfo {
         }
     }
     
-    private func deleteOldMarkedText() {
+    func deleteOldMarkedText() {
         guard !self.text.isEmpty else { return }
         let oldLen = self.text.nsLength
         let offset = oldLen - self.selectedRange.location

@@ -176,6 +176,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func insertText(_ text: String) {
+        self.markedInfo?.deleteOldMarkedText() //handle the alt- input
         self.addToInputBuffer(self.escapingText(text))
     }
     
