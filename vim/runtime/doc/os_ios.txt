@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Aug 23
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Sep 06
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -28,7 +28,8 @@ the newer iOS systems. This project started from it.
 4. Multi-stage language support		|ios-multistage-language|
 5. Share				|ios-share|
 6. Settings				|ios-settings|
-7. Miscellaneous			|ios-miscellaneous|
+7. External keyboard			|ios-external-keyboard|
+8. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -192,8 +193,29 @@ This switch tells iVim about the term of validity of the launch arguments.
 If YES, iVim will take the arguments every time it launches.
 If NO, iVim will only launch with the arguments once, then remove them.
 
+
 ==============================================================================
-7. Miscellaneous			*ios-miscellaneous* *ios-misc*
+7. External keyboard				*ios-external-keyboard*
+
+iVim supports the external hardware keyboard. You can connect the keyboard to
+your iOS device and start typing in iVim.
+
+a. besides the `ctrl` key chords `<C->`, the `command` key chords `<D->` are
+now at your disposal.
+
+b. the `option` key is preserved to input the extended symbols.
+
+c. special keys `esc`, `arrows`, `tab` and `enter` combined with modifier keys 
+`ctrl`, `command`, `option` and `shift` respectively are supported. However, 
+`<C-CR>` is not working now.
+
+d. function keys such as `F1` is not available due to the API limitation.
+
+e. multiple modifiers chords such as `<D-C->` are not supported.
+
+
+==============================================================================
+8. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 
