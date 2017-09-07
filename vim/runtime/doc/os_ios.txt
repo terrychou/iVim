@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Sep 06
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Sep 07
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -119,7 +119,7 @@ c. tapping it in any of the above state will restore its state.
 
 Hide and show ~ 
 
-You can toggle the extended keyboard by long pressing the screen. 
+You can toggle the extended keyboard by one finger long pressing the screen. 
 The extended keyboard will show at launch by default.
 
 
@@ -229,6 +229,9 @@ b. Single finger dragging can select text within a window, or resize a window
 when the fingers are on its status bar.
 
 c. Two fingers dragging will scroll text in a window.
+
+d. While one finger long pressing toggles the extended keyboard, two fingers
+long pressing hides the system keyboard, and a single tap to bring it back.
 
 Autosave ~
 

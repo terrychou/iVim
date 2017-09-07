@@ -61,6 +61,9 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         
         v.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.click(_:))))
         v.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(_:))))
+        let twoFingersLongPress = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(_:)))
+        twoFingersLongPress.numberOfTouchesRequired = 2
+        v.addGestureRecognizer(twoFingersLongPress)
         
         let scrollRecognizer = UIPanGestureRecognizer(target:self, action:#selector(self.scroll(_:)))
         scrollRecognizer.minimumNumberOfTouches = 2
@@ -94,7 +97,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     func longPress(_ sender: UILongPressGestureRecognizer) {
         guard sender.state == .began else { return }
-        self.toggleExtendedBar()
+        switch sender.numberOfTouches {
+        case 1: self.toggleExtendedBar()
+        case 2: self.resignFirstResponder()
+        default: break
+        }
     }
     
     func flush() {
@@ -272,13 +279,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
             sender.setTranslation(CGPoint(x: 0, y: translation.y - floor(diffY) * charHeight), in: v)
         }
         while diffY <= -1 {
-//            self.addToInputBuffer("E".ctrlModified)
-            gFeedKeys("C-e".escaped)
+            input_special_name("<C-e>")
             diffY += 1
         }
         while diffY >= 1 {
-//            self.addToInputBuffer("Y".ctrlModified)
-            gFeedKeys("C-y".escaped)
+            input_special_name("<C-y>")
             diffY -= 1
         }
     }
