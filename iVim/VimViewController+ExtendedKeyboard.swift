@@ -13,9 +13,9 @@ extension VimViewController {
         return ButtonOption(title: key, action: { _ in self.insertText(key) })
     }
     
-    private func keyOption(for title: String, key: Int32) -> ButtonOption {
-        return ButtonOption(title: title, action: { _ in self.insertText(key.unicoded) })
-    }
+//    private func keyOption(for title: String, key: Int32) -> ButtonOption {
+//        return ButtonOption(title: title, action: { _ in self.insertText(key.unicoded) })
+//    }
     
 //    private func feedKeysOption(for title: String, keys: String) -> ButtonOption {
 //        return ButtonOption(title: title, action: { _ in gFeedKeys(keys) })
@@ -43,22 +43,27 @@ extension VimViewController {
         }
     }
     
+    func press(modifiedText: String, action: () -> Void) {
+        if self.handleModifiers(with: modifiedText) { return }
+        action()
+    }
+    
     private var buttons: [[ButtonOption]] {
         return [
             [
                 ButtonOption(title: "esc", action: { _ in
-                    self.pressESC()
+                    self.press(modifiedText: "Esc", action: self.pressESC)
                 }),
                 ButtonOption(title: "ctrl", action: { b in
                     guard self.ctrlButton != b else { return }
                     self.ctrlButton = b
                 }, isSticky: true)],
             [
-                self.keyOption(for: "tab", key: keyTAB),
-                ButtonOption(title: "↓", action: { _ in self.pressArrow(keyDOWN) }),
-                ButtonOption(title: "←", action: { _ in self.pressArrow(keyLEFT) }),
-                ButtonOption(title: "→", action: { _ in self.pressArrow(keyRIGHT) }),
-                ButtonOption(title: "↑", action: { _ in self.pressArrow(keyUP) }) ],
+                ButtonOption(title: "tab", action: { _ in self.press(modifiedText: "Tab") { self.insertText(keyTAB.unicoded) } }),
+                ButtonOption(title: "↓", action: { _ in self.press(modifiedText: "Down") { self.pressArrow(keyDOWN) } }),
+                ButtonOption(title: "←", action: { _ in self.press(modifiedText: "Left") { self.pressArrow(keyLEFT) } }),
+                ButtonOption(title: "→", action: { _ in self.press(modifiedText: "Right") { self.pressArrow(keyRIGHT) } }),
+                ButtonOption(title: "↑", action: { _ in self.press(modifiedText: "Up") { self.pressArrow(keyUP) } }) ],
             [
                 self.inputOption(for: "0"),
                 self.inputOption(for: "1"),

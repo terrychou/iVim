@@ -51,17 +51,17 @@ extension VimViewController {
     
     private func handleNormalMode(_ text: String?) -> Bool {
         guard let text = text, !text.isEmpty else { return true }
-        if !self.isNormalPending {
+        guard !self.isNormalPending else { return false }
+        if !self.handleModifiers(with: text) {
             gAddNonCSITextToInputBuffer(self.escapingText(text))
             switch text {
             case "f", "F", "t", "T", "r": self.isNormalPending = true
             default: break
             }
-            self.resetKeyboard()
-            return true
         }
+        self.resetKeyboard()
         
-        return false
+        return true
     }
     
     func setMarkedText(_ markedText: String?, selectedRange: NSRange) {

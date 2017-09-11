@@ -170,20 +170,27 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         return true
     }
     
-    func escapingText(_ text: String) -> String {
+    func handleModifiers(with text: String) -> Bool {
         if self.ctrlEnabled {
-            self.ctrlButton?.tryRestore()
-            input_special_name("<C-\(text)>")
-            return ""
-        } else if text == "\n" {
-            return keyCAR.unicoded
-        } else {
-            return text
+            self.ctrlButton!.tryRestore()
+            let t = text == "\n" ? "CR" : text
+            input_special_name("<C-\(t)>")
+            return true
+        }
+        
+        return false
+    }
+    
+    func escapingText(_ text: String) -> String {
+        switch text {
+        case "\n": return keyCAR.unicoded
+        default: return text
         }
     }
     
     func insertText(_ text: String) {
         self.markedInfo?.deleteOldMarkedText() //handle the alt- input
+        if self.handleModifiers(with: text) { return }
         self.addToInputBuffer(self.escapingText(text))
     }
     
