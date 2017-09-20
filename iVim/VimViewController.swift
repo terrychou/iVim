@@ -309,6 +309,24 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
 }
 
+@available(iOS 11.0, *) /* disable smart operations available in iOS 11 */
+extension VimViewController {
+    var smartQuotesType: UITextSmartQuotesType {
+        get { return .no }
+        set { return }
+    }
+    
+    var smartDashesType: UITextSmartDashesType {
+        get { return .no }
+        set { return }
+    }
+    
+    var smartInsertDeleteType: UITextSmartInsertDeleteType {
+        get { return .no }
+        set { return }
+    }
+}
+
 extension VimViewController {
     private var shareRect: CGRect {
         return CGRect(x: 0, y: self.view.bounds.size.height - 10, width: 10, height: 10)
