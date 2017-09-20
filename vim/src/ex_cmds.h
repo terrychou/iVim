@@ -629,6 +629,8 @@ EX(CMD_iabclear,	"iabclear",	ex_abclear,
 			EXTRA|TRLBAR|CMDWIN,
 			ADDR_LINES),
 #ifdef FEAT_GUI_IOS
+EX(CMD_ictags, "ictags", ex_ios_cmds,
+   EXTRA|CMDWIN|FILES, ADDR_LINES),
 EX(CMD_ideletefont, "ideletefont", ex_ios_cmds,
    EXTRA|CMDWIN,
    ADDR_LINES),

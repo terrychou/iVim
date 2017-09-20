@@ -27,4 +27,10 @@
 
 int VimMain(int argc, char *argv[]);
 
+#define IOS 1
+#define IOS_FUNCTION 1
+
+extern int ctags_main(int, char **);
+extern void ctags_clean_up(void);
+
 #endif /* ios_prefix_h */

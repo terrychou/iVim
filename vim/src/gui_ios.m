@@ -86,6 +86,7 @@
 //int get_alt_modified_key(const char * c) {
 //    return Meta(*c);
 //}
+extern NSArray * call_ctags(int, char **);
 
 NSInteger const keyCAR = CAR;
 NSInteger const keyESC = ESC;
@@ -187,10 +188,11 @@ static void show_error_message(NSString * err_msg) {
 /* 
  * Declarations for ex command functions
  */
-void ex_ifont(exarg_T * eap);
-void ex_ideletefont(exarg_T * eap);
-void ex_idocuments(exarg_T * eap);
-void ex_ishare(exarg_T * eap);
+void ex_ifont(exarg_T *);
+void ex_ideletefont(exarg_T *);
+void ex_idocuments(exarg_T *);
+void ex_ishare(exarg_T *);
+void ex_ictags(exarg_T *);
 //void ex_ifontsize(exarg_T * eap);
 
 /*
@@ -209,6 +211,9 @@ void ex_ios_cmds(exarg_T * eap) {
             break;
         case CMD_idocuments:
             ex_idocuments(eap);
+            break;
+        case CMD_ictags:
+            ex_ictags(eap);
             break;
         default:
             break;
@@ -251,6 +256,37 @@ void ex_idocuments(exarg_T * eap) {
     } else if ([arg isEqualToString:@"import"]) {
         [getViewController() importDocument];
     }
+}
+
+/*
+ * Handling function for command *ictags*
+ */
+static void execute_ctags(NSString *);
+void ex_ictags(exarg_T * eap) {
+    execute_ctags(TONSSTRING(eap->cmd));
+}
+
+static void execute_ctags(NSString * cmdline) {
+    NSArray * args = [[[CommandTokenizer alloc] initWithLine:cmdline] run];
+    int argcnt = (int)[args count];
+    char * argv[argcnt + 1];
+    argv[0] = "ictags";
+    for (int i = 1; i < argcnt; ++i) {
+        argv[i] = (char *)[args[i] UTF8String];
+    }
+    argv[argcnt] = '\0';
+    NSArray * ret = call_ctags(argcnt, argv);
+    NSString * info = @"ictags: DONE";
+    NSString * cmdfmt = @"echo \"%@\"";
+    if ([ret[0] length] != 0) {
+        info = ret[0];
+    } else if ([ret[1] length] != 0) {
+        info = ret[1];
+        cmdfmt = [NSString stringWithFormat:@"echohl ErrorMsg | %@ | echohl None", cmdfmt];
+    }
+    info = [info stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+    NSString * cmd = [NSString stringWithFormat:cmdfmt, info];
+    do_cmdline_cmd(TOCHARS(cmd));
 }
 
 /*

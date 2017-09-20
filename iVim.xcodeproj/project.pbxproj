@@ -9,6 +9,58 @@
 /* Begin PBXBuildFile section */
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
+		DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D51F6E13CD00373B92 /* ctags_ios.m */; };
+		DE5C51871F6E152500373B92 /* basic.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CC1F6E13CD00373B92 /* basic.c */; };
+		DE5C51881F6E152B00373B92 /* tex.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C512D1F6E13CD00373B92 /* tex.c */; };
+		DE5C51891F6E153A00373B92 /* routines.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C511F1F6E13CD00373B92 /* routines.c */; };
+		DE5C518A1F6E154200373B92 /* fortran.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50E91F6E13CD00373B92 /* fortran.c */; };
+		DE5C518B1F6E155400373B92 /* lisp.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50FA1F6E13CD00373B92 /* lisp.c */; };
+		DE5C518C1F6E156600373B92 /* sml.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51251F6E13CD00373B92 /* sml.c */; };
+		DE5C518D1F6E157100373B92 /* vstring.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51311F6E13CD00373B92 /* vstring.c */; };
+		DE5C518E1F6E157600373B92 /* flex.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50E81F6E13CD00373B92 /* flex.c */; };
+		DE5C518F1F6E158400373B92 /* eiffel.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50E21F6E13CD00373B92 /* eiffel.c */; };
+		DE5C51901F6E159100373B92 /* sort.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51261F6E13CD00373B92 /* sort.c */; };
+		DE5C51911F6E159C00373B92 /* erlang.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50E51F6E13CD00373B92 /* erlang.c */; };
+		DE5C51921F6E15A600373B92 /* lua.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50FC1F6E13CD00373B92 /* lua.c */; };
+		DE5C51931F6E15B800373B92 /* args.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50C71F6E13CD00373B92 /* args.c */; };
+		DE5C51941F6E15BE00373B92 /* entry.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50E31F6E13CD00373B92 /* entry.c */; };
+		DE5C51951F6E15C500373B92 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50FE1F6E13CD00373B92 /* main.c */; };
+		DE5C51961F6E15DF00373B92 /* make.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51011F6E13CD00373B92 /* make.c */; };
+		DE5C51971F6E15E500373B92 /* asm.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50C91F6E13CD00373B92 /* asm.c */; };
+		DE5C51981F6E15EA00373B92 /* slang.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51241F6E13CD00373B92 /* slang.c */; };
+		DE5C51991F6E15FB00373B92 /* php.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51161F6E13CD00373B92 /* php.c */; };
+		DE5C519A1F6E160200373B92 /* scheme.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51221F6E13CD00373B92 /* scheme.c */; };
+		DE5C519B1F6E160700373B92 /* dosbatch.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D81F6E13CD00373B92 /* dosbatch.c */; };
+		DE5C519C1F6E161100373B92 /* read.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51191F6E13CD00373B92 /* read.c */; };
+		DE5C519D1F6E161800373B92 /* keyword.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50F81F6E13CD00373B92 /* keyword.c */; };
+		DE5C519E1F6E161F00373B92 /* c.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CE1F6E13CD00373B92 /* c.c */; };
+		DE5C519F1F6E162800373B92 /* tcl.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C512C1F6E13CD00373B92 /* tcl.c */; };
+		DE5C51A01F6E163300373B92 /* vim.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51301F6E13CD00373B92 /* vim.c */; };
+		DE5C51A11F6E163800373B92 /* pascal.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51141F6E13CD00373B92 /* pascal.c */; };
+		DE5C51A21F6E164500373B92 /* jscript.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50F71F6E13CD00373B92 /* jscript.c */; };
+		DE5C51A31F6E164B00373B92 /* awk.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CB1F6E13CD00373B92 /* awk.c */; };
+		DE5C51A41F6E166000373B92 /* options.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C510F1F6E13CD00373B92 /* options.c */; };
+		DE5C51A51F6E166500373B92 /* get.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50EB1F6E13CD00373B92 /* get.c */; };
+		DE5C51A61F6E166C00373B92 /* lregex.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50FB1F6E13CD00373B92 /* lregex.c */; };
+		DE5C51A71F6E167A00373B92 /* python.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51171F6E13CD00373B92 /* python.c */; };
+		DE5C51A81F6E168100373B92 /* strlist.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C512A1F6E13CD00373B92 /* strlist.c */; };
+		DE5C51A91F6E168700373B92 /* ocaml.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C510E1F6E13CD00373B92 /* ocaml.c */; };
+		DE5C51AA1F6E169B00373B92 /* beta.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CD1F6E13CD00373B92 /* beta.c */; };
+		DE5C51AB1F6E16A000373B92 /* perl.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51151F6E13CD00373B92 /* perl.c */; };
+		DE5C51AC1F6E16A500373B92 /* matlab.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51021F6E13CD00373B92 /* matlab.c */; };
+		DE5C51AD1F6E16AB00373B92 /* ruby.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51211F6E13CD00373B92 /* ruby.c */; };
+		DE5C51AE1F6E16B900373B92 /* yacc.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51331F6E13CD00373B92 /* yacc.c */; };
+		DE5C51AF1F6E16BE00373B92 /* sql.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51291F6E13CD00373B92 /* sql.c */; };
+		DE5C51B01F6E16C500373B92 /* verilog.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C512E1F6E13CD00373B92 /* verilog.c */; };
+		DE5C51B11F6E16CB00373B92 /* cobol.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CF1F6E13CD00373B92 /* cobol.c */; };
+		DE5C51B21F6E16D700373B92 /* ant.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50C51F6E13CD00373B92 /* ant.c */; };
+		DE5C51B31F6E16DC00373B92 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D61F6E13CD00373B92 /* debug.c */; };
+		DE5C51B41F6E16E300373B92 /* vhdl.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C512F1F6E13CD00373B92 /* vhdl.c */; };
+		DE5C51B51F6E16FD00373B92 /* sh.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51231F6E13CD00373B92 /* sh.c */; };
+		DE5C51B61F6E170500373B92 /* html.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50F51F6E13CD00373B92 /* html.c */; };
+		DE5C51B71F6E171100373B92 /* parse.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51111F6E13CD00373B92 /* parse.c */; };
+		DE5C51B81F6E171B00373B92 /* rexx.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C511E1F6E13CD00373B92 /* rexx.c */; };
+		DE5C51B91F6E172000373B92 /* asp.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CA1F6E13CD00373B92 /* asp.c */; };
 		DE7364851F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */; };
 		DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4201F209661007AFD63 /* VimViewController.swift */; };
 		DE7BA7921F21A75400705E67 /* VimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4211F209661007AFD63 /* VimView.swift */; };
@@ -2798,6 +2850,109 @@
 		DE531B171F20941200D71DB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DE531B241F20949100D71DB3 /* VimFontsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VimFontsManager.swift; sourceTree = "<group>"; };
 		DE531B251F20949100D71DB3 /* systemFonts.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = systemFonts.plist; sourceTree = "<group>"; };
+		DE5C50C51F6E13CD00373B92 /* ant.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ant.c; sourceTree = "<group>"; };
+		DE5C50C61F6E13CD00373B92 /* argproc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = argproc.c; sourceTree = "<group>"; };
+		DE5C50C71F6E13CD00373B92 /* args.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = args.c; sourceTree = "<group>"; };
+		DE5C50C81F6E13CD00373B92 /* args.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = args.h; sourceTree = "<group>"; };
+		DE5C50C91F6E13CD00373B92 /* asm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = asm.c; sourceTree = "<group>"; };
+		DE5C50CA1F6E13CD00373B92 /* asp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = asp.c; sourceTree = "<group>"; };
+		DE5C50CB1F6E13CD00373B92 /* awk.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = awk.c; sourceTree = "<group>"; };
+		DE5C50CC1F6E13CD00373B92 /* basic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = basic.c; sourceTree = "<group>"; };
+		DE5C50CD1F6E13CD00373B92 /* beta.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = beta.c; sourceTree = "<group>"; };
+		DE5C50CE1F6E13CD00373B92 /* c.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = c.c; sourceTree = "<group>"; };
+		DE5C50CF1F6E13CD00373B92 /* cobol.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cobol.c; sourceTree = "<group>"; };
+		DE5C50D01F6E13CD00373B92 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
+		DE5C50D11F6E13CD00373B92 /* ctags.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = ctags.1; sourceTree = "<group>"; };
+		DE5C50D21F6E13CD00373B92 /* ctags.exe */ = {isa = PBXFileReference; lastKnownFileType = file; path = ctags.exe; sourceTree = "<group>"; };
+		DE5C50D31F6E13CD00373B92 /* ctags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ctags.h; sourceTree = "<group>"; };
+		DE5C50D41F6E13CD00373B92 /* ctags.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ctags.html; sourceTree = "<group>"; };
+		DE5C50D51F6E13CD00373B92 /* ctags_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ctags_ios.m; sourceTree = "<group>"; };
+		DE5C50D61F6E13CD00373B92 /* debug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = debug.c; sourceTree = "<group>"; };
+		DE5C50D71F6E13CD00373B92 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
+		DE5C50D81F6E13CD00373B92 /* dosbatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dosbatch.c; sourceTree = "<group>"; };
+		DE5C50D91F6E13CD00373B92 /* e_amiga.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_amiga.h; sourceTree = "<group>"; };
+		DE5C50DA1F6E13CD00373B92 /* e_djgpp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_djgpp.h; sourceTree = "<group>"; };
+		DE5C50DB1F6E13CD00373B92 /* e_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_ios.h; sourceTree = "<group>"; };
+		DE5C50DC1F6E13CD00373B92 /* e_mac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_mac.h; sourceTree = "<group>"; };
+		DE5C50DD1F6E13CD00373B92 /* e_msoft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_msoft.h; sourceTree = "<group>"; };
+		DE5C50DE1F6E13CD00373B92 /* e_os2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_os2.h; sourceTree = "<group>"; };
+		DE5C50DF1F6E13CD00373B92 /* e_qdos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_qdos.h; sourceTree = "<group>"; };
+		DE5C50E01F6E13CD00373B92 /* e_riscos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_riscos.h; sourceTree = "<group>"; };
+		DE5C50E11F6E13CD00373B92 /* e_vms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = e_vms.h; sourceTree = "<group>"; };
+		DE5C50E21F6E13CD00373B92 /* eiffel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = eiffel.c; sourceTree = "<group>"; };
+		DE5C50E31F6E13CD00373B92 /* entry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = entry.c; sourceTree = "<group>"; };
+		DE5C50E41F6E13CD00373B92 /* entry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = entry.h; sourceTree = "<group>"; };
+		DE5C50E51F6E13CD00373B92 /* erlang.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = erlang.c; sourceTree = "<group>"; };
+		DE5C50E61F6E13CD00373B92 /* EXTENDING.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = EXTENDING.html; sourceTree = "<group>"; };
+		DE5C50E71F6E13CD00373B92 /* FAQ */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FAQ; sourceTree = "<group>"; };
+		DE5C50E81F6E13CD00373B92 /* flex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = flex.c; sourceTree = "<group>"; };
+		DE5C50E91F6E13CD00373B92 /* fortran.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fortran.c; sourceTree = "<group>"; };
+		DE5C50EA1F6E13CD00373B92 /* general.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = general.h; sourceTree = "<group>"; };
+		DE5C50EB1F6E13CD00373B92 /* get.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = get.c; sourceTree = "<group>"; };
+		DE5C50EC1F6E13CD00373B92 /* get.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = get.h; sourceTree = "<group>"; };
+		DE5C50F51F6E13CD00373B92 /* html.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = html.c; sourceTree = "<group>"; };
+		DE5C50F61F6E13CD00373B92 /* INSTALL.oth */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = INSTALL.oth; sourceTree = "<group>"; };
+		DE5C50F71F6E13CD00373B92 /* jscript.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jscript.c; sourceTree = "<group>"; };
+		DE5C50F81F6E13CD00373B92 /* keyword.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = keyword.c; sourceTree = "<group>"; };
+		DE5C50F91F6E13CD00373B92 /* keyword.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keyword.h; sourceTree = "<group>"; };
+		DE5C50FA1F6E13CD00373B92 /* lisp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lisp.c; sourceTree = "<group>"; };
+		DE5C50FB1F6E13CD00373B92 /* lregex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lregex.c; sourceTree = "<group>"; };
+		DE5C50FC1F6E13CD00373B92 /* lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lua.c; sourceTree = "<group>"; };
+		DE5C50FD1F6E13CD00373B92 /* mac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mac.c; sourceTree = "<group>"; };
+		DE5C50FE1F6E13CD00373B92 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		DE5C50FF1F6E13CD00373B92 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		DE5C51001F6E13CD00373B92 /* MAINTAINERS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MAINTAINERS; sourceTree = "<group>"; };
+		DE5C51011F6E13CD00373B92 /* make.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = make.c; sourceTree = "<group>"; };
+		DE5C51021F6E13CD00373B92 /* matlab.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = matlab.c; sourceTree = "<group>"; };
+		DE5C51031F6E13CD00373B92 /* mk_bc3.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_bc3.mak; sourceTree = "<group>"; };
+		DE5C51041F6E13CD00373B92 /* mk_bc5.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_bc5.mak; sourceTree = "<group>"; };
+		DE5C51051F6E13CD00373B92 /* mk_djg.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_djg.mak; sourceTree = "<group>"; };
+		DE5C51061F6E13CD00373B92 /* mk_manx.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_manx.mak; sourceTree = "<group>"; };
+		DE5C51071F6E13CD00373B92 /* mk_mingw.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_mingw.mak; sourceTree = "<group>"; };
+		DE5C51081F6E13CD00373B92 /* mk_mpw.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_mpw.mak; sourceTree = "<group>"; };
+		DE5C51091F6E13CD00373B92 /* mk_mvc.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_mvc.mak; sourceTree = "<group>"; };
+		DE5C510A1F6E13CD00373B92 /* mk_os2.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_os2.mak; sourceTree = "<group>"; };
+		DE5C510B1F6E13CD00373B92 /* mk_qdos.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_qdos.mak; sourceTree = "<group>"; };
+		DE5C510C1F6E13CD00373B92 /* mk_sas.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = mk_sas.mak; sourceTree = "<group>"; };
+		DE5C510D1F6E13CD00373B92 /* NEWS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NEWS; sourceTree = "<group>"; };
+		DE5C510E1F6E13CD00373B92 /* ocaml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ocaml.c; sourceTree = "<group>"; };
+		DE5C510F1F6E13CD00373B92 /* options.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = options.c; sourceTree = "<group>"; };
+		DE5C51101F6E13CD00373B92 /* options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = options.h; sourceTree = "<group>"; };
+		DE5C51111F6E13CD00373B92 /* parse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parse.c; sourceTree = "<group>"; };
+		DE5C51121F6E13CD00373B92 /* parse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parse.h; sourceTree = "<group>"; };
+		DE5C51131F6E13CD00373B92 /* parsers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parsers.h; sourceTree = "<group>"; };
+		DE5C51141F6E13CD00373B92 /* pascal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pascal.c; sourceTree = "<group>"; };
+		DE5C51151F6E13CD00373B92 /* perl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = perl.c; sourceTree = "<group>"; };
+		DE5C51161F6E13CD00373B92 /* php.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = php.c; sourceTree = "<group>"; };
+		DE5C51171F6E13CD00373B92 /* python.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = python.c; sourceTree = "<group>"; };
+		DE5C51181F6E13CD00373B92 /* qdos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = qdos.c; sourceTree = "<group>"; };
+		DE5C51191F6E13CD00373B92 /* read.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = read.c; sourceTree = "<group>"; };
+		DE5C511A1F6E13CD00373B92 /* read.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = read.h; sourceTree = "<group>"; };
+		DE5C511B1F6E13CD00373B92 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		DE5C511C1F6E13CD00373B92 /* readtags.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = readtags.c; sourceTree = "<group>"; };
+		DE5C511D1F6E13CD00373B92 /* readtags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = readtags.h; sourceTree = "<group>"; };
+		DE5C511E1F6E13CD00373B92 /* rexx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rexx.c; sourceTree = "<group>"; };
+		DE5C511F1F6E13CD00373B92 /* routines.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = routines.c; sourceTree = "<group>"; };
+		DE5C51201F6E13CD00373B92 /* routines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = routines.h; sourceTree = "<group>"; };
+		DE5C51211F6E13CD00373B92 /* ruby.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ruby.c; sourceTree = "<group>"; };
+		DE5C51221F6E13CD00373B92 /* scheme.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scheme.c; sourceTree = "<group>"; };
+		DE5C51231F6E13CD00373B92 /* sh.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sh.c; sourceTree = "<group>"; };
+		DE5C51241F6E13CD00373B92 /* slang.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = slang.c; sourceTree = "<group>"; };
+		DE5C51251F6E13CD00373B92 /* sml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sml.c; sourceTree = "<group>"; };
+		DE5C51261F6E13CD00373B92 /* sort.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sort.c; sourceTree = "<group>"; };
+		DE5C51271F6E13CD00373B92 /* sort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sort.h; sourceTree = "<group>"; };
+		DE5C51281F6E13CD00373B92 /* source.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = source.mak; sourceTree = "<group>"; };
+		DE5C51291F6E13CD00373B92 /* sql.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sql.c; sourceTree = "<group>"; };
+		DE5C512A1F6E13CD00373B92 /* strlist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = strlist.c; sourceTree = "<group>"; };
+		DE5C512B1F6E13CD00373B92 /* strlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = strlist.h; sourceTree = "<group>"; };
+		DE5C512C1F6E13CD00373B92 /* tcl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tcl.c; sourceTree = "<group>"; };
+		DE5C512D1F6E13CD00373B92 /* tex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tex.c; sourceTree = "<group>"; };
+		DE5C512E1F6E13CD00373B92 /* verilog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = verilog.c; sourceTree = "<group>"; };
+		DE5C512F1F6E13CD00373B92 /* vhdl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vhdl.c; sourceTree = "<group>"; };
+		DE5C51301F6E13CD00373B92 /* vim.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vim.c; sourceTree = "<group>"; };
+		DE5C51311F6E13CD00373B92 /* vstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vstring.c; sourceTree = "<group>"; };
+		DE5C51321F6E13CD00373B92 /* vstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vstring.h; sourceTree = "<group>"; };
+		DE5C51331F6E13CD00373B92 /* yacc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yacc.c; sourceTree = "<group>"; };
 		DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+ExternalKeyboard.swift"; sourceTree = "<group>"; };
 		DE7BA7A71F21AFD300705E67 /* iVim-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "iVim-Bridging-Header.h"; sourceTree = "<group>"; };
 		DE7BA7A81F21DA7000705E67 /* runtime */ = {isa = PBXFileReference; lastKnownFileType = folder; name = runtime; path = vim/runtime; sourceTree = SOURCE_ROOT; };
@@ -6410,6 +6565,7 @@
 		DE531AE91F20941100D71DB3 = {
 			isa = PBXGroup;
 			children = (
+				DE5C50C41F6E13CD00373B92 /* ctags58 */,
 				DE44D42D1F209A89007AFD63 /* vim */,
 				DE531AF41F20941100D71DB3 /* iVim */,
 				DE531B091F20941200D71DB3 /* iVimTests */,
@@ -6487,6 +6643,116 @@
 				DE531B251F20949100D71DB3 /* systemFonts.plist */,
 			);
 			name = "Font Management";
+			sourceTree = "<group>";
+		};
+		DE5C50C41F6E13CD00373B92 /* ctags58 */ = {
+			isa = PBXGroup;
+			children = (
+				DE5C50D01F6E13CD00373B92 /* COPYING */,
+				DE5C50E71F6E13CD00373B92 /* FAQ */,
+				DE5C51001F6E13CD00373B92 /* MAINTAINERS */,
+				DE5C510D1F6E13CD00373B92 /* NEWS */,
+				DE5C511B1F6E13CD00373B92 /* README */,
+				DE5C50D11F6E13CD00373B92 /* ctags.1 */,
+				DE5C50C51F6E13CD00373B92 /* ant.c */,
+				DE5C50C61F6E13CD00373B92 /* argproc.c */,
+				DE5C50C71F6E13CD00373B92 /* args.c */,
+				DE5C50C91F6E13CD00373B92 /* asm.c */,
+				DE5C50CA1F6E13CD00373B92 /* asp.c */,
+				DE5C50CB1F6E13CD00373B92 /* awk.c */,
+				DE5C50CC1F6E13CD00373B92 /* basic.c */,
+				DE5C50CD1F6E13CD00373B92 /* beta.c */,
+				DE5C50CE1F6E13CD00373B92 /* c.c */,
+				DE5C50CF1F6E13CD00373B92 /* cobol.c */,
+				DE5C50D61F6E13CD00373B92 /* debug.c */,
+				DE5C50D81F6E13CD00373B92 /* dosbatch.c */,
+				DE5C50E21F6E13CD00373B92 /* eiffel.c */,
+				DE5C50E31F6E13CD00373B92 /* entry.c */,
+				DE5C50E51F6E13CD00373B92 /* erlang.c */,
+				DE5C50E81F6E13CD00373B92 /* flex.c */,
+				DE5C50E91F6E13CD00373B92 /* fortran.c */,
+				DE5C50EB1F6E13CD00373B92 /* get.c */,
+				DE5C50F51F6E13CD00373B92 /* html.c */,
+				DE5C50F71F6E13CD00373B92 /* jscript.c */,
+				DE5C50F81F6E13CD00373B92 /* keyword.c */,
+				DE5C50FA1F6E13CD00373B92 /* lisp.c */,
+				DE5C50FB1F6E13CD00373B92 /* lregex.c */,
+				DE5C50FC1F6E13CD00373B92 /* lua.c */,
+				DE5C50FD1F6E13CD00373B92 /* mac.c */,
+				DE5C50FE1F6E13CD00373B92 /* main.c */,
+				DE5C51011F6E13CD00373B92 /* make.c */,
+				DE5C51021F6E13CD00373B92 /* matlab.c */,
+				DE5C510E1F6E13CD00373B92 /* ocaml.c */,
+				DE5C510F1F6E13CD00373B92 /* options.c */,
+				DE5C51111F6E13CD00373B92 /* parse.c */,
+				DE5C51141F6E13CD00373B92 /* pascal.c */,
+				DE5C51151F6E13CD00373B92 /* perl.c */,
+				DE5C51161F6E13CD00373B92 /* php.c */,
+				DE5C51171F6E13CD00373B92 /* python.c */,
+				DE5C51181F6E13CD00373B92 /* qdos.c */,
+				DE5C51191F6E13CD00373B92 /* read.c */,
+				DE5C511C1F6E13CD00373B92 /* readtags.c */,
+				DE5C511E1F6E13CD00373B92 /* rexx.c */,
+				DE5C511F1F6E13CD00373B92 /* routines.c */,
+				DE5C51211F6E13CD00373B92 /* ruby.c */,
+				DE5C51221F6E13CD00373B92 /* scheme.c */,
+				DE5C51231F6E13CD00373B92 /* sh.c */,
+				DE5C51241F6E13CD00373B92 /* slang.c */,
+				DE5C51251F6E13CD00373B92 /* sml.c */,
+				DE5C51261F6E13CD00373B92 /* sort.c */,
+				DE5C51291F6E13CD00373B92 /* sql.c */,
+				DE5C512A1F6E13CD00373B92 /* strlist.c */,
+				DE5C512C1F6E13CD00373B92 /* tcl.c */,
+				DE5C512D1F6E13CD00373B92 /* tex.c */,
+				DE5C512E1F6E13CD00373B92 /* verilog.c */,
+				DE5C512F1F6E13CD00373B92 /* vhdl.c */,
+				DE5C51301F6E13CD00373B92 /* vim.c */,
+				DE5C51311F6E13CD00373B92 /* vstring.c */,
+				DE5C51331F6E13CD00373B92 /* yacc.c */,
+				DE5C50D21F6E13CD00373B92 /* ctags.exe */,
+				DE5C50C81F6E13CD00373B92 /* args.h */,
+				DE5C50D31F6E13CD00373B92 /* ctags.h */,
+				DE5C50D71F6E13CD00373B92 /* debug.h */,
+				DE5C50D91F6E13CD00373B92 /* e_amiga.h */,
+				DE5C50DA1F6E13CD00373B92 /* e_djgpp.h */,
+				DE5C50DB1F6E13CD00373B92 /* e_ios.h */,
+				DE5C50DC1F6E13CD00373B92 /* e_mac.h */,
+				DE5C50DD1F6E13CD00373B92 /* e_msoft.h */,
+				DE5C50DE1F6E13CD00373B92 /* e_os2.h */,
+				DE5C50DF1F6E13CD00373B92 /* e_qdos.h */,
+				DE5C50E01F6E13CD00373B92 /* e_riscos.h */,
+				DE5C50E11F6E13CD00373B92 /* e_vms.h */,
+				DE5C50E41F6E13CD00373B92 /* entry.h */,
+				DE5C50EA1F6E13CD00373B92 /* general.h */,
+				DE5C50EC1F6E13CD00373B92 /* get.h */,
+				DE5C50F91F6E13CD00373B92 /* keyword.h */,
+				DE5C50FF1F6E13CD00373B92 /* main.h */,
+				DE5C51101F6E13CD00373B92 /* options.h */,
+				DE5C51121F6E13CD00373B92 /* parse.h */,
+				DE5C51131F6E13CD00373B92 /* parsers.h */,
+				DE5C511A1F6E13CD00373B92 /* read.h */,
+				DE5C511D1F6E13CD00373B92 /* readtags.h */,
+				DE5C51201F6E13CD00373B92 /* routines.h */,
+				DE5C51271F6E13CD00373B92 /* sort.h */,
+				DE5C512B1F6E13CD00373B92 /* strlist.h */,
+				DE5C51321F6E13CD00373B92 /* vstring.h */,
+				DE5C50D41F6E13CD00373B92 /* ctags.html */,
+				DE5C50E61F6E13CD00373B92 /* EXTENDING.html */,
+				DE5C50D51F6E13CD00373B92 /* ctags_ios.m */,
+				DE5C51031F6E13CD00373B92 /* mk_bc3.mak */,
+				DE5C51041F6E13CD00373B92 /* mk_bc5.mak */,
+				DE5C51051F6E13CD00373B92 /* mk_djg.mak */,
+				DE5C51061F6E13CD00373B92 /* mk_manx.mak */,
+				DE5C51071F6E13CD00373B92 /* mk_mingw.mak */,
+				DE5C51081F6E13CD00373B92 /* mk_mpw.mak */,
+				DE5C51091F6E13CD00373B92 /* mk_mvc.mak */,
+				DE5C510A1F6E13CD00373B92 /* mk_os2.mak */,
+				DE5C510B1F6E13CD00373B92 /* mk_qdos.mak */,
+				DE5C510C1F6E13CD00373B92 /* mk_sas.mak */,
+				DE5C51281F6E13CD00373B92 /* source.mak */,
+				DE5C50F61F6E13CD00373B92 /* INSTALL.oth */,
+			);
+			path = ctags58;
 			sourceTree = "<group>";
 		};
 		DE7364831F53A5D4006ACE4C /* External Keyboard Support */ = {
@@ -6625,7 +6891,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 0830;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = Boogaloo;
 				TargetAttributes = {
 					DE531AF11F20941100D71DB3 = {
@@ -6735,50 +7001,91 @@
 				DE7BA7D21F21F1F200705E67 /* undo.c in Sources */,
 				DE7BA7D41F21F22A00705E67 /* sha256.c in Sources */,
 				DE7BA7DA1F21F2F500705E67 /* hardcopy.c in Sources */,
+				DE5C51B31F6E16DC00373B92 /* debug.c in Sources */,
+				DE5C518C1F6E156600373B92 /* sml.c in Sources */,
 				DE7BA7D61F21F26900705E67 /* hashtab.c in Sources */,
 				DE7BA7CD1F21F07100705E67 /* diff.c in Sources */,
+				DE5C51911F6E159C00373B92 /* erlang.c in Sources */,
 				DE7BA7B91F21EB3300705E67 /* syntax.c in Sources */,
 				DE7BA7BA1F21EB5600705E67 /* ex_eval.c in Sources */,
 				DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */,
+				DE5C51AB1F6E16A000373B92 /* perl.c in Sources */,
 				DE7BA7C11F21EED100705E67 /* buffer.c in Sources */,
+				DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */,
 				DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */,
+				DE5C519B1F6E160700373B92 /* dosbatch.c in Sources */,
+				DE5C51B11F6E16CB00373B92 /* cobol.c in Sources */,
+				DE5C51B01F6E16C500373B92 /* verilog.c in Sources */,
 				DE7BA7B61F21E8D800705E67 /* getchar.c in Sources */,
+				DE5C51891F6E153A00373B92 /* routines.c in Sources */,
+				DE5C51A61F6E166C00373B92 /* lregex.c in Sources */,
+				DE5C518B1F6E155400373B92 /* lisp.c in Sources */,
+				DE5C51B91F6E172000373B92 /* asp.c in Sources */,
 				DE7BA7921F21A75400705E67 /* VimView.swift in Sources */,
 				DE7BA7CF1F21F19400705E67 /* mark.c in Sources */,
+				DE5C51B51F6E16FD00373B92 /* sh.c in Sources */,
 				DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */,
+				DE5C519A1F6E160200373B92 /* scheme.c in Sources */,
+				DE5C51981F6E15EA00373B92 /* slang.c in Sources */,
 				DE7BA7BE1F21EE6600705E67 /* spell.c in Sources */,
+				DE5C51B21F6E16D700373B92 /* ant.c in Sources */,
 				DE7BA7D01F21F1B900705E67 /* regexp.c in Sources */,
+				DE5C51AA1F6E169B00373B92 /* beta.c in Sources */,
+				DE5C51B81F6E171B00373B92 /* rexx.c in Sources */,
 				DEE31E961F4BF712000CA9E8 /* Stack.swift in Sources */,
 				DE7BA7D31F21F20E00705E67 /* memfile.c in Sources */,
 				DE7BA7C71F21EF9900705E67 /* fileio.c in Sources */,
+				DE5C51921F6E15A600373B92 /* lua.c in Sources */,
+				DE5C51871F6E152500373B92 /* basic.c in Sources */,
+				DE5C519E1F6E161F00373B92 /* c.c in Sources */,
 				DE7BA7AE1F21E6B700705E67 /* version.c in Sources */,
+				DE5C51971F6E15E500373B92 /* asm.c in Sources */,
+				DE5C519D1F6E161800373B92 /* keyword.c in Sources */,
+				DE5C51B41F6E16E300373B92 /* vhdl.c in Sources */,
+				DE5C51A01F6E163300373B92 /* vim.c in Sources */,
 				DE7BA7C21F21EF0800705E67 /* normal.c in Sources */,
 				DE7BA7941F21A75400705E67 /* VimMainView.swift in Sources */,
 				DE7BA7B41F21E87800705E67 /* mbyte.c in Sources */,
 				DE7BA7B31F21E83D00705E67 /* charset.c in Sources */,
+				DE5C51A41F6E166000373B92 /* options.c in Sources */,
 				DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */,
 				DE7BA7BB1F21EB7C00705E67 /* term.c in Sources */,
 				DE7BA7AD1F21E63400705E67 /* misc1.c in Sources */,
+				DE5C51B61F6E170500373B92 /* html.c in Sources */,
 				DE7BA7951F21A75400705E67 /* URLSchemeWorker.swift in Sources */,
+				DE5C519F1F6E162800373B92 /* tcl.c in Sources */,
+				DE5C51A21F6E164500373B92 /* jscript.c in Sources */,
+				DE5C51881F6E152B00373B92 /* tex.c in Sources */,
 				DE7BA7CA1F21EFFF00705E67 /* os_unix.c in Sources */,
 				DE7BA7AF1F21E72800705E67 /* ex_docmd.c in Sources */,
+				DE5C51A71F6E167A00373B92 /* python.c in Sources */,
 				DE7BA7961F21A75400705E67 /* GlobalConfiguration.swift in Sources */,
 				DE7BA7BC1F21EB9F00705E67 /* option.c in Sources */,
 				DE7BA7B51F21E8AA00705E67 /* menu.c in Sources */,
+				DE5C51AC1F6E16A500373B92 /* matlab.c in Sources */,
 				DE7BA7C51F21EF5900705E67 /* edit.c in Sources */,
+				DE5C51AD1F6E16AB00373B92 /* ruby.c in Sources */,
 				DE7BA7B81F21EB0400705E67 /* main.c in Sources */,
+				DE5C51A81F6E168100373B92 /* strlist.c in Sources */,
 				DE7BA7D71F21F28900705E67 /* crypt.c in Sources */,
+				DE5C518F1F6E158400373B92 /* eiffel.c in Sources */,
 				DE7BA7CE1F21F17200705E67 /* fold.c in Sources */,
 				DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */,
+				DE5C51A91F6E168700373B92 /* ocaml.c in Sources */,
 				DE7BA7971F21A76100705E67 /* OptionalButton.swift in Sources */,
+				DE5C51941F6E15BE00373B92 /* entry.c in Sources */,
 				DE7BA7981F21A76400705E67 /* OptionalButtonsBar.swift in Sources */,
 				DE7BA7DC1F21F33100705E67 /* pty.c in Sources */,
 				DE7BA7BD1F21EC1100705E67 /* window.c in Sources */,
+				DE5C51951F6E15C500373B92 /* main.c in Sources */,
+				DE5C51A11F6E163800373B92 /* pascal.c in Sources */,
 				DE7BA7D11F21F1D300705E67 /* ex_cmds2.c in Sources */,
 				DE7BA7991F21A76800705E67 /* VimViewController+ExtendedKeyboard.swift in Sources */,
 				DE7BA79A1F21A77500705E67 /* PickInfoManager.swift in Sources */,
+				DE5C519C1F6E161100373B92 /* read.c in Sources */,
 				DE7BA7C81F21EFBA00705E67 /* ops.c in Sources */,
 				DE7BA7BF1F21EE9100705E67 /* ex_cmds.c in Sources */,
+				DE5C518A1F6E154200373B92 /* fortran.c in Sources */,
 				DE7BA79B1F21A77500705E67 /* VimViewController+UIDocumentPickerDelegate.swift in Sources */,
 				DE7BA7B71F21E91000705E67 /* ui.c in Sources */,
 				DE7BA7B11F21E7B000705E67 /* eval.c in Sources */,
@@ -6787,22 +7094,33 @@
 				DE7BA79E1F21A77500705E67 /* SafeFileMoving.swift in Sources */,
 				DE7BA7C31F21EF1F00705E67 /* move.c in Sources */,
 				DE7BA7AC1F21E48B00705E67 /* gui.c in Sources */,
+				DE5C51901F6E159100373B92 /* sort.c in Sources */,
 				DE7BA7CB1F21F01900705E67 /* tag.c in Sources */,
 				DE7BA7C01F21EEB300705E67 /* misc2.c in Sources */,
+				DE5C51AE1F6E16B900373B92 /* yacc.c in Sources */,
 				DE7BA79F1F21A77C00705E67 /* VimViewController+UITextInput.swift in Sources */,
 				DE7BA7D81F21F2B800705E67 /* crypt_zip.c in Sources */,
 				DE7BA7B21F21E7F300705E67 /* screen.c in Sources */,
+				DE5C51B71F6E171100373B92 /* parse.c in Sources */,
 				DE7BA7DD1F21F36300705E67 /* termlib.c in Sources */,
+				DE5C51A51F6E166500373B92 /* get.c in Sources */,
 				DE7BA7A01F21A78E00705E67 /* VimFontsManager.swift in Sources */,
+				DE5C518E1F6E157600373B92 /* flex.c in Sources */,
 				DE7BA7C41F21EF3F00705E67 /* search.c in Sources */,
+				DE5C51961F6E15DF00373B92 /* make.c in Sources */,
 				DE7BA7D91F21F2DB00705E67 /* blowfish.c in Sources */,
+				DE5C518D1F6E157100373B92 /* vstring.c in Sources */,
+				DE5C51AF1F6E16BE00373B92 /* sql.c in Sources */,
 				DE7BA7B01F21E76700705E67 /* message.c in Sources */,
 				DE7BA7C61F21EF7800705E67 /* ex_getln.c in Sources */,
+				DE5C51A31F6E164B00373B92 /* awk.c in Sources */,
 				DE7BA7DB1F21F31500705E67 /* digraph.c in Sources */,
 				DE7BA7CC1F21F05400705E67 /* popupmnu.c in Sources */,
 				DE7BA7D51F21F24500705E67 /* memline.c in Sources */,
+				DE5C51931F6E15B800373B92 /* args.c in Sources */,
 				DE7364851F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift in Sources */,
 				DE7BA7A11F21A7A000705E67 /* gui_ios.m in Sources */,
+				DE5C51991F6E15FB00373B92 /* php.c in Sources */,
 				DE7BA7C91F21EFD600705E67 /* quickfix.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6890,7 +7208,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -6898,7 +7218,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -6941,7 +7265,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -6949,7 +7275,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;

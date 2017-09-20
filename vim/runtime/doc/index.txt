@@ -1261,10 +1261,11 @@ tag	      command	      action ~
 |:insert|	:i[nsert]	insert text
 |:iabbrev|	:ia[bbrev]	like ":abbrev" but for Insert mode
 |:iabclear|	:iabc[lear]	like ":abclear" but for Insert mode
+|:ictags|	:ic[tags]	use the integrated exuberant ctags
 |:ideletefont|  :idel[etefont]  delete user font
 |:idocuments|   :idoc[uments]   open document picker
 |:if|		:if		execute commands when condition met
-|:ifont|    :ifo[nt]    set editor font
+|:ifont|	:ifo[nt]	set editor font
 |:ijump|	:ij[ump]	jump to definition of identifier
 |:ilist|	:il[ist]	list lines where identifier matches
 |:imap|		:im[ap]		like ":map" but for Insert mode
@@ -1275,7 +1276,7 @@ tag	      command	      action ~
 |:inoremenu|	:inoreme[nu]	like ":noremenu" but for Insert mode
 |:intro|	:int[ro]	print the introductory message
 |:isearch|	:is[earch]	list one line where identifier matches
-|:ishare|   :ish[are]   share file or text with other apps
+|:ishare|	:ish[are]	share file or text with other apps
 |:isplit|	:isp[lit]	split window and jump to definition of
 				identifier
 |:iunmap|	:iu[nmap]	like ":unmap" but for Insert mode

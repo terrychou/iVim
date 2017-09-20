@@ -4290,6 +4290,7 @@ set_one_cmd_context(xp, buff)
 #endif
 
 #if defined(FEAT_GUI_IOS)
+        case CMD_ictags:
         case CMD_ideletefont:
         case CMD_idocuments:
         case CMD_ifont:

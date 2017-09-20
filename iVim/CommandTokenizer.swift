@@ -8,14 +8,12 @@
 
 import Foundation
 
-import Foundation
-
 private let sNormal = CharacterSet(charactersIn: " \"\'\\")
 private let sWeakQuotes = CharacterSet(charactersIn: "\"")
 private let sStrongQuotes = CharacterSet(charactersIn: "\'")
 private let sEscape = CharacterSet()
 
-final class CommandTokenizer {
+final class CommandTokenizer: NSObject {
     let line: String
     var modes = Stack<Mode>()
     var acum = ""
