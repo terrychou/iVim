@@ -83,17 +83,21 @@ enum ButtonsBarStyle {
     case phone
     case padFull
     case slideOver
-    case slideView
+    case narrowSlideView
+    case wideSlideView
     
     init(width: CGFloat) {
         if UIDevice.current.isPhone {
             self = .phone
-        } else if width == UIScreen.main.bounds.width || width == UIScreen.main.bounds.height {
+        } else if width == UIScreen.main.bounds.width ||
+            width == UIScreen.main.bounds.height {
             self = .padFull
         } else if width == 320 {
             self = .slideOver
+        } else if width < 450 {
+            self = .narrowSlideView
         } else {
-            self = .slideView
+            self = .wideSlideView
         }
     }
     
@@ -103,7 +107,8 @@ enum ButtonsBarStyle {
         case .phone: measures = (3, 6, 6, 26, 15, 10)
         case .padFull: measures = (15, 8, 10, 43, 21, 14)
         case .slideOver: measures = (8, 8, 5, 26, 15, 10)
-        case .slideView: measures = (10, 8, 6, 38, 21, 14)
+        case .narrowSlideView: measures = (10, 8, 6, 36, 21, 14)
+        case .wideSlideView: measures = (10, 8, 6, 38, 21, 14)
         }
         bar.horizontalMargin = measures.0
         bar.verticalMargin = measures.1

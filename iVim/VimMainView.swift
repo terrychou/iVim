@@ -7,12 +7,11 @@
 //
 
 import UIKit
-import Foundation
 
-class VimMainView: UIView {
+final class VimMainView: UIView {
     override func layoutSubviews() {
 //        print("VimMainView Frame: \(self.frame)")
-        subviews[0].frame=frame
+        self.subviews[0].frame = self.frame
     }
 }
 

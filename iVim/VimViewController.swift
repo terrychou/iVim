@@ -219,9 +219,10 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
             let v = self.view,
             let window = v.window
             else { return }
-        let screenHeight = UIScreen.main.bounds.height
-        let isSplited = screenHeight - frame.origin.y > frame.height
-        let newHeight = isSplited ? screenHeight : window.convert(frame, to: v).origin.y
+//        let screenHeight = UIScreen.main.bounds.height
+        let windowHeight = window.frame.height
+        let isSplited = windowHeight - frame.origin.y > frame.height
+        let newHeight = isSplited ? windowHeight : window.convert(frame, to: v).origin.y
         let tuning = {
             guard v.frame.size.height != newHeight else { return }
             v.frame.size.height = newHeight
