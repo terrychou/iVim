@@ -274,21 +274,42 @@ extension VimFontsManager {
         return false
     }
     
-    func importFont(with fileName: String) -> Bool {
-        guard let url = URL.inboxDirectory?.appendingPathComponent(fileName),
-            let dst = userFontsURL?.appendingPathComponent(fileName)
+    func importFont(from url: URL?, isMoving: Bool, removeOriginIfFailed: Bool) -> Bool {
+        guard let url = url else { return false }
+        let fileName = url.lastPathComponent
+        guard let dst = userFontsURL?.appendingPathComponent(fileName)
             else { return self.showErrorForImportingFont(with: fileName) }
-        do {
-            try FileManager.default.moveItem(at: url, to: dst)
-        } catch {
-            NSLog("Failed to move font: \(error)")
+        var err: Error?
+        if isMoving {
             do {
-                try FileManager.default.removeItem(at: url)
+                try FileManager.default.moveItem(at: url, to: dst)
             } catch {
-                NSLog("Failed to delete font: \(error)")
+                err = error
+            }
+        } else {
+            do {
+                if url.startAccessingSecurityScopedResource() {
+                    try FileManager.default.copyItem(at: url, to: dst)
+                    url.stopAccessingSecurityScopedResource()
+                } else {
+                    NSLog("Failed to access security scoped resource")
+                }
+            } catch {
+                err = error
+            }
+        }
+        if let e = err {
+            NSLog("Failed to \(isMoving ? "MOVE" : "COPY") font: \(e)")
+            if removeOriginIfFailed {
+                do {
+                    try FileManager.default.removeItem(at: url)
+                } catch {
+                    NSLog("Failed to delete font: \(error)")
+                }
             }
             return self.showErrorForImportingFont(with: fileName)
         }
+        
         let fi = FontInfo(name: fileName, type: .user)
         self.fonts.append(fi)
         showMessage("Imported font \\\"\(fileName)\\\"")

@@ -970,9 +970,19 @@ gui_mch_set_scrollbar_thumb(
     void
 gui_mch_draw_hollow_cursor(guicolor_T color)
 {
-    CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), gui.char_width, gui.char_height);
+    int cw = 1;
+#ifdef FEAT_MBYTE
+    if (mb_lefthalve(gui.row, gui.col)) {
+        cw = 2;
+    }
+#endif
+    CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), cw * gui.char_width, gui.char_height);
     CGColorRef cgColor = CGColorCreateFromVimColor(color);
-    [getView() fillRect:rect with:cgColor];
+    rect.size.width += 1;
+    rect.size.height += 1;
+//    rect.origin.x -= 0.5;
+//    rect.origin.y -= 0.5;
+    [getView() strokeRect:rect with:cgColor];
 }
 
 

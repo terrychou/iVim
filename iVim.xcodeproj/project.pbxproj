@@ -61,6 +61,7 @@
 		DE5C51B71F6E171100373B92 /* parse.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51111F6E13CD00373B92 /* parse.c */; };
 		DE5C51B81F6E171B00373B92 /* rexx.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C511E1F6E13CD00373B92 /* rexx.c */; };
 		DE5C51B91F6E172000373B92 /* asp.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CA1F6E13CD00373B92 /* asp.c */; };
+		DE7234531F739C640033F3E8 /* VimURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7234521F739C640033F3E8 /* VimURLHandler.swift */; };
 		DE7364851F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */; };
 		DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4201F209661007AFD63 /* VimViewController.swift */; };
 		DE7BA7921F21A75400705E67 /* VimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4211F209661007AFD63 /* VimView.swift */; };
@@ -2953,6 +2954,7 @@
 		DE5C51311F6E13CD00373B92 /* vstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vstring.c; sourceTree = "<group>"; };
 		DE5C51321F6E13CD00373B92 /* vstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vstring.h; sourceTree = "<group>"; };
 		DE5C51331F6E13CD00373B92 /* yacc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yacc.c; sourceTree = "<group>"; };
+		DE7234521F739C640033F3E8 /* VimURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimURLHandler.swift; sourceTree = "<group>"; };
 		DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+ExternalKeyboard.swift"; sourceTree = "<group>"; };
 		DE7BA7A71F21AFD300705E67 /* iVim-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "iVim-Bridging-Header.h"; sourceTree = "<group>"; };
 		DE7BA7A81F21DA7000705E67 /* runtime */ = {isa = PBXFileReference; lastKnownFileType = folder; name = runtime; path = vim/runtime; sourceTree = SOURCE_ROOT; };
@@ -6589,6 +6591,7 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DE7234511F739BD20033F3E8 /* URL Handler */,
 				DE7364831F53A5D4006ACE4C /* External Keyboard Support */,
 				DEE31E921F4BF54E000CA9E8 /* Launch Arguments */,
 				DEEAD18B1F23014E00B4CAC9 /* iVim.entitlements */,
@@ -6753,6 +6756,14 @@
 				DE5C50F61F6E13CD00373B92 /* INSTALL.oth */,
 			);
 			path = ctags58;
+			sourceTree = "<group>";
+		};
+		DE7234511F739BD20033F3E8 /* URL Handler */ = {
+			isa = PBXGroup;
+			children = (
+				DE7234521F739C640033F3E8 /* VimURLHandler.swift */,
+			);
+			name = "URL Handler";
 			sourceTree = "<group>";
 		};
 		DE7364831F53A5D4006ACE4C /* External Keyboard Support */ = {
@@ -7087,6 +7098,7 @@
 				DE7BA7BF1F21EE9100705E67 /* ex_cmds.c in Sources */,
 				DE5C518A1F6E154200373B92 /* fortran.c in Sources */,
 				DE7BA79B1F21A77500705E67 /* VimViewController+UIDocumentPickerDelegate.swift in Sources */,
+				DE7234531F739C640033F3E8 /* VimURLHandler.swift in Sources */,
 				DE7BA7B71F21E91000705E67 /* ui.c in Sources */,
 				DE7BA7B11F21E7B000705E67 /* eval.c in Sources */,
 				DE7BA79C1F21A77500705E67 /* DocumentPresenter.swift in Sources */,

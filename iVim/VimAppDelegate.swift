@@ -65,25 +65,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     private func open(_ url: URL?) -> Bool {
-        guard let url = url else { return false }
-        if URLSchemeWorker.isValid(url) {
-            return URLSchemeWorker(url: url)!.run()
-        } else if url.isSupportedFont {
-            return gFM.importFont(with: url.lastPathComponent)
-        } else {
-            guard let path = FileManager.default.safeMovingItem(
-                from: URL.inboxDirectory?.appendingPathComponent(url.lastPathComponent),
-                into: URL.documentsDirectory) else { return false }
-            gOpenFile(at: path)
-            return true
-        }
+        return VimURLHandler(url: url)?.open() ?? false
     }
 }
 
-extension String {
-    func each(_ closure: (String) -> Void) {
-        for digit in self.characters {
-            closure(String(digit))
-        }
-    }
-}
+//extension String {
+//    func each(_ closure: (String) -> Void) {
+//        for digit in self.characters {
+//            closure(String(digit))
+//        }
+//    }
+//}
+

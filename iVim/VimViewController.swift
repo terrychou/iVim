@@ -40,6 +40,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var shouldTuneFrame = true
     lazy var extendedBar: OptionalButtonsBar = self.newExtendedBar()
     var shouldShowExtendedBar = false
+    var extendedBarTemporarilyHidden = false
     
     var pendingWork: (() -> Void)?
     
@@ -206,8 +207,9 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     fileprivate func toggleExtendedBar() {
         self.shouldShowExtendedBar = !self.shouldShowExtendedBar
-        self.resignFirstResponder()
-        self.becomeFirstResponder()
+        self.reloadInputViews()
+//        self.resignFirstResponder()
+//        self.becomeFirstResponder()
     }
     
     //MARK: OnScreen Keyboard Handling

@@ -104,6 +104,15 @@ final class VimView: UIView {
         self.markNeedsDisplay()
     }
     
+    func strokeRect(_ rect: CGRect, with color: CGColor?) {
+        guard let context = self.shellLayer?.context,
+            let c = color else { return }
+        context.setStrokeColor(c)
+        context.stroke(rect)
+        self.dirtyRect = self.dirtyRect.union(rect)
+        self.markNeedsDisplay()
+    }
+    
     private func attributedString(from string: String, font: CTFont) -> NSAttributedString {
         let attributes: [String: Any] = [
             NSFontAttributeName: font,
