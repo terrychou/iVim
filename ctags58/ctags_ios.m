@@ -11,6 +11,8 @@
 
 static jmp_buf _ctags_j_buf;
 static int _ctags_offset = 1;
+static const char * _stdout_fn = NULL;
+static const char * _stderr_fn = NULL;
 FILE * ctags_stdout;
 FILE * ctags_stderr;
 
@@ -85,19 +87,19 @@ static NSString * get_contents_of_file(const char * path, FILE ** fp) {
 }
 
 extern NSArray * call_ctags(int argc, char ** argv) {
-    const char * stdout_fn = "";
-    const char * stderr_fn = "";
     int j_ret = setjmp(_ctags_j_buf);
     if (!j_ret) {
-        stdout_fn = assign_ctags_stream(&ctags_stdout, "ctags_stdout");
-        stderr_fn = assign_ctags_stream(&ctags_stderr, "ctags_stderr");
+        _stdout_fn = assign_ctags_stream(&ctags_stdout, "ctags_stdout");
+        _stderr_fn = assign_ctags_stream(&ctags_stderr, "ctags_stderr");
         ctags_main(argc, argv);
     } else {
         ctags_clean_up();
 //        printf("ctags main done.\n");
     }
-    NSString * stdout_contents = get_contents_of_file(stdout_fn, &ctags_stdout);
-    NSString * stderr_contents = get_contents_of_file(stderr_fn, &ctags_stderr);
+    NSString * stdout_contents = get_contents_of_file(_stdout_fn, &ctags_stdout);
+    NSString * stderr_contents = get_contents_of_file(_stderr_fn, &ctags_stderr);
+    _stdout_fn = NULL;
+    _stderr_fn = NULL;
     NSArray * result = [NSArray arrayWithObjects:
                         stdout_contents,
                         stderr_contents,

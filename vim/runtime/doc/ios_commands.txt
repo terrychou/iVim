@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2017 Jul 31
+*ios_commands.txt*	For Vim version 7.4	Last change: 2017 Sep 29
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -9,6 +9,7 @@ its features.
 
 1. Font Management		|font-management-icommands|
 2. Share			|share-icommands|
+3. Exuberant Ctags		|ctags-icommand|
 
 ==============================================================================
 1. Font Management				*font-management-icommands*
@@ -107,5 +108,26 @@ iVim has two commands for sharing |ios-share|.
 		Note: the imported file will be renamed if there has been 
 		a file already possesses that name.
 
+
+==============================================================================
+3. Exuberant Ctags					*ctags-icommand*
+
+iVim offers one command to use the integrated Exuberant Ctags
+|ios-exuberant-ctags|.
+
+:ic[tags] {options} [fname]				*:ic* *:ictags*
+		Run the integrated Exuberant Ctags like the shell command.
+		
+		Examples: >
+			:ictags --help		"show help info of ctags
+			:ictags -R .		"generate tags recusively
+						"for files under current
+						"working directory
+<
+		After the tags are generated, you can browse the source code
+		project under the directory easily by tags navigation 
+		commands |tag|.
+
+		Note: big projects may take some time to finish.
 
  vim:tw=78:ts=8:ft=help:norl:

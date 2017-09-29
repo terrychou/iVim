@@ -33,7 +33,7 @@ void gui_update_cursor(int force, int clear_selection);
 void gui_undraw_cursor();
 void gui_send_mouse_event(int button,int x,int y, int repeated_click, unsigned int modifiers);
 void maybe_intro_message(void);
-void gui_focus_change(BOOL);
+//void gui_focus_change(BOOL);
 
 int vim_setenv(const unsigned char *name, const unsigned char *value);
 int do_cmdline_cmd(const unsigned char *cmd);

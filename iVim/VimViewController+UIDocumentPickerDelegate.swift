@@ -18,8 +18,8 @@ extension VimViewController: UIDocumentPickerDelegate {
     }
     
     private func switchExtendedBarTemporarily(hide: Bool) {
-//        gui_focus_change(!hide)
-        guard self.extendedBarTemporarilyHidden != hide else { return }
+        guard #available(iOS 11.0, *),
+            self.extendedBarTemporarilyHidden != hide else { return }
         self.extendedBarTemporarilyHidden = self.shouldShowExtendedBar
         self.shouldShowExtendedBar = !hide
         self.reloadInputViews()
@@ -33,27 +33,32 @@ extension VimViewController: UIDocumentPickerDelegate {
         self.showPicker(in: .import)
     }
     
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
-//        NSLog("picked url: \(url)")
-        self.switchExtendedBarTemporarily(hide: false)
-        switch controller.documentPickerMode {
-        case .open:
-            gPIM.addPickInfo(for: url, task: {
-                gOpenFile(at: $0)
-            })
-        case .import:
-            guard let p = FileManager.default.safeMovingItem(from: url, into: URL.documentsDirectory) else { break }
-            gOpenFile(at: p)
+    private func handle(url: URL, in mode: UIDocumentPickerMode) {
+        var urlMode: VimURLMode?
+        switch mode {
+        case .open: urlMode = .open
+        case .import: urlMode = .copy
         default: break
         }
+        _ = VimURLHandler(url: url, nonLocalMode: urlMode)?.open()
     }
     
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
+        self.switchExtendedBarTemporarily(hide: false)
+        self.handle(url: url, in: controller.documentPickerMode)
+    }
+    
+    //only available since iOS 11
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        print(urls)
+        self.switchExtendedBarTemporarily(hide: false)
+        let mode = controller.documentPickerMode
+        for url in urls {
+            self.handle(url: url, in: mode)
+        }
     }
     
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         self.switchExtendedBarTemporarily(hide: false)
-        NSLog("document picker cancelled")
+//        NSLog("document picker cancelled")
     }
 }

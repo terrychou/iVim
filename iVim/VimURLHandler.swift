@@ -24,7 +24,7 @@ enum VimURLType {
     }
 }
 
-private enum URLMode {
+enum VimURLMode {
     case local
     case copy
     case open
@@ -52,12 +52,13 @@ extension URL {
 struct VimURLHandler {
     let url: URL
     let type: VimURLType
+    let nonLocalMode: VimURLMode?
 }
 
 extension VimURLHandler {
-    init?(url: URL?) {
+    init?(url: URL?, nonLocalMode: VimURLMode? = nil) {
         guard let u = url, let t = VimURLType(url: u) else { return nil }
-        self.init(url: u, type: t)
+        self.init(url: u, type: t, nonLocalMode: nonLocalMode)
     }
     
     func open() -> Bool {
@@ -68,8 +69,13 @@ extension VimURLHandler {
         }
     }
     
+    private var mode: VimURLMode? {
+        let m = VimURLMode(url: self.url)
+        return m == .local ? .local : (self.nonLocalMode ?? m)
+    }
+    
     private func importFont() -> Bool {
-        guard let mode = URLMode(url: self.url) else { return false }
+        guard let mode = self.mode else { return false }
         let isMoving: Bool
         let removeOrigin: Bool
         switch mode {
@@ -85,7 +91,7 @@ extension VimURLHandler {
     }
     
     private func importText() -> Bool {
-        guard let mode = URLMode(url: self.url) else { return false }
+        guard let mode = self.mode else { return false }
         switch mode {
         case .local: gOpenFile(at: self.url)
         case .copy:

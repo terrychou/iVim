@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Sep 07
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Sep 29
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -29,7 +29,8 @@ the newer iOS systems. This project started from it.
 5. Share				|ios-share|
 6. Settings				|ios-settings|
 7. External keyboard			|ios-external-keyboard|
-8. Miscellaneous			|ios-miscellaneous|
+8. Integrated Exuberant Ctags		|ios-exuberant-ctags|
+9. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -54,6 +55,14 @@ file system via external Unix commands.
 However, iVim comes with a `netrw` file browser plugin. You can type ":edit ."
 to get started. It provides an intuitive way to navigate the file system 
 structure. Type ":help netrw" to get the help on how to use it.
+
+iOS 11 Files app support ~
+
+The newly added "Files" app in iOS 11 provides a central place for users to
+organize their documents. iVim adds support to it. You can now apply common
+file operations such as copy, duplicate, move, create or delete easily to
+files or directories under iVim's `Documents` directory.
+iVim can be found under "Locations > On My ..." in Files.
 
 Besides the file editing within its sandbox, iVim can edit text from other 
 apps via |ios-share|.
@@ -171,6 +180,17 @@ iCloud Drive or other document provider apps. All the modifications will be
 saved into the original files even though this is normally not allowed because 
 they are in different sandbox environments.
 
+Behavior in iOS 11 ~
+
+a. Since iOS 11, any "Copy to iVim" item in the share panel is renamed to 
+"Open in iVim". Correspondingly, through this option, text files will be 
+edited in place rather than copied to iVim. Font files will still be copied.
+
+b. There may also be a "Save to Files" action, through which you can copy the 
+target item to iVim via the Files filesystem hierarchy.
+
+c. The document picker invoked by |:idocuments| will open the Files browser.
+
 Type ":help :ishare" or ":help :idocuments" for more detailed information.
 
 
@@ -215,7 +235,24 @@ e. multiple modifiers chords such as `<D-C->` are not supported.
 
 
 ==============================================================================
-8. Miscellaneous			*ios-miscellaneous* *ios-misc*
+8. Integrated Exuberant Ctags			*ios-exuberant-ctags*
+
+Exuberant Ctags |Exuberant_ctags| is a great tool to generate tags for
+programming languages. Its resulting tags are directly supported by vim. 
+
+For better source code browsing experience, iVim integrates Exuberant Ctags
+into its own environment. You can use it like the shell command via the Ex 
+command |:ictags|.
+
+Also, the integrated Exuberant Ctags shares the home directory with iVim. You
+can put your ".ctags" config file under it and ctags will read it every time
+it is invoked.
+
+Type ":help :ictags" for details about the command.
+
+
+==============================================================================
+9. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 

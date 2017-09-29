@@ -274,7 +274,7 @@ static void execute_ctags(NSString * cmdline) {
     for (int i = 1; i < argcnt; ++i) {
         argv[i] = (char *)[args[i] UTF8String];
     }
-    argv[argcnt] = '\0';
+    argv[argcnt] = NULL;
     NSArray * ret = call_ctags(argcnt, argv);
     NSString * info = @"ictags: DONE";
     NSString * cmdfmt = @"echo \"%@\"";
@@ -978,8 +978,8 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 #endif
     CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), cw * gui.char_width, gui.char_height);
     CGColorRef cgColor = CGColorCreateFromVimColor(color);
-    rect.size.width += 1;
-    rect.size.height += 1;
+//    rect.size.width += 1;
+//    rect.size.height += 1;
 //    rect.origin.x -= 0.5;
 //    rect.origin.y -= 0.5;
     [getView() strokeRect:rect with:cgColor];

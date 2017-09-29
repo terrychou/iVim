@@ -312,7 +312,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
 }
 
-@available(iOS 11.0, *) /* disable smart operations available in iOS 11 */
+/* disable smart operations introduced in iOS 11 */
+@available(iOS, introduced: 11.0)
 extension VimViewController {
     var smartQuotesType: UITextSmartQuotesType {
         get { return .no }

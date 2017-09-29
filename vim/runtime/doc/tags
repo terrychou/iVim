@@ -2295,6 +2295,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :iabbrev	map.txt	/*:iabbrev*
 :iabc	map.txt	/*:iabc*
 :iabclear	map.txt	/*:iabclear*
+:ic	ios_commands.txt	/*:ic*
+:ictags	ios_commands.txt	/*:ictags*
 :idel	ios_commands.txt	/*:idel*
 :ideletefont	ios_commands.txt	/*:ideletefont*
 :idoc	ios_commands.txt	/*:idoc*
@@ -5352,6 +5354,7 @@ csto	if_cscop.txt	/*csto*
 csverb	if_cscop.txt	/*csverb*
 ctags	tagsrch.txt	/*ctags*
 ctags-gone	version6.txt	/*ctags-gone*
+ctags-icommand	ios_commands.txt	/*ctags-icommand*
 cterm-colors	syntax.txt	/*cterm-colors*
 ctrl	intro.txt	/*ctrl*
 ctype-variable	eval.txt	/*ctype-variable*
@@ -6706,6 +6709,7 @@ ios	os_ios.txt	/*ios*
 ios-commands	ios_commands.txt	/*ios-commands*
 ios-extended-keyboard	os_ios.txt	/*ios-extended-keyboard*
 ios-external-keyboard	os_ios.txt	/*ios-external-keyboard*
+ios-exuberant-ctags	os_ios.txt	/*ios-exuberant-ctags*
 ios-file-system	os_ios.txt	/*ios-file-system*
 ios-font-management	os_ios.txt	/*ios-font-management*
 ios-misc	os_ios.txt	/*ios-misc*
