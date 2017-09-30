@@ -262,20 +262,43 @@ void ex_idocuments(exarg_T * eap) {
  * Handling function for command *ictags*
  */
 static void execute_ctags(NSString *);
+static NSArray * ctags_args(NSString *);
 void ex_ictags(exarg_T * eap) {
     execute_ctags(TONSSTRING(eap->cmd));
 }
 
+static NSArray * ctags_args(NSString * cmdline) {
+    NSArray * splited = [[[CommandTokenizer alloc] initWithLine:cmdline] run];
+    NSMutableArray * args = [NSMutableArray array];
+    for (NSString * i in splited) {
+        char_u * pat = (char_u *)[i UTF8String];
+        if (mch_has_wildcard(pat)) {
+            char_u ** filenames;
+            int filecnt;
+            gen_expand_wildcards(1, &pat, &filecnt, &filenames,
+                                 EW_DIR | EW_FILE | EW_SILENT);
+            for (int i = 0; i < filecnt; ++i) {
+                [args addObject:TONSSTRING(filenames[i])];
+            }
+            FreeWild(filecnt, filenames);
+        } else {
+            [args addObject:i];
+        }
+    }
+    
+    return args;
+}
+
 static void execute_ctags(NSString * cmdline) {
-    NSArray * args = [[[CommandTokenizer alloc] initWithLine:cmdline] run];
-    int argcnt = (int)[args count];
-    char * argv[argcnt + 1];
+    NSArray * args = ctags_args(cmdline);
+    int argc = (int)[args count];
+    char * argv[argc + 1];
     argv[0] = "ictags";
-    for (int i = 1; i < argcnt; ++i) {
+    for (int i = 1; i < argc; ++i) {
         argv[i] = (char *)[args[i] UTF8String];
     }
-    argv[argcnt] = NULL;
-    NSArray * ret = call_ctags(argcnt, argv);
+    argv[argc] = NULL;
+    NSArray * ret = call_ctags(argc, argv);
     NSString * info = @"ictags: DONE";
     NSString * cmdfmt = @"echo \"%@\"";
     if ([ret[0] length] != 0) {
