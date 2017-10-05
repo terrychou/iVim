@@ -60,6 +60,15 @@ extern const char * ctags_tmpdir(void) {
     return [NSTemporaryDirectory() UTF8String];
 }
 
+extern char * ctags_overlap_strcpy(char * dst, char * src) {
+    char * tmp = (char *)malloc((size_t)(strlen(src) + 1) * sizeof(char));
+    strcpy(tmp, src);
+    strcpy(dst, tmp);
+    free(tmp);
+    
+    return dst;
+}
+
 static char * tmpfile_with_name(const char * name) {
     char * template = (char *)[[NSString stringWithFormat:@"%@%s.XXXXXX",
                                 NSTemporaryDirectory(), name] UTF8String];

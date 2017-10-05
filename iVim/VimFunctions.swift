@@ -100,7 +100,7 @@ func gInputESC() {
 }
 
 func gEnsureSuccessfulOpen() {
-    gFeedKeys("H", mode: "n")
+    gFeedKeys("\\<Esc>H", mode: "n")
 }
 
 func *(_ string: String, times: Int) -> String {

@@ -760,13 +760,13 @@ extern char* absoluteFilename (const char *file)
 				else if (cp [0] != PATH_SEPARATOR)
 					cp = slashp;
 #endif
-				strcpy (cp, slashp + 3);
+				CTAGSOVERLAPSTRCPY (cp, slashp + 3);
 				slashp = cp;
 				continue;
 			}
 			else if (slashp [2] == PATH_SEPARATOR  ||  slashp [2] == '\0')
 			{
-				strcpy (slashp, slashp + 2);
+                CTAGSOVERLAPSTRCPY (slashp, slashp + 2);
 				continue;
 			}
 		}

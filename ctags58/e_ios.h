@@ -36,6 +36,7 @@
 #define CTAGSVPRINTF ctags_vprintf
 #define CTAGSPUTS ctags_puts
 #define CTAGSPUTCHAR ctags_putchar
+#define CTAGSOVERLAPSTRCPY(d, s) ctags_overlap_strcpy((char *)(d), (char *)(s))
 
 #else
 
@@ -46,6 +47,7 @@
 #define CTAGSVPRINTF vprintf
 #define CTAGSPUTS puts
 #define CTAGSPUTCHAR putchar
+#define CTAGSOVERLAPSTRCPY(d, s) strcpy((char *)(d), (char *)(s))
 
 #endif
 
@@ -70,5 +72,6 @@ extern int ctags_printf(const char * restrict, ...);
 extern int ctags_puts(const char *);
 extern int ctags_putchar(int);
 extern const char * ctags_tmpdir(void);
+extern char * ctags_overlap_strcpy(char *, char *);
 
 #endif /* e_ios_h */
