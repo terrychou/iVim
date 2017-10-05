@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2017 Sep 29
+*ios_commands.txt*	For Vim version 7.4	Last change: 2017 Oct 03
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -124,9 +124,16 @@ iVim offers one command to use the integrated Exuberant Ctags
 						"for files under current
 						"working directory
 <
-		After the tags are generated, you can browse the source code
-		project under the directory easily by tags navigation 
-		commands |tag|.
+		Also, it supports vim |wildcards| in file or directory names.
+		Example: >
+			:ictags *.c *.h		"generate tags for all .c and
+						".h files under current dir
+<
+		Note: option 'fileignorecase' is on by default, it will ignore
+		case in file names when expanding them.
+
+		After the tags are generated, you can browse the codebase 
+		easily by |tags| navigation commands.
 
 		Note: big projects may take some time to finish.
 

@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Sep 29
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Oct 03
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -56,9 +56,9 @@ However, iVim comes with a `netrw` file browser plugin. You can type ":edit ."
 to get started. It provides an intuitive way to navigate the file system 
 structure. Type ":help netrw" to get the help on how to use it.
 
-iOS 11 Files app support ~
+The Files app support ~
 
-The newly added "Files" app in iOS 11 provides a central place for users to
+Newly added in iOS 11, the Files app provides a central place for users to
 organize their documents. iVim adds support to it. You can now apply common
 file operations such as copy, duplicate, move, create or delete easily to
 files or directories under iVim's `Documents` directory.
@@ -160,7 +160,7 @@ Sharing makes iVim's editing power available to more apps.
 Importing ~
 
 If an app supports sharing text files or selected text, you can find iVim in 
-its share panel. The picked file will be copied into the sandbox of iVim.
+its share panel. See |share-with-ivim| and |copy-to-ivim|.
 
 Through the document picker invoked by ":idocuments import", you can also 
 import text files from iCloud Drive or other document providers. This way,
@@ -180,16 +180,28 @@ iCloud Drive or other document provider apps. All the modifications will be
 saved into the original files even though this is normally not allowed because 
 they are in different sandbox environments.
 
-Behavior in iOS 11 ~
+Also see |open-in-ivim|.
 
-a. Since iOS 11, any "Copy to iVim" item in the share panel is renamed to 
-"Open in iVim". Correspondingly, through this option, text files will be 
-edited in place rather than copied to iVim. Font files will still be copied.
+Items in the share panel ~
 
-b. There may also be a "Save to Files" action, through which you can copy the 
-target item to iVim via the Files filesystem hierarchy.
+a. Share with iVim					*share-with-ivim*
 
-c. The document picker invoked by |:idocuments| will open the Files browser.
+This item will share the selected text in the sharing app. When invoked, the
+selected text will appear in a floating box for you to do some simple editing.
+Tapping `Post` will open iVim and the text in a new buffer within a new tab.
+
+b. Copy to iVim						*copy-to-ivim*
+
+It will copy the shared file into the `Documents` directory. When invoked, it
+will open iVim and the copied file in a new tab. Note that if there had been
+a file with the same name as the shared one, it will be renamed to avoid the
+conflict.
+
+c. Open in iVim						*open-in-ivim*
+
+It will open the shared file directly in iVim. In another word, it lets iVim
+edit the target file in place. Note that it needs the sharing app's support
+for this feature.
 
 Type ":help :ishare" or ":help :idocuments" for more detailed information.
 
@@ -245,7 +257,7 @@ into its own environment. You can use it like the shell command via the Ex
 command |:ictags|.
 
 Also, the integrated Exuberant Ctags shares the home directory with iVim. You
-can put your ".ctags" config file under it and ctags will read it every time
+can put your `.ctags` config file under it and ctags will read it every time
 it is invoked.
 
 Type ":help :ictags" for details about the command.

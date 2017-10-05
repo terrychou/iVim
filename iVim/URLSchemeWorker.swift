@@ -53,22 +53,19 @@ extension URLCommand {
             try FileManager.default.removeItem(at: url)
             return text
         } catch {
+            NSLog("Failed to read temp file: \(error)")
             return nil
         }
     }
     
     private func doNewtab(_ components: URLComponents) {
-//        NSLog("Got here.")
-        if let fn = components.firstQueryValue(for: "file"),
-            let t = self.text(of: fn) {
-//            NSLog("GOT TEXT: \(t)")
-            if !is_current_buf_new() {
-                do_cmdline_cmd("tabnew | redraw!")
-            }
-            do_cmdline_cmd("normal! i\(t)")
-            gInputESC()
-            do_cmdline_cmd("redraw!")
+        guard let fn = components.firstQueryValue(for: "file"),
+            let t = self.text(of: fn) else { return }
+        if !is_current_buf_new() {
+            do_cmdline_cmd("tabnew")
         }
+        do_cmdline_cmd("normal! i\(t)")
+        gEnsureSuccessfulOpen()
     }
 }
 

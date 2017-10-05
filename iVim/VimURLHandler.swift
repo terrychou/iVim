@@ -63,7 +63,7 @@ extension VimURLHandler {
     
     func open() -> Bool {
         switch self.type {
-        case .scheme: return URLSchemeWorker(url: self.url)!.run()
+        case .scheme: return self.runURLScheme()
         case .font: return self.importFont()
         case .text: return self.importText()
         }
@@ -72,6 +72,16 @@ extension VimURLHandler {
     private var mode: VimURLMode? {
         let m = VimURLMode(url: self.url)
         return m == .local ? .local : (self.nonLocalMode ?? m)
+    }
+    
+    private func runURLScheme() -> Bool {
+        guard let worker = URLSchemeWorker(url: self.url) else { return false }
+        if gSVO.started {
+            return worker.run()
+        } else {
+            gSVO.run { _ = worker.run() }
+            return true
+        }
     }
     
     private func importFont() -> Bool {
@@ -93,15 +103,15 @@ extension VimURLHandler {
     private func importText() -> Bool {
         guard let mode = self.mode else { return false }
         switch mode {
-        case .local: gOpenFile(at: self.url)
+        case .local: gSVO.openFile(at: self.url)
         case .copy:
             guard let path = FileManager.default.safeMovingItem(
                 from: self.url,
                 into: URL.documentsDirectory) else { return false }
-            gOpenFile(at: path)
+            gSVO.openFile(at: path)
         case .open:
             gPIM.addPickInfo(for: self.url, task: {
-                gOpenFile(at: $0)
+                gSVO.openFile(at: $0)
             })
         }
         

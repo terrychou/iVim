@@ -299,16 +299,22 @@ static void execute_ctags(NSString * cmdline) {
     }
     argv[argc] = NULL;
     NSArray * ret = call_ctags(argc, argv);
-    NSString * info = @"ictags: DONE";
-    NSString * cmdfmt = @"echo \"%@\"";
+    NSString * info = nil;
+    NSString * cmdfmt = nil;
+    NSString * norcmd = @"echo \"%@\"";
     if ([ret[0] length] != 0) {
         info = ret[0];
     } else if ([ret[1] length] != 0) {
         info = ret[1];
-        cmdfmt = [NSString stringWithFormat:@"echohl ErrorMsg | %@ | echohl None", cmdfmt];
+        cmdfmt = [NSString stringWithFormat:@"echohl ErrorMsg | %@ | echohl None", norcmd];
+    } else {
+        info = @"ictags DONE";
     }
-    info = [info stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-    NSString * cmd = [NSString stringWithFormat:cmdfmt, info];
+    if (cmdfmt == nil) {
+        cmdfmt = norcmd;
+    }
+    NSString * escapedInfo = [info stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+    NSString * cmd = [NSString stringWithFormat:cmdfmt, escapedInfo];
     do_cmdline_cmd(TOCHARS(cmd));
 }
 

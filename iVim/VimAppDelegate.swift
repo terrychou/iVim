@@ -12,24 +12,28 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-    private var vimController: VimViewController? {
-        return self.window?.rootViewController as? VimViewController
-    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         FileManager.default.cleanMirrorFiles()
+//        self.logToFile()
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),
             with: nil,
             waitUntilDone: false)
-        
-        return !self.addPendingWork(with: launchOptions)
+
+        return true
     }
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey: Any]) -> Bool {
-        return self.open(url)
+        return VimURLHandler(url: url)?.open() ?? false
     }
+    
+//    private func logToFile() {
+//        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+//        let file = path + "/NSLog.log"
+//        freopen(file, "a+", stderr)
+//    }
     
     func VimStarter() {
         guard let vimPath = Bundle.main.resourcePath else { return }
@@ -44,36 +48,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         VimMain(Int32(args.count), &argv)
         argv.forEach { free($0) }
     }
-    
-    private func showIntroMessage() {
-        guard is_current_buf_new() else { return }
-        maybe_intro_message()
-        gAddTextToInputBuffer("gg")
-    }
-    
-    private func addPendingWork(with options: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        if let url = options?[.url] as? URL {
-            self.vimController?.pendingWork = {
-                _ = self.open(url)
-                self.showIntroMessage()
-            }
-            return true
-        } else {
-            self.vimController?.pendingWork = { self.showIntroMessage() }
-            return false
-        }
-    }
-    
-    private func open(_ url: URL?) -> Bool {
-        return VimURLHandler(url: url)?.open() ?? false
-    }
 }
-
-//extension String {
-//    func each(_ closure: (String) -> Void) {
-//        for digit in self.characters {
-//            closure(String(digit))
-//        }
-//    }
-//}
-

@@ -47,6 +47,7 @@ extension ShareViewController {
             try text.write(to: url, atomically: false, encoding: .utf8)
             return name
         } catch {
+            NSLog("Failed to write temp file: \(error)")
             return nil
         }
     }

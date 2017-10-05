@@ -99,7 +99,7 @@ extension VimFontsManager {
     }
     
     func showAvailableFonts(withCommand cmd: String?) {
-        showContent(self.printableAvailableFonts, withCommand: cmd)
+        gSVO.showContent(self.printableAvailableFonts, withCommand: cmd)
     }
     
     private func setGUIFont(_ info: String) {
@@ -121,7 +121,7 @@ extension VimFontsManager {
     
     private func showErrorForFontName(_ n: String) {
         let err = n.int == nil ? "matching '\(n)'" : "at index \(n)"
-        showError("Cannot find font \(err)")
+        gSVO.showError("Cannot find font \(err)")
     }
     
     func selectFont(with arg: String) {
@@ -159,7 +159,7 @@ extension VimFontsManager {
         }
         guard let i = info else { return self.showErrorForFontName(arg) }
         guard i.type == .user else {
-            return showError("Font '\(i.name)' is not an user font")
+            return gSVO.showError("Font '\(i.name)' is not an user font")
         }
         self.deleteFont(with: i)
     }
@@ -171,7 +171,7 @@ extension VimFontsManager {
         do {
             try FileManager.default.removeItem(at: path)
         } catch {
-            showError("Failed to delete font '\(info.name)'")
+            gSVO.showError("Failed to delete font '\(info.name)'")
             return
         }
         self.fonts.remove(at: i)
@@ -179,7 +179,7 @@ extension VimFontsManager {
             self.selectFont(with: "1")
         }
         self.uncacheUserFont(with: info.name)
-        showMessage("Deleted font '\(info.name)'")
+        gSVO.showMessage("Deleted font '\(info.name)'")
     }
     
     private func uncacheUserFont(with name: String) {
@@ -269,7 +269,7 @@ extension VimFontsManager {
 
 extension VimFontsManager {
     private func showErrorForImportingFont(with fileName: String) -> Bool {
-        showError("Failed to import font \\\"\(fileName)\\\"")
+        gSVO.showError("Failed to import font \\\"\(fileName)\\\"")
         
         return false
     }
@@ -312,7 +312,7 @@ extension VimFontsManager {
         
         let fi = FontInfo(name: fileName, type: .user)
         self.fonts.append(fi)
-        showMessage("Imported font \\\"\(fileName)\\\"")
+        gSVO.showMessage("Imported font \\\"\(fileName)\\\"")
         
         return true
     }

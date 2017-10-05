@@ -42,7 +42,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
-    var pendingWork: (() -> Void)?
+//    var pendingWork: (() -> Void)?
     
     private func registerNotifications() {
         let nfc = NotificationCenter.default
@@ -108,7 +108,10 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     func flush() {
         if !self.hasBeenFlushedOnce {
             self.hasBeenFlushedOnce = true
-            DispatchQueue.main.async { self.becomeFirstResponder() }
+            DispatchQueue.main.async {
+                self.becomeFirstResponder()
+                gSVO.markStart()
+            }
         }
         self.vimView?.flush()
     }
@@ -223,18 +226,21 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         let windowHeight = window.frame.height
         let isSplited = windowHeight - frame.origin.y > frame.height
         let newHeight = isSplited ? windowHeight : window.convert(frame, to: v).origin.y
-        let tuning = {
-            guard v.frame.size.height != newHeight else { return }
-            v.frame.size.height = newHeight
-        }
-        guard let pw = self.pendingWork else { return tuning() }
-        CATransaction.begin()
-        tuning()
-        CATransaction.setCompletionBlock {
-            pw()
-            self.pendingWork = nil
-        }
-        CATransaction.commit()
+        guard v.frame.size.height != newHeight else { return }
+        v.frame.size.height = newHeight
+//        let tuning = {
+//            guard v.frame.size.height != newHeight else { return }
+//            v.frame.size.height = newHeight
+//        }
+////        tuning()
+////        guard !gSVO.started else { return tuning() }
+//        CATransaction.begin()
+//        tuning()
+//        CATransaction.setCompletionBlock {
+////            gSVO.start()
+//            gui_update_cursor(1, 0)
+//        }
+//        CATransaction.commit()
     }
     
     func keyboardWillChangeFrame(_ notification: Notification) {

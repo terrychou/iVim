@@ -37,9 +37,6 @@ extension PickInfoManager {
         NSLog("become active")
         self.table.values.forEach { pi in
             NSFileCoordinator.addFilePresenter(pi.presenter)
-//            p.read {
-//                p.startMonitor()
-//            }
         }
     }
     
