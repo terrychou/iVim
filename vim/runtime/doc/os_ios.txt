@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Oct 03
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Oct 06
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -202,6 +202,8 @@ c. Open in iVim						*open-in-ivim*
 It will open the shared file directly in iVim. In another word, it lets iVim
 edit the target file in place. Note that it needs the sharing app's support
 for this feature.
+
+Note that supported font files are always copied for installation.
 
 Type ":help :ishare" or ":help :idocuments" for more detailed information.
 

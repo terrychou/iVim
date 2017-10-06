@@ -12,36 +12,13 @@
 				<string>Icon-60@3x.png</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>Text File</string>
+			<string>All File</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>public.text</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeIconFiles</key>
-			<array/>
-			<key>CFBundleTypeName</key>
-			<string>TrueType OpenType font</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>public.truetype-ttf-font</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeIconFiles</key>
-			<array/>
-			<key>CFBundleTypeName</key>
-			<string>PostScript OpenType font</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>public.opentype-font</string>
+				<string>public.content</string>
+				<string>public.data</string>
 			</array>
 		</dict>
 	</array>
@@ -69,7 +46,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>6</string>
+	<string>7</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -1703,6 +1680,28 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>vba</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Elixir source</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.elixir-lang.source</string>
+			<key>UTTypeSize320IconFile</key>
+			<string>VimTypeIcon-320</string>
+			<key>UTTypeSize64IconFile</key>
+			<string>VimTypeIcon-64</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>exs</string>
+					<string>ex</string>
 				</array>
 			</dict>
 		</dict>
