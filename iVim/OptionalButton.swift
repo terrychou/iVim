@@ -91,7 +91,7 @@ extension OptionalButton {
         let font = UIFont.systemFont(ofSize: size)
         let contentSize = NSAttributedString(
             string: title,
-            attributes: [NSFontAttributeName: font]).size()
+            attributes: [.font: font]).size()
         let width = ceil(contentSize.width)
         let height = ceil(contentSize.height)
         layer.bounds = CGRect(x: 0, y: 0, width: width, height: height)

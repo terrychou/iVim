@@ -17,12 +17,12 @@ enum blink_state {
 }
 
 final class VimViewController: UIViewController, UIKeyInput, UITextInput, UITextInputTraits {
-    var vimView: VimView?
+    @objc var vimView: VimView?
     var hasBeenFlushedOnce = false
     
-    var blink_wait: CLong = 1000
-    var blink_on: CLong = 1000
-    var blink_off: CLong = 1000
+    @objc var blink_wait: CLong = 1000
+    @objc var blink_on: CLong = 1000
+    @objc var blink_off: CLong = 1000
     var state: blink_state = .none
     var blinkTimer: Timer?
     
@@ -89,14 +89,14 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.shouldTuneFrame = true
     }
     
-    func click(_ sender: UITapGestureRecognizer) {
+    @objc func click(_ sender: UITapGestureRecognizer) {
         self.resetKeyboard()
         self.unmarkText()
         let clickLocation = sender.location(in: sender.view)
         gui_send_mouse_event(0, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
     }
     
-    func longPress(_ sender: UILongPressGestureRecognizer) {
+    @objc func longPress(_ sender: UILongPressGestureRecognizer) {
         guard sender.state == .began else { return }
         switch sender.numberOfTouches {
         case 1: self.toggleExtendedBar()
@@ -105,7 +105,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }
     }
     
-    func flush() {
+    @objc func flush() {
         if !self.hasBeenFlushedOnce {
             self.hasBeenFlushedOnce = true
             DispatchQueue.main.async {
@@ -126,7 +126,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.vimView?.markNeedsDisplay()
     }
     
-    func blinkCursor() {
+    @objc func blinkCursor() {
         switch self.state {
         case .on:
             gui_undraw_cursor()
@@ -140,13 +140,13 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.markNeedsDisplay()
     }
     
-    func startBlink() {
+    @objc func startBlink() {
         self.state = .on
         gui_update_cursor(1, 0)
         self.changeCursor(after: self.blink_wait)
     }
     
-    func stopBlink() {
+    @objc func stopBlink() {
         self.blinkTimer?.invalidate()
         self.state = .none
         gui_update_cursor(1, 0)
@@ -243,15 +243,15 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
 //        CATransaction.commit()
     }
     
-    func keyboardWillChangeFrame(_ notification: Notification) {
+    @objc func keyboardWillChangeFrame(_ notification: Notification) {
         self.tuneFrameAccordingToKeyboard(notification)
     }
     
-    func keyboardDidChangeFrame(_ notification: Notification) {
+    @objc func keyboardDidChangeFrame(_ notification: Notification) {
         self.tuneFrameAccordingToKeyboard(notification)
     }
     
-    func waitForChars(_ wtime: Int) -> Bool {
+    @objc func waitForChars(_ wtime: Int) -> Bool {
         if input_available() > 0 { return true }
         let expirationDate = wtime > -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
         repeat {
@@ -264,7 +264,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         return false
     }
     
-    func pan(_ sender: UIPanGestureRecognizer) {
+    @objc func pan(_ sender: UIPanGestureRecognizer) {
         guard let v = self.vimView else { return }
         let clickLocation = sender.location(in: v)
         let event: Int32
@@ -276,7 +276,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         gui_send_mouse_event(event, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
     }
     
-    func scroll(_ sender: UIPanGestureRecognizer) {
+    @objc func scroll(_ sender: UIPanGestureRecognizer) {
         if sender.state == .began {
 //            self.becomeFirstResponder()
             let clickLocation = sender.location(in: sender.view)
@@ -304,7 +304,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }
     }
     
-    func flash(forSeconds s: TimeInterval) {
+    @objc func flash(forSeconds s: TimeInterval) {
         guard let v = self.view else { return }
         let fv = UIView(frame: v.bounds)
         fv.backgroundColor = .white
@@ -342,7 +342,7 @@ extension VimViewController {
         return CGRect(x: 0, y: self.view.bounds.size.height - 10, width: 10, height: 10)
     }
    
-    func showShareSheet(url: URL?, text: String?) {
+    @objc func showShareSheet(url: URL?, text: String?) {
         if let url = url {
             self.documentController = UIDocumentInteractionController(url: url)
             self.documentController?.presentOptionsMenu(from: self.shareRect, in: self.view, animated: true)

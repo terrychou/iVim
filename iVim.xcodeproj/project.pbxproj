@@ -6908,6 +6908,7 @@
 					DE531AF11F20941100D71DB3 = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = LGM6M9XA5D;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -6921,18 +6922,21 @@
 					DE531B051F20941200D71DB3 = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = LGM6M9XA5D;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						TestTargetID = DE531AF11F20941100D71DB3;
 					};
 					DE531B101F20941200D71DB3 = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = LGM6M9XA5D;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						TestTargetID = DE531AF11F20941100D71DB3;
 					};
 					DEEAD1791F23005500B4CAC9 = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = LGM6M9XA5D;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -7336,7 +7340,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/iVim-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -7359,7 +7364,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/iVim-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -7432,7 +7438,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -7447,7 +7454,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

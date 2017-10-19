@@ -43,7 +43,7 @@ private let systemFontsFile = "systemFonts"
 let gFM = VimFontsManager.shared
 
 final class VimFontsManager: NSObject {
-    static let shared = VimFontsManager()
+    @objc static let shared = VimFontsManager()
     private override init() {
         super.init()
         self.registerFonts()
@@ -98,7 +98,7 @@ extension VimFontsManager {
         return s
     }
     
-    func showAvailableFonts(withCommand cmd: String?) {
+    @objc func showAvailableFonts(withCommand cmd: String?) {
         gSVO.showContent(self.printableAvailableFonts, withCommand: cmd)
     }
     
@@ -124,7 +124,7 @@ extension VimFontsManager {
         gSVO.showError("Cannot find font \(err)")
     }
     
-    func selectFont(with arg: String) {
+    @objc func selectFont(with arg: String) {
         let args = arg.components(separatedBy: .whitespaces)
         let size = args.count > 1 ? args[1].cgFloat : nil
         
@@ -150,7 +150,7 @@ extension VimFontsManager {
         }
     }
     
-    func deleteFont(with arg: String) {
+    @objc func deleteFont(with arg: String) {
         let info: FontInfo?
         if let i = arg.int {
             info = self.infoAtIndex(i)
@@ -198,8 +198,8 @@ extension VimFontsManager {
     
     private func parseFontInfo(_ fi: String) -> (String, CGFloat?) {
         guard let r = fi.range(of: ":h") else { return (fi, nil) }
-        let n = fi.substring(to: r.lowerBound)
-        let s = fi.substring(from: r.upperBound).cgFloat
+        let n = String(fi[..<r.lowerBound])
+        let s = String(fi[r.upperBound...]).cgFloat
         
         return (n, s)
     }
@@ -227,8 +227,8 @@ extension VimFontsManager {
             else { return nil }
         _ = UIFont() //to overcome the CGFontCreate hanging bug: http://stackoverflow.com/a/40256390/723851
         let font = CGFont(dp)
-        guard let psName = font.postScriptName as String?,
-            CTFontManagerRegisterGraphicsFont(font, nil) else { return nil }
+        guard let psName = font?.postScriptName as String?,
+            CTFontManagerRegisterGraphicsFont(font!, nil) else { return nil }
         self.cache[name] = FontCache(postScriptName: psName, cgFont: font)
         
         return psName
@@ -355,7 +355,7 @@ extension String {
     }
     
     var cgFloat: CGFloat? {
-        return self.number.flatMap { CGFloat($0) }
+        return self.number.flatMap { CGFloat(truncating: $0) }
     }
     
     var int: Int? {

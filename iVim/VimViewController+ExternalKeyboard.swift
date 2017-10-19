@@ -62,7 +62,7 @@ extension VimViewController {
         return re
     }
     
-    func keyCommandTriggered(_ sender: UIKeyCommand) {
+    @objc func keyCommandTriggered(_ sender: UIKeyCommand) {
         DispatchQueue.main.async {
             self.handleKeyCommand(sender)
         }
@@ -72,11 +72,11 @@ extension VimViewController {
         let flags = command.modifierFlags
         if flags.rawValue == 0 {
             switch command.input {
-            case UIKeyInputEscape: self.pressESC()
-            case UIKeyInputUpArrow: self.pressArrow(keyUP)
-            case UIKeyInputDownArrow: self.pressArrow(keyDOWN)
-            case UIKeyInputLeftArrow: self.pressArrow(keyLEFT)
-            case UIKeyInputRightArrow: self.pressArrow(keyRIGHT)
+            case UIKeyInputEscape?: self.pressESC()
+            case UIKeyInputUpArrow?: self.pressArrow(keyUP)
+            case UIKeyInputDownArrow?: self.pressArrow(keyDOWN)
+            case UIKeyInputLeftArrow?: self.pressArrow(keyLEFT)
+            case UIKeyInputRightArrow?: self.pressArrow(keyRIGHT)
             default: break//self.insertText(command.input)
             }
 //        } else if flags.contains(.alphaShift) {
@@ -97,16 +97,16 @@ extension VimViewController {
                 keys.append("S-")
             }
             switch command.input {
-            case UIKeyInputEscape: keys.append("Esc")
-            case UIKeyInputUpArrow: keys.append("Up")
-            case UIKeyInputDownArrow: keys.append("Down")
-            case UIKeyInputLeftArrow: keys.append("Left")
-            case UIKeyInputRightArrow: keys.append("Right")
-            case "\t": keys.append("Tab")
-            case "\r": keys.append("CR")
-            case "2" where flags == [.control]: keys.append("@")
-            case "6" where flags == [.control]: keys.append("^")
-            default: keys.append(command.input)
+            case UIKeyInputEscape?: keys.append("Esc")
+            case UIKeyInputUpArrow?: keys.append("Up")
+            case UIKeyInputDownArrow?: keys.append("Down")
+            case UIKeyInputLeftArrow?: keys.append("Left")
+            case UIKeyInputRightArrow?: keys.append("Right")
+            case "\t"?: keys.append("Tab")
+            case "\r"?: keys.append("CR")
+            case "2"? where flags == [.control]: keys.append("@")
+            case "6"? where flags == [.control]: keys.append("^")
+            default: keys.append(command.input!)
             }
             input_special_name("<\(keys)>")
         }

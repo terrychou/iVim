@@ -35,7 +35,7 @@ extension ShareViewController {
         return
     }
     
-    func openURL(_ url: URL) -> Bool {
+    @objc func openURL(_ url: URL) -> Bool {
         return false
     }
     

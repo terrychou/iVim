@@ -35,7 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        freopen(file, "a+", stderr)
 //    }
     
-    func VimStarter() {
+    @objc func VimStarter() {
         guard let vimPath = Bundle.main.resourcePath else { return }
         let runtimePath = vimPath + "/runtime"
         vim_setenv("VIM", vimPath)

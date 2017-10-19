@@ -19,7 +19,7 @@ final class CommandTokenizer: NSObject {
     var acum = ""
     var args = [String]()
     
-    init(line: String) {
+    @objc init(line: String) {
         self.line = line
     }
     
@@ -98,7 +98,7 @@ final class CommandTokenizer: NSObject {
         self.acum.unicodeScalars.append(scalar)
     }
     
-    func run() -> [String] {
+    @objc func run() -> [String] {
         self.modes.push(.normal)
         for scalar in self.line.unicodeScalars {
             self.tackle(scalar)

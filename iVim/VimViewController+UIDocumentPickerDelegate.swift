@@ -25,11 +25,11 @@ extension VimViewController: UIDocumentPickerDelegate {
         self.reloadInputViews()
     }
     
-    func pickDocument() {
+    @objc func pickDocument() {
         self.showPicker(in: .open)
     }
     
-    func importDocument() {
+    @objc func importDocument() {
         self.showPicker(in: .import)
     }
     

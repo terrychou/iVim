@@ -29,14 +29,14 @@ final class VimView: UIView {
         return CGRect(x: 0, y: 0, width: length, height: length)
     }()
     
-    var char_ascent = CGFloat(0)
+    @objc var char_ascent = CGFloat(0)
     var char_descent = CGFloat(0)
-    var char_width = CGFloat(0)
-    var char_height = CGFloat(0)
+    @objc var char_width = CGFloat(0)
+    @objc var char_height = CGFloat(0)
     
-    var bgcolor: CGColor?
-    var fgcolor: CGColor?
-    var spcolor: CGColor?
+    @objc var bgcolor: CGColor?
+    @objc var fgcolor: CGColor?
+    @objc var spcolor: CGColor?
     
     override func draw(_ rect: CGRect) {
         guard !rect.equalTo(.zero),
@@ -50,9 +50,10 @@ final class VimView: UIView {
         self.resizeShell()
     }
     
-    func resizeShell() {
+    @objc func resizeShell() {
 //        print("Resizing to \(frame)")
-        gui_resize_shell(CInt(self.frame.width), CInt(self.frame.height))
+        let f = self.frame
+        gui_resize_shell(CInt(f.width), CInt(f.height))
     }
     
     private func drawShellLayer(at location: CGPoint? = nil, clippedIn rect: CGRect, in context: CGContext) {
@@ -66,7 +67,7 @@ final class VimView: UIView {
         context.restoreGState()
     }
     
-    func copyRect(from src: CGRect, to target: CGRect) {
+    @objc func copyRect(from src: CGRect, to target: CGRect) {
         guard let context = self.shellLayer?.context else { return }
         let dstRect = CGRect(x: target.origin.x,
                              y: target.origin.y,
@@ -87,13 +88,13 @@ final class VimView: UIView {
         self.markNeedsDisplay()
     }
     
-    func fillAll(with color: CGColor) {
+    @objc func fillAll(with color: CGColor) {
         guard let layer = self.shellLayer else { return }
         let rect = CGRect(origin: .zero, size: layer.size)
         self.fillRect(rect, with: color)
     }
     
-    func fillRect(_ rect: CGRect, with color: CGColor?) {
+    @objc func fillRect(_ rect: CGRect, with color: CGColor?) {
         guard let context = self.shellLayer?.context,
             let c = color else { return }
         context.saveGState()
@@ -104,7 +105,7 @@ final class VimView: UIView {
         self.markNeedsDisplay()
     }
     
-    func strokeRect(_ rect: CGRect, with color: CGColor?) {
+    @objc func strokeRect(_ rect: CGRect, with color: CGColor?) {
         guard let context = self.shellLayer?.context,
             let c = color else { return }
         context.setStrokeColor(c)
@@ -114,14 +115,14 @@ final class VimView: UIView {
     }
     
     private func attributedString(from string: String, font: CTFont) -> NSAttributedString {
-        let attributes: [String: Any] = [
-            NSFontAttributeName: font,
-            kCTForegroundColorFromContextAttributeName as String: true]
+        let attributes: [NSAttributedStringKey: Any] = [
+            .font: font,
+            NSAttributedStringKey(kCTForegroundColorFromContextAttributeName as String): true]
         
         return NSAttributedString(string: string, attributes: attributes)
     }
     
-    func drawString(_ s: NSString, font: CTFont,
+    @objc func drawString(_ s: NSString, font: CTFont,
                     pos_x:CGFloat, pos_y: CGFloat, rect:CGRect, p_antialias: Bool,
                     transparent: Bool, underline: Bool,
                     undercurl: Bool, cursor: Bool) {
@@ -195,7 +196,7 @@ final class VimView: UIView {
         context.strokePath()
     }
     
-    func initFont(_ fontInfo: String?) -> CTFont {
+    @objc func initFont(_ fontInfo: String?) -> CTFont {
         let (f, a, d, w, h) = gFM.initializeFont(fontInfo)
         self.char_ascent = a
         self.char_descent = d
