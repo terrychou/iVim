@@ -241,7 +241,7 @@ extension VimFontsManager {
         return self.prepareUserFont(with: info.name)
     }
     
-    func initializeFont(_ info: String?) -> (CTFont, CGFloat, CGFloat, CGFloat) {
+    func initializeFont(_ info: String?) -> (CTFont, CGFloat, CGFloat, CGFloat, CGFloat) {
         let (fn, fs) = self.fontInfo(with: info)
         let rawFont = CTFontCreateWithName(fn as CFString, fs, nil)
         
@@ -263,7 +263,7 @@ extension VimFontsManager {
         var transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
         
         return (CTFontCreateCopyWithAttributes(rawFont, fs, &transform, nil),
-                char_ascent, char_width, char_height)
+                char_ascent, descent, char_width, char_height)
     }
 }
 

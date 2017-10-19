@@ -30,6 +30,7 @@ final class VimView: UIView {
     }()
     
     var char_ascent = CGFloat(0)
+    var char_descent = CGFloat(0)
     var char_width = CGFloat(0)
     var char_height = CGFloat(0)
     
@@ -86,20 +87,19 @@ final class VimView: UIView {
         self.markNeedsDisplay()
     }
     
-    func clearAll() {
+    func fillAll(with color: CGColor) {
         guard let layer = self.shellLayer else { return }
         let rect = CGRect(origin: .zero, size: layer.size)
-        let color = self.bgcolor ?? UIColor.black.cgColor
         self.fillRect(rect, with: color)
-        self.dirtyRect = self.bounds
-        self.markNeedsDisplay()
     }
     
     func fillRect(_ rect: CGRect, with color: CGColor?) {
         guard let context = self.shellLayer?.context,
             let c = color else { return }
+        context.saveGState()
         context.setFillColor(c)
         context.fill(rect)
+        context.restoreGState()
         self.dirtyRect = self.dirtyRect.union(rect)
         self.markNeedsDisplay()
     }
@@ -121,21 +121,25 @@ final class VimView: UIView {
         return NSAttributedString(string: string, attributes: attributes)
     }
     
-    func drawString(_ s: NSString, font: CTFont, pos_x:CGFloat, pos_y: CGFloat, rect:CGRect, p_antialias: Bool, transparent: Bool, cursor: Bool) {
+    func drawString(_ s: NSString, font: CTFont,
+                    pos_x:CGFloat, pos_y: CGFloat, rect:CGRect, p_antialias: Bool,
+                    transparent: Bool, underline: Bool,
+                    undercurl: Bool, cursor: Bool) {
         guard let context = self.shellLayer?.context else { return }
         context.saveGState()
+        if !transparent {
+            context.setFillColor(self.bgcolor!)
+            context.fill(rect)
+        }
         context.setShouldAntialias(p_antialias)
         context.setAllowsAntialiasing(p_antialias)
         context.setShouldSmoothFonts(p_antialias)
         context.setCharacterSpacing(0)
         context.setTextDrawingMode(.fill)
-        if !transparent {
-            context.setFillColor(self.bgcolor!)
-            context.fill(rect)
-        }
         context.setFillColor(self.fgcolor!)
         let range = NSMakeRange(0, s.length)
         var offset = CGFloat(0)
+        var totalCells = 0
         s.enumerateSubstrings(in: range, options: .byComposedCharacterSequences) { (c, _, _, _) in
             guard let c = c else { return }
             let a = self.attributedString(from: c, font: font)
@@ -143,7 +147,16 @@ final class VimView: UIView {
             context.textPosition = CGPoint(x: pos_x + offset, y: pos_y)
             CTLineDraw(l, context)
             let cells = cells_for_character(c)
+            totalCells += Int(cells)
             offset += CGFloat(cells) * self.char_width
+        }
+        
+        if underline {
+            self.drawUnderline(x: pos_x, y: pos_y,
+                               cells: totalCells, in: context)
+        } else if undercurl {
+            self.drawUndercurl(x: pos_x, y: pos_y,
+                               cells: totalCells, in: context)
         }
         
         if cursor {
@@ -154,10 +167,38 @@ final class VimView: UIView {
         self.dirtyRect = self.dirtyRect.union(rect)
     }
     
+    private func drawUnderline(x: CGFloat, y: CGFloat, cells: Int, in context: CGContext) {
+        let rect = CGRect(x: x, y: y + 0.4 * self.char_descent,
+                          width: CGFloat(cells) * self.char_width, height: 1)
+        context.setFillColor(self.spcolor!)
+        context.fill(rect)
+    }
+    
+    private func drawUndercurl(x: CGFloat, y: CGFloat, cells: Int, in context: CGContext) {
+        var x = x
+        let y = y + 1
+        let w = self.char_width
+        let h = 0.5 * self.char_descent
+        context.move(to: CGPoint(x: x, y: y))
+        for _ in 0..<cells {
+            context.addCurve(
+                to: CGPoint(x: x + 0.5 * w, y: y + h),
+                control1: CGPoint(x: x + 0.25 * w, y: y),
+                control2: CGPoint(x: x + 0.25 * w, y: y + h))
+            context.addCurve(
+                to: CGPoint(x: x + w, y: y),
+                control1: CGPoint(x: x + 0.75 * w, y: y + h),
+                control2: CGPoint(x: x + 0.75 * w, y: y))
+            x += w
+        }
+        context.setStrokeColor(self.spcolor!)
+        context.strokePath()
+    }
     
     func initFont(_ fontInfo: String?) -> CTFont {
-        let (f, a, w, h) = gFM.initializeFont(fontInfo)
+        let (f, a, d, w, h) = gFM.initializeFont(fontInfo)
         self.char_ascent = a
+        self.char_descent = d
         self.char_width = w
         self.char_height = h
         

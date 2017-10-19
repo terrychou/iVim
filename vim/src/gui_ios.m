@@ -581,7 +581,7 @@ void
 gui_mch_clear_all(void)
 {
 //    printf("%s\n",__func__);
-    [getView() clearAll];
+    [getView() fillAllWith:CGColorCreateFromVimColor(gui.back_pixel)];
 }
 
 
@@ -630,6 +630,8 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
                      rect: rect
               p_antialias: true
               transparent: flags & DRAW_TRANSP
+                underline: flags & DRAW_UNDERL
+                undercurl: flags & DRAW_UNDERC
                    cursor: flags & DRAW_CURSOR];
 }
 
