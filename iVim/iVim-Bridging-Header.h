@@ -52,4 +52,6 @@ BOOL is_current_buf_new(void);
 BOOL file_is_in_buffer_list(NSString * path);
 BOOL is_in_normal_mode(void);
 
+void gui_ios_init_bg_color(void);
+
 #endif /* iVim_Bridging_Header_h */

@@ -1277,7 +1277,7 @@ gui_update_cursor(force, clear_selection)
 		--gui.col;
 #endif
 
-#ifndef FEAT_GUI_MSWIN && !defined(FEAT_GUI_IOS)	    /* doesn't seem to work for MSWindows */
+#if !defined(FEAT_GUI_MSWIN) //&& !defined(FEAT_GUI_IOS)	    /* doesn't seem to work for MSWindows */
 	    gui.highlight_mask = ScreenAttrs[LineOffset[gui.row] + gui.col];
 	    (void)gui_screenchar(LineOffset[gui.row] + gui.col,
 		    GUI_MON_TRS_CURSOR | GUI_MON_NOCLEAR,

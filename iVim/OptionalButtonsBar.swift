@@ -39,18 +39,26 @@ extension OptionalButtonsBar {
         }
     }
     
+    private func horizontalInset() -> CGFloat {
+        guard #available(iOS 11, *) else { return 0 }
+        let insets = self.safeAreaInsets
+        
+        return max(insets.left, insets.right)
+    }
+    
     private func layoutButtons() {
         let height = self.measure
         let width = self.buttonWidth ?? height
         let buttons = self.subviews
         let halfCount = buttons.count - buttons.count / 2
-        var x = self.horizontalMargin
+        let hm = self.horizontalMargin + self.horizontalInset()
+        var x = hm
         for i in 0..<halfCount {
             buttons[i].frame.origin.x = x
             x += width + spacing
         }
         
-        x = self.bounds.width - self.horizontalMargin - width
+        x = self.bounds.width - hm - width
         for i in stride(from: self.buttons.count - 1, through: halfCount, by: -1) {
             buttons[i].frame.origin.x = x
             x -= width + spacing

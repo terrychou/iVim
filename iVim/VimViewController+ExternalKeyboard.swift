@@ -55,7 +55,7 @@ extension VimViewController {
     
     private static func keyCommands(keys: String, modifierFlags: [UIKeyModifierFlags]) -> [UIKeyCommand] {
         var re = [UIKeyCommand]()
-        for c in keys.characters {
+        for c in keys {
             self.add(input: String(c), modifierFlags: modifierFlags, to: &re)
         }
         

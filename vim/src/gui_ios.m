@@ -14,7 +14,6 @@
  */
 
 #import "vim.h"
-//#import "ui.c"
 #import "iVim-Swift.h"
 #import <AudioToolbox/AudioToolbox.h>
 
@@ -142,19 +141,32 @@ static int hex_digit(int c) {
     return -1000;
 }
 
-AppDelegate * app_delegate() {
-    return (AppDelegate *)[[UIApplication sharedApplication] delegate];
+static AppDelegate * appDelegate(void) {
+    static AppDelegate * appDelegate = nil;
+    if (appDelegate == nil) {
+        appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    }
+    
+    return appDelegate;
 }
 
-VimViewController * getViewController() {
-    return (VimViewController*)[[app_delegate() window] rootViewController];
+static VimViewController * shellViewController(void) {
+    static VimViewController * controller = nil;
+    if (controller == nil) {
+        controller = (VimViewController*)[[appDelegate() window] rootViewController];
+    }
+    
+    return controller;
 }
 
-VimView * getView() {
-    return [getViewController() vimView];
+static VimView * shellView(void) {
+    static VimView * view;
+    if (view == nil) {
+        view = [shellViewController() vimView];
+    }
+    
+    return view;
 }
-
-
 
 CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -252,9 +264,9 @@ void ex_ideletefont(exarg_T * eap) {
 void ex_idocuments(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0 || [arg isEqualToString:@"open"]) {
-        [getViewController() pickDocument];
+        [shellViewController() pickDocument];
     } else if ([arg isEqualToString:@"import"]) {
-        [getViewController() importDocument];
+        [shellViewController() importDocument];
     }
 }
 
@@ -334,7 +346,7 @@ char_u * get_working_directory(void) {
 void share_file(NSString * path) {
     NSURL * url = [NSURL fileURLWithPath:path];
     if ([url checkResourceIsReachableAndReturnError:nil]) {
-        [getViewController() showShareSheetWithUrl:url text:nil];
+        [shellViewController() showShareSheetWithUrl:url text:nil];
     } else {
         NSString * errMsg = [NSString stringWithFormat:@"file %@ not exist!", path];
         show_error_message(errMsg);
@@ -363,7 +375,7 @@ void ex_ishare(exarg_T * eap) {
     if (eap->addr_count > 0) {
         NSString * text = get_text_between(eap->line1, eap->line2);
 //        NSLog(@"share text: %@", text);
-        [getViewController() showShareSheetWithUrl:nil text:text];
+        [shellViewController() showShareSheetWithUrl:nil text:text];
     } else if ([arg length] == 0 || [arg isEqualToString:@"%"]) {
         char_u * ff = curbuf->b_ffname;
         if (ff != NULL) {
@@ -465,6 +477,21 @@ gui_mch_init_check(void)
     return OK;
 }
 
+static BOOL bg_color_ready = NO;
+
+static void gui_ios_sync_bg_color(BOOL is_init) {
+    CGColorRef color = CGColorCreateFromVimColor(gui.def_back_pixel);
+    [shellViewController() setBackgroundColor:color isInit: is_init];
+}
+
+/*
+ * Initialize background color for shell view controller when there are safe areas
+ * the background color is not valid until gui_mch_init is called
+ */
+void gui_ios_init_bg_color(void) {
+    if (!bg_color_ready) { return; }
+    gui_ios_sync_bg_color(YES);
+}
 
 /*
  * Initialise the GUI.  Create all the windows, set up all the call-backs etc.
@@ -483,6 +510,11 @@ gui_mch_init(void)
     gui_check_colors();
     gui.def_norm_pixel = gui.norm_pixel;
     gui.def_back_pixel = gui.back_pixel;
+    
+    bg_color_ready = YES;
+    if (shellViewController()) {
+        gui_ios_init_bg_color();
+    }
 
 //#ifdef FEAT_GUI_SCROLL_WHEEL_FORCE
    // gui.scroll_wheel_force = 1;
@@ -508,7 +540,7 @@ gui_mch_exit(int rc)
 gui_mch_open(void)
 {
     //    printf("%s\n",__func__);
-    [getView() resizeShell];
+    [shellView() resizeShell];
     
     return OK;
 }
@@ -550,7 +582,7 @@ gui_mch_flush(void)
     // flushing.  If we were to flush every time it was called the screen would
     // flicker.
 //    printf("%s\n",__func__);
-   [getViewController() flush];
+   [shellViewController() flush];
 }
 
 
@@ -567,7 +599,7 @@ gui_mch_flush(void)
     int
 gui_mch_wait_for_chars(int wtime)
 {
-    return [getViewController() waitForChars:wtime];
+    return [shellViewController() waitForChars:wtime];
 }
 
 
@@ -581,7 +613,7 @@ void
 gui_mch_clear_all(void)
 {
 //    printf("%s\n",__func__);
-    [getView() fillAllWith:CGColorCreateFromVimColor(gui.back_pixel)];
+    [shellView() fillAllWith:CGColorCreateFromVimColor(gui.back_pixel)];
 }
 
 
@@ -597,7 +629,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
                              FILL_Y(row1),
                              FILL_X(col2+1)-FILL_X(col1),
                              FILL_Y(row2+1)-FILL_Y(row1));
-    [getView() fillRect:rect with:CGColorCreateFromVimColor(gui.back_pixel)];
+    [shellView() fillRect:rect with:CGColorCreateFromVimColor(gui.back_pixel)];
 }
 
 
@@ -623,7 +655,7 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
         return;
     }
     
-    [getView() drawString: string
+    [shellView() drawString: string
                      font: gui.norm_font
                     pos_x: TEXT_X(col)
                     pos_y: TEXT_Y(row)
@@ -656,7 +688,7 @@ gui_mch_delete_lines(int row, int num_lines)
 //                                   FILL_X(gui.scroll_region_right+1) - FILL_X(gui.scroll_region_left),
 //                                   FILL_Y(gui.scroll_region_bot+1) - FILL_Y(row + num_lines));
 
-    [getView() copyRectFrom:sourceRect to:targetRect];
+    [shellView() copyRectFrom:sourceRect to:targetRect];
     gui_clear_block(gui.scroll_region_bot - num_lines + 1,
                     gui.scroll_region_left,
                     gui.scroll_region_bot, gui.scroll_region_right);
@@ -683,7 +715,7 @@ gui_mch_insert_lines(int row, int num_lines)
 //                                   FILL_X(gui.scroll_region_right+1) - FILL_X(gui.scroll_region_left),
 //                                   FILL_Y(gui.scroll_region_bot+1) - FILL_Y(row + num_lines));
    
-    [getView() copyRectFrom:sourceRect to:targetRect];
+    [shellView() copyRectFrom:sourceRect to:targetRect];
     gui_clear_block(row, gui.scroll_region_left,
                     row + num_lines - 1, gui.scroll_region_right);
 }
@@ -694,7 +726,7 @@ gui_mch_insert_lines(int row, int num_lines)
     void
 gui_mch_set_fg_color(guicolor_T color)
 {
-   getView().fgcolor = CGColorCreateFromVimColor(color);
+   shellView().fgcolor = CGColorCreateFromVimColor(color);
 }
 
 
@@ -704,7 +736,7 @@ gui_mch_set_fg_color(guicolor_T color)
     void
 gui_mch_set_bg_color(guicolor_T color)
 {
-    getView().bgcolor = CGColorCreateFromVimColor(color);
+    shellView().bgcolor = CGColorCreateFromVimColor(color);
 }
 
 /*
@@ -714,7 +746,7 @@ gui_mch_set_bg_color(guicolor_T color)
 gui_mch_set_sp_color(guicolor_T color)
 {
     //    printf("%s\n",__func__);
-    getView().spcolor = CGColorCreateFromVimColor(color);
+    shellView().spcolor = CGColorCreateFromVimColor(color);
 }
 
 
@@ -738,7 +770,7 @@ gui_mch_new_colors(void)
 //    printf("%s\n",__func__);  
     gui.def_back_pixel = gui.back_pixel;
     gui.def_norm_pixel = gui.norm_pixel;
-
+    gui_ios_sync_bg_color(NO);
 }
 
 /*
@@ -909,7 +941,7 @@ gui_mch_get_fontname(GuiFont font, char_u *name)
  */
     int
 gui_mch_init_font(char_u *font_name, int fontset) {
-    VimView * view = getView();
+    VimView * view = shellView();
     NSString * fn = nil;
     if (font_name != NULL) {
         fn = [[NSString alloc] initWithUTF8String:(const char *)font_name];
@@ -1013,7 +1045,7 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 //    rect.size.height += 1;
 //    rect.origin.x -= 0.5;
 //    rect.origin.y -= 0.5;
-    [getView() strokeRect:rect with:cgColor];
+    [shellView() strokeRect:rect with:cgColor];
 }
 
 
@@ -1037,7 +1069,7 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
         left = FILL_X(gui.col);
     
     CGRect rect = CGRectMake(left, FILL_Y(gui.row), (CGFloat)w, (CGFloat)h);
-    [getView() fillRect:rect with:CGColorCreateFromVimColor(color)];
+    [shellView() fillRect:rect with:CGColorCreateFromVimColor(color)];
 }
 
 
@@ -1054,7 +1086,7 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 gui_mch_set_blinking(long wait, long on, long off)
 {
 //    printf("%s\n",__func__);
-    VimViewController * vc = getViewController();
+    VimViewController * vc = shellViewController();
     vc.blink_wait = wait;
     vc.blink_on   = on;
     vc.blink_off  = off;
@@ -1068,7 +1100,7 @@ gui_mch_set_blinking(long wait, long on, long off)
     void
 gui_mch_start_blink(void)
 {
-    [getViewController() startBlink];
+    [shellViewController() startBlink];
 //    printf("%s\n",__func__);
  //   if (gui_ios.blink_timer != nil)
  //       [gui_ios.blink_timer invalidate];
@@ -1093,7 +1125,7 @@ gui_mch_start_blink(void)
     void
 gui_mch_stop_blink(void)
 {
-    [getViewController() stopBlink];
+    [shellViewController() stopBlink];
 //    printf("%s\n",__func__);  
 //    [gui_ios.blink_timer invalidate];
 //    
@@ -1328,7 +1360,7 @@ gui_mch_browse(
 //    NSLog(@"path: %@",path);
 //    NSURL *url = [NSURL fileURLWithPath:path];
 //
-//    [getViewController() showShareSheetForURL:url mode:@"Share"];
+//    [shellViewController() showShareSheetForURL:url mode:@"Share"];
 
    // UIDocumentInteractionController *controller = [UIDocumentInteractionController interactionControllerWithURL:url];
 
@@ -1362,7 +1394,7 @@ gui_mch_dialog(
 //        NSString *path = [NSString stringWithFormat:@"%s", message];
 //        NSURL *url = [NSURL fileURLWithPath:path];
 //        
-//        [getViewController() showShareSheetForURL:url mode:@"Activity"];
+//        [shellViewController() showShareSheetForURL:url mode:@"Activity"];
 //    }
 //    NSLog(@"Confirm title %s", title);
 //    NSLog(@"Confirm message %s", message);
@@ -1378,7 +1410,7 @@ gui_mch_flash(int msec)
 //    printf("%s\n",__func__);
 //    NSLog(@"flash time: %d", msec);
     NSTimeInterval sec = (NSTimeInterval)msec / (NSTimeInterval)1000;
-    [getViewController() flashForSeconds:sec];
+    [shellViewController() flashForSeconds:sec];
 }
 
 
@@ -1451,9 +1483,9 @@ gui_mch_get_color(char_u *name)
     /* is name #rrggbb format? */
     if (name[0] == '#' && STRLEN(name) == 7)
     {
-        r = hex_digit(name[1]) * 16 + hex_digit(name[2]);
-        g = hex_digit(name[3]) * 16 + hex_digit(name[4]);
-        b = hex_digit(name[5]) * 16 + hex_digit(name[6]);
+        r = (hex_digit(name[1]) << 4) + hex_digit(name[2]);
+        g = (hex_digit(name[3]) << 4) + hex_digit(name[4]);
+        b = (hex_digit(name[5]) << 4) + hex_digit(name[6]);
         if (r < 0 || g < 0 || b < 0)
             return INVALCOLOR;
         return RGB(r, g, b);
@@ -1546,7 +1578,7 @@ gui_mch_get_rgb(guicolor_T pixel)
     void
 gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 {
-    CGSize size = [getView() bounds].size;
+    CGSize size = [shellView() bounds].size;
     
     
 //    CGSize appSize = [[UIScreen mainScreen] applicationFrame].size;
@@ -1604,7 +1636,7 @@ gui_mch_set_shellsize(
 //    printf("%s\n",__func__);
 //    CGSize layerSize = CGLayerGetSize(gui_ios.layer);
 //    gui_resize_shell(layerSize.width, layerSize.height);
-    [getView() resizeShell];
+    [shellView() resizeShell];
 }
 
 

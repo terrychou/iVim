@@ -42,8 +42,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
-//    var pendingWork: (() -> Void)?
-    
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: .UIKeyboardWillChangeFrame, object: nil)
@@ -51,11 +49,10 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     override func viewDidLoad() {
-        let v = VimView(frame: self.view.frame)
-        v.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        self.view.addSubview(v)
-        
+        let v = VimView(frame: .zero)
+        (self.view as! VimMainView).addShellView(v)
         self.vimView = v
+        gui_ios_init_bg_color()
         
         self.textTokenizer = UITextInputStringTokenizer(textInput: self)
         self.registerNotifications()
@@ -211,8 +208,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     fileprivate func toggleExtendedBar() {
         self.shouldShowExtendedBar = !self.shouldShowExtendedBar
         self.reloadInputViews()
-//        self.resignFirstResponder()
-//        self.becomeFirstResponder()
     }
     
     //MARK: OnScreen Keyboard Handling
@@ -222,25 +217,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
             let v = self.view,
             let window = v.window
             else { return }
-//        let screenHeight = UIScreen.main.bounds.height
         let windowHeight = window.frame.height
         let isSplited = windowHeight - frame.origin.y > frame.height
         let newHeight = isSplited ? windowHeight : window.convert(frame, to: v).origin.y
         guard v.frame.size.height != newHeight else { return }
         v.frame.size.height = newHeight
-//        let tuning = {
-//            guard v.frame.size.height != newHeight else { return }
-//            v.frame.size.height = newHeight
-//        }
-////        tuning()
-////        guard !gSVO.started else { return tuning() }
-//        CATransaction.begin()
-//        tuning()
-//        CATransaction.setCompletionBlock {
-////            gSVO.start()
-//            gui_update_cursor(1, 0)
-//        }
-//        CATransaction.commit()
     }
     
     @objc func keyboardWillChangeFrame(_ notification: Notification) {
@@ -314,6 +295,17 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
             fv.alpha = 0
         }) { _ in
             fv.removeFromSuperview()
+        }
+    }
+}
+
+extension VimViewController {
+    @objc func setBackgroundColor(_ color: CGColor, isInit: Bool) {
+        guard #available(iOS 11, *), self.view.safeAreaInsets != .zero else { return }
+        let c = UIColor(cgColor: color)
+        self.view.backgroundColor = c
+        if isInit {
+            self.vimView?.backgroundColor = c
         }
     }
 }
