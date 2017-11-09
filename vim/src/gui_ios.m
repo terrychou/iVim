@@ -168,6 +168,13 @@ static VimView * shellView(void) {
     return view;
 }
 
+void executeCommand(char* cmd) {
+    // transfer to the view controller because we need access to the original URL
+    // as well as the current URL
+    [shellViewController() executeWithCommand:[NSString stringWithFormat:@"%s", cmd]];
+}
+
+
 CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     int red = (color & 0xFF0000) >> 16;

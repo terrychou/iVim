@@ -73,4 +73,11 @@ extension PickInfoManager {
         self.table[newURL] = old
         self.table[url] = nil
     }
+    
+    func getOriginURL(mirror: URL) -> String {
+        for pi in self.table {
+            if (pi.value.mirrorURL == mirror) { return pi.value.origin.path }
+        }
+        return ""
+    }
 }

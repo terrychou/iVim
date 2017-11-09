@@ -25,9 +25,46 @@ extension VimViewController: UIDocumentPickerDelegate {
         self.reloadInputViews()
     }
     
+    private func executeCommand(command: String) {
+        // Hard part: scan the command for mirror URLs
+        // check if they are in PickInfoManager table
+        // replace them with origin URLs
+        //      All mirror URLs have this origin:
+        let mirrorOriginPath: String = FileManager.default.mirrorDirectoryURL.path
+        let currentDirectory = FileManager.default.currentDirectoryPath // Were are we right now?
+        // Separate the command into space-separated components:
+        var editedCommand = command
+        let argumentList: Array = command.components(separatedBy: " ")
+        for argument in argumentList {
+            let argumentLocation = currentDirectory.appending("/".appending(argument))
+            if argumentLocation.hasPrefix(mirrorOriginPath) {
+                // Found one!
+                let argumentURL = URL(fileURLWithPath: argumentLocation)
+                let originPath = gPIM.getOriginURL(mirror: argumentURL)
+                if (!originPath.isEmpty) {
+                    editedCommand = editedCommand.replacingOccurrences(of: argument, with: originPath)
+                }
+            }
+        }
+        // we send it to blinkshell:
+        var path: String
+        // concatenate everything into a single string. BlinkShell will do the parsing.
+        path = "blinkshell://"
+        path = path.appending(editedCommand.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlFragmentAllowed)!)
+        let commandURL = URL(string: path)
+        DispatchQueue.main.async {
+            UIApplication.shared.open(commandURL!, options: [:], completionHandler: nil)
+        }
+    }
+    
     @objc func pickDocument() {
         self.showPicker(in: .open)
     }
+
+    @objc func execute(command: String) {
+        self.executeCommand(command: command)
+    }
+
     
     @objc func importDocument() {
         self.showPicker(in: .import)

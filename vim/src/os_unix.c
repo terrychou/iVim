@@ -4017,6 +4017,10 @@ wait4pid(child, status)
     return wait_pid;
 }
 
+
+// NH: iOS command, defined in gui_ios.m
+void executeCommand(char* cmd);
+
     int
 mch_call_shell(cmd, options)
     char_u	*cmd;
@@ -4077,8 +4081,11 @@ mch_call_shell(cmd, options)
 	msg_putchar('\n');
     }
 # else /* not __EMX__ */
-    if (cmd == NULL)
-	x = system((char *)p_sh);
+    if (cmd == NULL) {
+        // NH: can't do anything here
+	   // x = system((char *)p_sh);
+        MSG_PUTS(_("\nCannot execute shell in iOS"));
+    }
     else
     {
 #  ifdef VMS
@@ -4109,7 +4116,18 @@ mch_call_shell(cmd, options)
 		    extra_shell_arg == NULL ? "" : (char *)extra_shell_arg,
 		    (char *)p_shcf,
 		    (char *)cmd);
-	    x = system((char *)newcmd);
+        // NH: iOS, just exec the command
+	    // x = system((char *)newcmd);
+        // NH: iOS. I just want to execute the command (no shell, no args)
+        if (cmd[0] == '"') cmd = cmd + 1; // remove starting quote
+        cmd[strlen(cmd) - 1] = 0x00; // remove ending quote
+        if (cmd[0] == '(') {
+            cmd = cmd + 1; // remove starting parenthesis
+            for (int c = 0; c < strlen(cmd); c++) {
+                if (cmd[c] == ')') { cmd[c] = ' '; break; } // remove closing parenthesis
+            }
+        }
+        executeCommand(cmd);
 	    vim_free(newcmd);
 	}
 #  endif
@@ -4177,6 +4195,7 @@ mch_call_shell(cmd, options)
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
     newcmd = vim_strsave(p_sh);
+    
     if (newcmd == NULL)		/* out of memory */
 	goto error;
 
@@ -4256,6 +4275,9 @@ mch_call_shell(cmd, options)
 
 	argv[argc++] = (char *)cmd;
     }
+    // NH: the command to execute is argv[argc - 1]. The previous part of the code
+    // was to add "/bin/sh -c" in front of it.
+    // I could get rid of all the code above.
     argv[argc] = NULL;
 
     /*
@@ -4325,7 +4347,8 @@ mch_call_shell(cmd, options)
 	beos_cleanup_read_thread();
 # endif
 
-	if ((pid = fork()) == -1)	/* maybe we should use vfork() */
+    /* We don't fork, we just create the child */
+	if ((pid = /*fork()*/ 0) == -1)	/* maybe we should use vfork() */
 	{
 	    MSG_PUTS(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
@@ -4476,6 +4499,8 @@ mch_call_shell(cmd, options)
 		else
 # endif
 		{
+            // NH: iOS this is the branch in which we go.
+            // We can't set a communication channel between apps inside iOS, though.
 		    /* set up stdin for the child */
 		    close(fd_toshell[1]);
 		    close(0);
@@ -4506,10 +4531,13 @@ mch_call_shell(cmd, options)
 	     * Call _exit() instead of exit() to avoid closing the connection
 	     * to the X server (esp. with GTK, which uses atexit()).
 	     */
-	    execvp(argv[0], argv);
-	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
+        // NH: iOS. I want to execute this command:
+        executeCommand(argv[argc-1]);
+        // NH: iOS. The command now runs in background
+	    // execvp(argv[0], argv);
+	    // _exit(EXEC_FAILED);	    /* exec failed, return failure code */
 	}
-	else			/* parent */
+    else			/* parent */
 	{
 	    /*
 	     * While child is running, ignore terminating signals.
