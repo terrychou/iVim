@@ -38,13 +38,18 @@ iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=
 4. Run iVim, Xcode will install it onto your device
 5. A free Apple ID may need to do this every 7 days
 
-## Caveats
+### Modifications
 
-Normally, you can use iVim as vim on other platforms.
-However, there are some points worth mentioning due to iOS system's personality:
-1. there is no shell. You cannot call external shell commands.
-2. iVim is sandboxed. It means you don't have direct access to files of other apps if not via the sharing feature.
-3. iVim don't do autosave. Because the system could terminate apps without notifying at any time, iVim won't save its opened files automatically for the users.
+This is a fork of https://github.com/terrychou/iVim
+The modification is that you *can* call shell commands (a first for iOS). 
+It works by creating special URLs with "@blinkshell://" scheme, encoding the command and callin OpenURL. It transfers the command to [blinkshell](https://github.com/holzschu/blink) (another app) who executes the command. 
+
+There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside blinkshell sandbox. So you can edit a file inside blinkshell sandbox (using open-in-place), then call a compiler on it, then read the log file in iVim. But you can't create a file in iVim then compile it using a command. And obviously you can't take a file from another app, open it in iVim and operate on it in blinkshell. 
+
+The other limitation is the type of shell commands available. There's a lot of them, including scripting (python, lua) and LaTeX (pdflatex, lualatex). But some things are impossible (traceroute, or commands that call themselves, such as a python script starting python). 
+
+In your .vimrc, you need to define "set shellpipe=" to prevent the shell from trying to pipe its results to a file. 
+You can set "makeef" (make error file) to the log file that will be created by your command, and iVim will parse it.
 
 ## Giants' shoulders
 
