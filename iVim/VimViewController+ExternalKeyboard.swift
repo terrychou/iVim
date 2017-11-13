@@ -136,4 +136,33 @@ extension VimViewController {
 //        let newCommand = VimViewController.keyCommand(input: newInput, modifierFlags: newModifierFlags)
 //        self.handleKeyCommand(newCommand)
 //    }
+    private func triggerReservedKeyCommand(input: String, modifierFlags: UIKeyModifierFlags) {
+        let kc = VimViewController.keyCommand(input: input, modifierFlags: modifierFlags)
+        self.keyCommandTriggered(kc)
+    }
+    
+    override func copy(_ sender: Any?) {
+        //handle <D-c>
+        self.triggerReservedKeyCommand(input: "c", modifierFlags: .command)
+    }
+    
+    override func cut(_ sender: Any?) {
+        //handle <D-x>
+        self.triggerReservedKeyCommand(input: "x", modifierFlags: .command)
+    }
+    
+    override func paste(_ sender: Any?) {
+        //handle <D-v>
+        self.triggerReservedKeyCommand(input: "v", modifierFlags: .command)
+    }
+    
+    override func selectAll(_ sender: Any?) {
+        //handle <D-a>
+        self.triggerReservedKeyCommand(input: "a", modifierFlags: .command)
+    }
+    
+//    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+//        NSLog("\(action)")
+//        return true
+//    }
 }
