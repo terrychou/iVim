@@ -42,14 +42,10 @@ iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=
 
 This is a fork of https://github.com/terrychou/iVim
 The modification is that you *can* call shell commands (a first for iOS). 
-It works by creating special URLs with "@blinkshell://" scheme, encoding the command and callin OpenURL. It transfers the command to [blinkshell](https://github.com/holzschu/blink) (another app) who executes the command. 
 
-There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside blinkshell sandbox. So you can edit a file inside blinkshell sandbox (using open-in-place), then call a compiler on it, then read the log file in iVim. But you can't create a file in iVim then compile it using a command. And obviously you can't take a file from another app, open it in iVim and operate on it in blinkshell. 
+There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside iVim sandbox. 
 
-The other limitation is the type of shell commands available. There's a lot of them, including scripting (python, lua) and LaTeX (pdflatex, lualatex). But some things are impossible (traceroute, or commands that call themselves, such as a python script starting python). 
-
-In your .vimrc, you need to define "set shellpipe=" to prevent the shell from trying to pipe its results to a file. 
-You can set "makeef" (make error file) to the log file that will be created by your command, and iVim will parse it.
+The other limitation is the type of shell commands available. Right now, there is: ls touch rm cp ln link mv mkdir rmdir chown chgrp chflags chmod du  df  chksum sum    stat  readlink compress uncompress gzip   gunzip. Of these, the most useful are: rmdir (not available otherwise) and gzip/gunzip (lets you edit gzipped files directly). 
 
 ## Giants' shoulders
 
