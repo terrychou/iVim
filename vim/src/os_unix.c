@@ -81,10 +81,6 @@ static int selinux_enabled = -1;
 extern int   select __ARGS((int, fd_set *, fd_set *, fd_set *, struct timeval *));
 #endif
 
-#if defined TARGET_OS_IPHONE
-#include <removefile.h>
-#endif
-
 #ifdef FEAT_MOUSE_GPM
 # include <gpm.h>
 /* <linux/keyboard.h> contains defines conflicting with "keymap.h",
@@ -4021,9 +4017,7 @@ wait4pid(child, status)
     return wait_pid;
 }
 
-
-// NH: iOS command, defined in gui_ios.m
-void executeCommand(char* cmd);
+extern int ios_system(char* cmd);
 
     int
 mch_call_shell(cmd, options)
@@ -4121,50 +4115,8 @@ mch_call_shell(cmd, options)
 		    (char *)p_shcf,
 		    (char *)cmd);
         // NH: iOS, just execute the command (without "/bin/sh -c" in front of it)
+        x = ios_system(cmd);
 	    // x = system((char *)newcmd);
-        // NH: iOS. I just want to execute the command (no shell, no args)
-        fprintf(stderr, "Command sent: %s \n", cmd); fflush(stderr);
-        if (cmd[0] == '"') {
-            cmd = cmd + 1; // remove starting quote
-            cmd[strlen(cmd) - 1] = 0x00; // remove ending quote
-        }
-        if (cmd[0] == '\'') {
-            cmd = cmd + 1; // remove starting quote
-            cmd[strlen(cmd) - 1] = 0x00; // remove ending quote
-        }
-        if (cmd[0] == '(') {
-            cmd = cmd + 1; // remove starting parenthesis
-            for (int c = 0; c < strlen(cmd); c++) {
-                if (cmd[c] == ')') { cmd[c] = ' '; break; } // remove closing parenthesis
-            }
-        }
-        if ((strncmp(cmd, "rmdir ", strlen("rmdir ")) == 0) || (strncmp(cmd, "rm ", strlen("rm ")) == 0)) {
-            // Execute rmdir / rm command locally
-            bool is_rmdir = (strncmp(cmd, "rmdir ", strlen("rmdir ")) == 0);
-            char* directory = cmd;
-            if (is_rmdir) directory += strlen("rmdir ");
-            else directory += strlen("rm ");
-            if (directory[0] == '\'') { // directory to remove enclosed in quotes:
-                directory = directory + 1; // remove starting quote
-                for (int c = 0; c < strlen(directory); c++) {
-                    if (directory[c] == '\'') { directory[c] = 0x00; break; } // remove closing quote, end of directory
-                }
-            }
-            // rest of command is "... > debug_file 2>&1". We extract the file name:
-            char* outputFileName = directory + strlen(directory) + 1;
-            // scan until first ">"
-            while ((outputFileName[0] != '>') && (strlen(outputFileName) > 0)) outputFileName++;
-            // scan until first "/" (there can be spaces between ">" and file name
-            while ((outputFileName[0] != '/') && (strlen(outputFileName) > 0)) outputFileName++;
-            for (int c = 0; c < strlen(outputFileName); c++) {
-                if (outputFileName[c] == ' ') { outputFileName[c] = 0x00; break; } // end output file name at first space
-            }
-            FILE* outputFile = fopen(outputFileName, "w");
-            if (is_rmdir) x = rmdir(directory);
-            else x = removefile(directory, NULL, REMOVEFILE_RECURSIVE);
-            if (x != 0) fprintf(outputFile, "%s\n", strerror(errno));
-            fclose(outputFile);
-        } else executeCommand(cmd);
 	    vim_free(newcmd);
 	}
 #  endif
@@ -4312,9 +4264,6 @@ mch_call_shell(cmd, options)
 
 	argv[argc++] = (char *)cmd;
     }
-    // NH: the command to execute is argv[argc - 1]. The previous part of the code
-    // was to add "/bin/sh -c" in front of it.
-    // I could get rid of all the code above.
     argv[argc] = NULL;
 
     /*
@@ -4536,8 +4485,6 @@ mch_call_shell(cmd, options)
 		else
 # endif
 		{
-            // NH: iOS this is the branch in which we go.
-            // We can't set a communication channel between apps inside iOS, though.
 		    /* set up stdin for the child */
 		    close(fd_toshell[1]);
 		    close(0);
@@ -4568,11 +4515,8 @@ mch_call_shell(cmd, options)
 	     * Call _exit() instead of exit() to avoid closing the connection
 	     * to the X server (esp. with GTK, which uses atexit()).
 	     */
-        // NH: iOS. I want to execute this command:
-        executeCommand(argv[argc-1]);
-        // NH: iOS. The command now runs in background
-	    // execvp(argv[0], argv);
-	    // _exit(EXEC_FAILED);	    /* exec failed, return failure code */
+	    execvp(argv[0], argv);
+	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
 	}
     else			/* parent */
 	{

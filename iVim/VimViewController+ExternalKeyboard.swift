@@ -14,6 +14,11 @@ private let symbolKeys = "`-=~!@#$%^&*()_+[]\\{}|;':\",./<>?"
 private let escapedKeys = "\t\r"
 private let specialKeys = [UIKeyInputEscape, UIKeyInputUpArrow, UIKeyInputDownArrow, UIKeyInputLeftArrow, UIKeyInputRightArrow]
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
+private let KS_MODIFIER : UInt8 = 252
+private let MOD_MASK_CMD : UInt8 = 0x80
+private let CSI : UInt8 = 0x9b    /* Control Sequence Introducer */
+
+
 
 extension VimViewController {
     override var keyCommands: [UIKeyCommand]? {
@@ -110,6 +115,38 @@ extension VimViewController {
             }
             input_special_name("<\(keys)>")
         }
+    }
+    
+
+ override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        var vimModifier : UInt8 = 0x00
+        vimModifier |= MOD_MASK_CMD
+        var result : [UInt8] = []
+        switch (action.description) {
+            // Still missing: D-n D-z D-a
+        case "cut:":
+            // D-x
+            result = [CSI,KS_MODIFIER,vimModifier,UInt8("x".utf8CString[0])]
+            break;
+        case "paste:":
+            // D-v
+            result = [CSI,KS_MODIFIER,vimModifier,UInt8("v".utf8CString[0])]
+            break;
+        case "copy:":
+            // D-c
+            result = [CSI,KS_MODIFIER,vimModifier,UInt8("c".utf8CString[0])]
+            break;
+        default:
+            break;
+        }
+        if (result.count > 0) {
+            becomeFirstResponder()
+            add_to_input_buf(result, Int32(result.count))
+            flush()
+            self.markNeedsDisplay()
+            return false
+        }
+        return true
     }
     
 //    private enum CapsLockDestination: String {
