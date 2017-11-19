@@ -43,9 +43,9 @@ iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=
 This is a fork of https://github.com/terrychou/iVim
 The modification is that you *can* call shell commands (a first for iOS). 
 
-There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside iVim sandbox. The other is that you need to redirect the output for the command effect to be visible on screen: "!ls" produces nothing, "!ls > result" does. 
+There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside iVim sandbox. The other is that you need to redirect the output: "!ls" produces nothing, "!ls > result" does. Commands sent by iVim plugins do this naturally, but it also applies to commands you write yourself.
 
-Finally, there is only a small number of shell commands available. See inside ios_system.m to pick the commands you want. You will need the frameworks from my [Blinkshell fork](https://github.com/holzschu/blink), inside the `AppleSource` directory: file_cmds_265.50.1, libarchive, shell_cmds-198, text_cmds-97. 
+There is only a small number of shell commands available. See inside ios_system.m to pick the commands you want. You will need the frameworks from my [Blinkshell fork](https://github.com/holzschu/blink), inside the `AppleSource` directory: file_cmds_265.50.1, libarchive, shell_cmds-198, text_cmds-97. 
 
 The most useful are: rmdir (not available otherwise), grep (to operate on log files), and gzip/gunzip, which lets you edit gzipped files directly. 
 
