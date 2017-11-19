@@ -19,7 +19,7 @@
 #define FILE_UTILITIES   // file_cmds_ios
 #define ARCHIVE_UTILITIES // libarchive_ios
 #define SHELL_UTILITIES  // shell_cmds_ios
-#define TEXT_UTILITIES  // shell_cmds_ios
+#define TEXT_UTILITIES  // text_cmds_ios
 
 #ifdef FILE_UTILITIES
 // Most useful file utilities (file_cmds_ios)
