@@ -4192,7 +4192,6 @@ mch_call_shell(cmd, options)
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
     newcmd = vim_strsave(p_sh);
-    
     if (newcmd == NULL)		/* out of memory */
 	goto error;
 
@@ -4341,8 +4340,7 @@ mch_call_shell(cmd, options)
 	beos_cleanup_read_thread();
 # endif
 
-    /* We don't fork, we just create the child */
-	if ((pid = /*fork()*/ 0) == -1)	/* maybe we should use vfork() */
+	if ((pid = fork()) == -1)	/* maybe we should use vfork() */
 	{
 	    MSG_PUTS(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
@@ -4526,7 +4524,7 @@ mch_call_shell(cmd, options)
 	    execvp(argv[0], argv);
 	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
 	}
-    else			/* parent */
+       else                    /* parent */
 	{
 	    /*
 	     * While child is running, ignore terminating signals.
