@@ -12,12 +12,15 @@
 // it is easier to remove the "/bin/sh -c" part before calling system than in system.
 // See example in os_unix.c
 
-#import "vim.h"
-#import "iVim-Swift.h"
+// #import "vim.h"
+// #import "iVim-Swift.h"
 #include <pthread.h>
 
+#define FILE_UTILITIES   // file_cmds_ios
+#define ARCHIVE_UTILITIES // libarchive_ios
+#define SHELL_UTILITIES  // shell_cmds_ios
+#define TEXT_UTILITIES  // shell_cmds_ios
 
-#define FILE_UTILITIES
 #ifdef FILE_UTILITIES
 // Most useful file utilities (file_cmds_ios)
 extern int ls_main(int argc, char *argv[]);
@@ -39,6 +42,25 @@ extern int chmod_main(int argc, char *argv[]);
 extern int chflags_main(int argc, char *argv[]);
 extern int chown_main(int argc, char *argv[]);
 extern int stat_main(int argc, char *argv[]);
+#endif
+#ifdef ARCHIVE_UTILITIES
+// from libarchive:
+extern int tar_main(int argc, char **argv);
+#endif
+#ifdef SHELL_UTILITIES
+extern int date_main(int argc, char *argv[]);
+extern int env_main(int argc, char *argv[]);     // does the same as printenv
+extern int hostname_main(int argc, char *argv[]);
+extern int id_main(int argc, char *argv[]); // also groups, whoami
+extern int printenv_main(int argc, char *argv[]);
+extern int pwd_main(int argc, char *argv[]);
+extern int uname_main(int argc, char *argv[]);
+extern int w_main(int argc, char *argv[]); // also uptime
+#endif
+#ifdef TEXT_UTILITIES
+extern int cat_main(int argc, char *argv[]);
+extern int grep_main(int argc, char *argv[]);
+extern int wc_main(int argc, char *argv[]);
 #endif
 
 typedef struct _functionParameters {
@@ -96,6 +118,10 @@ static void initializeCommandList()
                     @"gzip"   : [NSValue valueWithPointer: gzip_main],
                     @"gunzip" : [NSValue valueWithPointer: gzip_main],
 #endif
+#ifdef ARCHIVE_UTILITIES
+                    // from libarchive:
+                    @"tar"    : [NSValue valueWithPointer: tar_main],
+#endif
 #ifdef SHELL_UTILITIES
                     // Commands from Apple shell_cmds:
                     @"printenv": [NSValue valueWithPointer: printenv_main],
@@ -108,26 +134,36 @@ static void initializeCommandList()
                     @"whoami" : [NSValue valueWithPointer: id_main],
                     @"uptime" : [NSValue valueWithPointer: w_main],
                     @"w"      : [NSValue valueWithPointer: w_main],
+#endif
+#ifdef TEXT_UTILITIES
                     // Commands from Apple text_cmds:
                     @"cat"    : [NSValue valueWithPointer: cat_main],
                     @"wc"     : [NSValue valueWithPointer: wc_main],
                     @"grep"   : [NSValue valueWithPointer: grep_main],
                     @"egrep"  : [NSValue valueWithPointer: grep_main],
                     @"fgrep"  : [NSValue valueWithPointer: grep_main],
+#endif
+#ifdef NETWORK_UTILITIES
                     // Commands from Apple network_cmds:
                     @"ping"  : [NSValue valueWithPointer: ping_main],
+#endif
+#ifdef CURL_COMMANDS
                     // From curl:
                     @"curl"   : [NSValue valueWithPointer: curl_main],
                     // scp / sftp arguments were converted earlier in makeargs
                     // @"scp"    : [NSValue valueWithPointer: curl_main],
                     // @"sftp"   : [NSValue valueWithPointer: curl_main],
-                    // from libarchive:
-                    @"tar"    : [NSValue valueWithPointer: tar_main],
+#endif
+#ifdef PYTHON_COMMANDS
                     // from python:
                     @"python"  : [NSValue valueWithPointer: python_main],
+#endif
+#ifdef LUA_COMMANDS
                     // from lua:
                     @"lua"     : [NSValue valueWithPointer: lua_main],
                     @"luac"    : [NSValue valueWithPointer: luac_main],
+#endif
+#ifdef TEX_COMMANDS
                     // from TeX:
                     // LuaTeX:
                     @"luatex"     : [NSValue valueWithPointer: dllluatexmain],
@@ -216,8 +252,12 @@ int ios_system(char* inputCmd) {
     outputFileName = inputFileName;
     // scan until first "<"
     inputFileName = strstr(inputFileName, "<");
-    // scan until first "/" (there can be spaces between ">" and file name
-    if (inputFileName) inputFileName = strstr(inputFileName + 1, "/");
+    // scan until first non-space character:
+    if (inputFileName) {
+        inputFileName += 1; // skip past '<'
+        // skip past all spaces
+        while ((inputFileName[0] == ' ') && strlen(inputFileName) > 0) inputFileName++;
+    }
     char *joined = NULL;
     // Must scan in strstr by reverse order of inclusion. So "2>&1" before "2>" before ">"
     joined = strstr (outputFileName,"&>"); // both stderr/stdout sent to same file
@@ -226,16 +266,26 @@ int ios_system(char* inputCmd) {
     else {
         // specific name for error file?
         errorFileName = strstr(outputFileName,"2>");
-        if (errorFileName) errorFileName = strstr(errorFileName + 2, "/");
+        if (errorFileName) {
+            errorFileName += 2; // skip past "2>"
+            // skip past all spaces:
+            while ((errorFileName[0] == ' ') && strlen(errorFileName) > 0) errorFileName++;
+        }
     }
     // scan until first ">"
     outputFileName = strstr(outputFileName, ">");
-    if (outputFileName) outputFileName = strstr(outputFileName+1, "/");
+    if (outputFileName) {
+        outputFileName += 1; // skip past '>'
+        while ((outputFileName[0] == ' ') && strlen(outputFileName) > 0) outputFileName++;
+    }
     if (errorFileName && (outputFileName == errorFileName)) {
         // we got the same ">" twice, pick the next one ("2>" before ">")
         outputFileName = errorFileName;
         outputFileName = strstr(outputFileName, ">");
-        if (outputFileName) outputFileName = strstr(outputFileName+1, "/");
+        if (outputFileName) {
+            outputFileName += 1; // skip past '>'
+            while ((outputFileName[0] == ' ') && strlen(outputFileName) > 0) outputFileName++;
+        }
     }
     if (outputFileName) {
         char* endFile = strstr(outputFileName, " ");
