@@ -54,6 +54,12 @@ static int selinux_enabled = -1;
 # endif
 #endif
 
+# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+extern int ios_system(char* cmd);
+extern int ios_executable(char* cmd);
+#endif
+
+
 /*
  * Use this prototype for select, some include files have a wrong prototype
  */
@@ -3148,36 +3154,40 @@ mch_can_exe(name, path, use_path)
      */
     for (;;)
     {
-	e = (char_u *)strchr((char *)p, ':');
-	if (e == NULL)
-	    e = p + STRLEN(p);
-	if (e - p <= 1)		/* empty entry means current dir */
-	    STRCPY(buf, "./");
-	else
-	{
-	    vim_strncpy(buf, p, e - p);
-	    add_pathsep(buf);
-	}
-	STRCAT(buf, name);
-	retval = executable_file(buf);
-	if (retval == 1)
-	{
-	    if (path != NULL)
-	    {
-		if (buf[0] == '.')
-		    *path = FullName_save(buf, TRUE);
-		else
-		    *path = vim_strsave(buf);
-	    }
-	    break;
-	}
-
-	if (*e != ':')
-	    break;
-	p = e + 1;
+        e = (char_u *)strchr((char *)p, ':');
+        if (e == NULL)
+            e = p + STRLEN(p);
+        if (e - p <= 1)		/* empty entry means current dir */
+            STRCPY(buf, "./");
+        else
+        {
+            vim_strncpy(buf, p, e - p);
+            add_pathsep(buf);
+        }
+        STRCAT(buf, name);
+        retval = executable_file(buf);
+        if (retval == 1)
+        {
+            if (path != NULL)
+            {
+                if (buf[0] == '.')
+                    *path = FullName_save(buf, TRUE);
+                else
+                    *path = vim_strsave(buf);
+            }
+            break;
+        }
+        
+        if (*e != ':')
+            break;
+        p = e + 1;
     }
 
     vim_free(buf);
+    // iOS: we've walked through the entire path, did not find an executable with that name
+    // is that one of the "internal commands" from ios_system?
+    if (!retval) retval = ios_executable(name);
+    
     return retval;
 }
 
@@ -4016,8 +4026,6 @@ wait4pid(child, status)
     }
     return wait_pid;
 }
-
-extern int ios_system(char* cmd);
 
     int
 mch_call_shell(cmd, options)

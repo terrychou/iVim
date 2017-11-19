@@ -168,6 +168,16 @@ static void initializeCommandList()
                     };
 }
 
+int ios_executable(char* inputCmd) {
+ // returns 1 if this is one of the commands we define in ios_system, 0 otherwise
+    int (*function)(int ac, char** av) = NULL;
+    if (commandList == nil) initializeCommandList();
+    NSString* commandName = [NSString stringWithCString:inputCmd encoding:NSASCIIStringEncoding];
+    function = [[commandList objectForKey: commandName] pointerValue];
+    if (function) return 1;
+    else return 0;
+}
+
 
 int ios_system(char* inputCmd) {
     char* command;
