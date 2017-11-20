@@ -7,13 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
-// Executes the command in "cmd". The goal is to be a drop-in replacement for system(), as much as possible.
+// ios_system(cmd): Executes the command in "cmd". The goal is to be a drop-in replacement for system(), as much as possible.
 // We assume cmd is the command. If vim has prepared '/bin/sh -c "(command -arguments) < inputfile > outputfile",
-// it is easier to remove the "/bin/sh -c" part before calling system than in system.
+// it is easier to remove the "/bin/sh -c" part before calling ios_system than inside ios_system.
 // See example in os_unix.c
+//
+// ios_executable(cmd): returns true if the command is one of the commands defined in ios_system, and can be executed.
+// This is because mch_can_exe (called by executable()) checks for the existence of binaries with the same name in the
+// path. Our commands don't exist in the path. 
 
-// #import "vim.h"
-// #import "iVim-Swift.h"
 #include <pthread.h>
 
 #define FILE_UTILITIES   // file_cmds_ios
@@ -144,13 +146,16 @@ static void initializeCommandList()
                     @"fgrep"  : [NSValue valueWithPointer: grep_main],
 #endif
 #ifdef NETWORK_UTILITIES
+                    // This doesn't make sense inside iVim environment
                     // Commands from Apple network_cmds:
                     @"ping"  : [NSValue valueWithPointer: ping_main],
 #endif
 #ifdef CURL_COMMANDS
-                    // From curl:
+                    // From curl. curl with ssh requires keys, and thus keys generation / management.
+                    // http, https, ftp... should be OK.
+                    // Would require some rewriting from the @blinkshell code(?)
                     @"curl"   : [NSValue valueWithPointer: curl_main],
-                    // scp / sftp arguments were converted earlier in makeargs
+                    // scp / sftp require conversion to curl, rewriting arguments
                     // @"scp"    : [NSValue valueWithPointer: curl_main],
                     // @"sftp"   : [NSValue valueWithPointer: curl_main],
 #endif
@@ -217,9 +222,15 @@ int ios_executable(char* inputCmd) {
 
 int ios_system(char* inputCmd) {
     char* command;
+    // The names of the files for stdin, stdout, stderr
     char* inputFileName = 0;
     char* outputFileName = 0;
     char* errorFileName = 0;
+    // Where the symbols "<", ">" or "2>" were.
+    // to be replaced by 0x0 later.
+    char* outputFileMarker = 0;
+    char* inputFileMarker = 0;
+    char* errorFileMarker = 0;
     bool  sharedErrorOutput = false;
     int result = 127;
     
@@ -240,7 +251,7 @@ int ios_system(char* inputCmd) {
         if (endCmd) {
             endCmd[0] = 0x0;
             assert(endCmd < maxPointer);
-            inputFileName = endCmd + 1;
+            inputFileMarker = endCmd + 1;
         }
     } else command = cmd;
     // Search for input, output and error redirection
@@ -248,42 +259,42 @@ int ios_system(char* inputCmd) {
     // command < input > output 2> error, command < input > output 2>&1 or command < input >& output
     // The last two are equivalent. Vim prefers the second.
     // Search for input file "< " and output file " >"
-    if (!inputFileName) inputFileName = command;
-    outputFileName = inputFileName;
+    if (!inputFileMarker) inputFileMarker = command;
+    outputFileMarker = inputFileMarker;
     // scan until first "<"
-    inputFileName = strstr(inputFileName, "<");
+    inputFileMarker = strstr(inputFileMarker, "<");
     // scan until first non-space character:
-    if (inputFileName) {
-        inputFileName += 1; // skip past '<'
+    if (inputFileMarker) {
+        inputFileName = inputFileMarker + 1; // skip past '<'
         // skip past all spaces
         while ((inputFileName[0] == ' ') && strlen(inputFileName) > 0) inputFileName++;
     }
     char *joined = NULL;
     // Must scan in strstr by reverse order of inclusion. So "2>&1" before "2>" before ">"
-    joined = strstr (outputFileName,"&>"); // both stderr/stdout sent to same file
-    if (!joined) joined = strstr (outputFileName,"2>&1"); // Same, but expressed differently
+    joined = strstr (outputFileMarker,"&>"); // both stderr/stdout sent to same file
+    if (!joined) joined = strstr (outputFileMarker,"2>&1"); // Same, but expressed differently
     if (joined) sharedErrorOutput = true;
     else {
         // specific name for error file?
-        errorFileName = strstr(outputFileName,"2>");
-        if (errorFileName) {
-            errorFileName += 2; // skip past "2>"
+        errorFileMarker = strstr(outputFileMarker,"2>");
+        if (errorFileMarker) {
+            errorFileName = errorFileMarker + 2; // skip past "2>"
             // skip past all spaces:
             while ((errorFileName[0] == ' ') && strlen(errorFileName) > 0) errorFileName++;
         }
     }
     // scan until first ">"
-    outputFileName = strstr(outputFileName, ">");
-    if (outputFileName) {
-        outputFileName += 1; // skip past '>'
+    outputFileMarker = strstr(outputFileMarker, ">");
+    if (outputFileMarker) {
+        outputFileName = outputFileMarker + 1; // skip past '>'
         while ((outputFileName[0] == ' ') && strlen(outputFileName) > 0) outputFileName++;
     }
     if (errorFileName && (outputFileName == errorFileName)) {
-        // we got the same ">" twice, pick the next one ("2>" before ">")
-        outputFileName = errorFileName;
-        outputFileName = strstr(outputFileName, ">");
-        if (outputFileName) {
-            outputFileName += 1; // skip past '>'
+        // we got the same ">" twice, pick the next one ("2>" was before ">")
+        outputFileMarker = errorFileName;
+        outputFileMarker = strstr(outputFileMarker, ">");
+        if (outputFileMarker) {
+            outputFileName = outputFileMarker + 1; // skip past '>'
             while ((outputFileName[0] == ' ') && strlen(outputFileName) > 0) outputFileName++;
         }
     }
@@ -302,6 +313,11 @@ int ios_system(char* inputCmd) {
         if (endFile) endFile[0] = 0x00; // end error file name at first space
         assert(endFile < maxPointer);
     }
+    // insert chain termination elements at the beginning of each filename.
+    // Must be done after the parsing
+    if (inputFileMarker) inputFileMarker[0] = 0x0;
+    if (outputFileMarker) outputFileMarker[0] = 0x0;
+    if (errorFileMarker) errorFileMarker[0] = 0x0;
     // Store previous values of stdin, stdout, stderr:
     FILE* push_stdin = stdin;
     FILE* push_stdout = stdout;
