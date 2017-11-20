@@ -3154,33 +3154,33 @@ mch_can_exe(name, path, use_path)
      */
     for (;;)
     {
-        e = (char_u *)strchr((char *)p, ':');
-        if (e == NULL)
-            e = p + STRLEN(p);
-        if (e - p <= 1)		/* empty entry means current dir */
-            STRCPY(buf, "./");
-        else
-        {
-            vim_strncpy(buf, p, e - p);
-            add_pathsep(buf);
-        }
-        STRCAT(buf, name);
-        retval = executable_file(buf);
-        if (retval == 1)
-        {
-            if (path != NULL)
-            {
-                if (buf[0] == '.')
-                    *path = FullName_save(buf, TRUE);
-                else
-                    *path = vim_strsave(buf);
-            }
-            break;
-        }
-        
-        if (*e != ':')
-            break;
-        p = e + 1;
+	e = (char_u *)strchr((char *)p, ':');
+	if (e == NULL)
+	    e = p + STRLEN(p);
+	if (e - p <= 1)		/* empty entry means current dir */
+	    STRCPY(buf, "./");
+	else
+	{
+	    vim_strncpy(buf, p, e - p);
+	    add_pathsep(buf);
+	}
+	STRCAT(buf, name);
+	retval = executable_file(buf);
+	if (retval == 1)
+	{
+	    if (path != NULL)
+	    {
+		if (buf[0] == '.')
+		    *path = FullName_save(buf, TRUE);
+		else
+		    *path = vim_strsave(buf);
+	    }
+	    break;
+	}
+
+	if (*e != ':')
+	    break;
+	p = e + 1;
     }
 
     vim_free(buf);
@@ -4524,7 +4524,7 @@ mch_call_shell(cmd, options)
 	    execvp(argv[0], argv);
 	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
 	}
-       else                    /* parent */
+	else			/* parent */
 	{
 	    /*
 	     * While child is running, ignore terminating signals.
