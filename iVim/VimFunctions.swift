@@ -59,6 +59,12 @@ final class SafeVimOperations {
         }
     }
     
+    func showErrContent(_ content: String) {
+        self.run {
+            do_cmdline_cmd("echohl ErrorMsg | echo \"\(content)\" | echohl None")
+        }
+    }
+    
     func showError(_ err: String) {
         self.run {
             do_cmdline_cmd("echoerr \"\(err)\"")

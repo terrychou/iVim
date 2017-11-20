@@ -42,6 +42,36 @@
 			<key>DefaultValue</key>
 			<false/>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Hardware Keyboard</string>
+			<key>FooterText</key>
+			<string>*Mapping only works for English, disabled otherwise.</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Map [caps lock] to</string>
+			<key>Key</key>
+			<string>kUDCapsLockMapping</string>
+			<key>DefaultValue</key>
+			<string>none</string>
+			<key>Titles</key>
+			<array>
+				<string>none</string>
+				<string>esc</string>
+				<string>ctrl</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>none</string>
+				<string>esc</string>
+				<string>ctrl</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
