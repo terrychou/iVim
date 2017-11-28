@@ -12643,6 +12643,9 @@ f_has(argvars, rettv)
 #if defined(MACOS_X_UNIX)
 	"macunix",
 #endif
+#ifdef FEAT_GUI_IOS
+	"ios",
+#endif
 #ifdef OS2
 	"os2",
 #endif
