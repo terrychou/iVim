@@ -14,19 +14,19 @@ private let symbolKeys = "`-=~!@#$%^&*()_+[]\\{}|;':\",./<>?"
 private let escapedKeys = "\t\r"
 private let specialKeys = [UIKeyInputEscape, UIKeyInputUpArrow, UIKeyInputDownArrow, UIKeyInputLeftArrow, UIKeyInputRightArrow]
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
+private let kUDOptionMapping = "kUDOptionMapping"
 
 extension VimViewController {
     override var keyCommands: [UIKeyCommand]? {
         switch self.currentCapslockDst {
-        case .none: return VimViewController.externalKeys
+        case .none:
+            return self.isOptionMappingEnabled ?
+                VimViewController.externalKeysWithOption :
+                VimViewController.externalKeys
         case .esc: return VimViewController.capslockToEsc
         case .ctrl: return VimViewController.capslockToCtrl
         }
     }
-    
-//    private var isHardwareKeyboardAttached: Bool {
-//        return self.isKeyboardOutsideOfScreen && self.isFirstResponder
-//    }
     
     private var isInEnglish: Bool {
         return self.textInputMode?.primaryLanguage?.hasPrefix("en") ?? false
@@ -69,8 +69,18 @@ extension VimViewController {
             keys: escapedKeys,
             modifierFlags: [.control, .command, .alternate, .shift])
     
+    private static let optionKeys: [UIKeyCommand] =
+        VimViewController.keyCommands(
+            keys: alphabetaKeys + numericKeys + symbolKeys,
+            modifierFlags: [.alternate])
+    
+    private static let externalKeysWithOption: [UIKeyCommand] =
+        VimViewController.externalKeys +
+        VimViewController.optionKeys
+    
     private static let capslockToEsc: [UIKeyCommand] =
         VimViewController.externalKeys +
+        VimViewController.optionKeys +
         VimViewController.keyCommands(keys: alphabetaKeys, modifierFlags: [[]]) +
         [VimViewController.keyCommand(input: "", modifierFlags: .alphaShift)]
     
@@ -80,6 +90,10 @@ extension VimViewController {
         VimViewController.keyCommands(
             keys: alphabetaKeys + numericKeys + symbolKeys + escapedKeys,
             modifierFlags: [.alphaShift])
+    
+    private var isOptionMappingEnabled: Bool {
+        return UserDefaults.standard.bool(forKey: kUDOptionMapping)
+    }
     
     private static func keyCommand(input: String, modifierFlags: UIKeyModifierFlags = [], title: String? = nil) -> UIKeyCommand {
         let re = UIKeyCommand(input: input, modifierFlags: modifierFlags, action: #selector(self.keyCommandTriggered(_:)))
@@ -141,7 +155,9 @@ extension VimViewController {
                 self.ctrlButton?.tryRestore()
                 keys.append("C-")
             }
+            var hasOption = false
             if flags.contains(.alternate) {
+                hasOption = true
                 keys.append("A-")
             }
             if flags.contains(.shift) {
@@ -157,7 +173,13 @@ extension VimViewController {
             case "\r"?: keys.append("CR")
             case "2"? where flags == [.control]: keys.append("@")
             case "6"? where flags == [.control]: keys.append("^")
-            default: keys.append(command.input ?? "")
+            default:
+                let l = command.input ?? ""
+                if hasOption && !self.isOptionMappingEnabled {
+                    self.insertText(l)
+                    return
+                }
+                keys.append(l)
             }
             input_special_name("<\(keys)>")
         }

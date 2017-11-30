@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Nov 17
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Nov 29
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -231,8 +231,13 @@ Hardware Keyboard ~
 
 a. Map [caps lock] to
 If you have an external hardware keyboard connected, you can map its less used
-`caps lock` key to either `esc` or `ctrl` in this option. Note that this only
-supports English keyboard, and it will be disabled automatically otherwise.
+`caps_lock` key to either `esc` or `ctrl` in this option. Note that it has 
+caveats as mentioned at g. in |ios-external-keyboard|.
+
+b. Enable [alt] Mapping
+When enabled, it will map keystrokes with modifier `alt` to |<A-| chords in 
+iVim. Otherwise, they will be handled by iOS system for extended symbols 
+input.
 
 
 ==============================================================================
@@ -241,23 +246,29 @@ supports English keyboard, and it will be disabled automatically otherwise.
 iVim supports the external hardware keyboard. You can connect the keyboard to
 your iOS device and start typing in iVim.
 
-a. besides the `ctrl` key chords `<C->`, the `command` key chords `<D->` are
+a. besides the `ctrl` key chords |<C-|, the `command` key chords |<D-| are
 now at your disposal.
 
 b. chords `<D-s>`, `<D-h>` and `<D-.>` are reserved by iOS system.
 
-c. the `option` key is preserved to input the extended symbols.
+c. by default, the `alt` key is preserved to input the extended symbols.
+But you can enable `alt` key mapping in |ios-settings| to map it to the |<A-| 
+chords handled by iVim.
 
 d. special keys `esc`, `arrows`, `tab` and `enter` combined with modifier keys 
-`ctrl`, `command`, `option` and `shift` respectively are supported. However, 
+`ctrl`, `command`, `alt` and `shift` respectively are supported. However, 
 `<C-CR>` is not working now.
 
 e. function keys such as `F1` is not available due to the API limitation.
 
 f. multiple modifiers chords such as `<D-C->` are not supported.
 
-g. if you are only using English, you can map `caps lock` key to either `esc`
-or `ctrl` in |ios-settings|.
+g. you can map `caps_lock` key to either `esc` or `ctrl` in |ios-settings|.
+Note that due to the API limitation, only English keyboards are supported and 
+will be disabled otherwise; after mapped, the default `alt` extended symbol 
+input will be ignored; for an alternative to extended symbol input, you may 
+refer to |digraph|; however, the `alt` mapping mentioned in c. will still work 
+if enabled.
 
 
 ==============================================================================

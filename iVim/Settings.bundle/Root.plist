@@ -48,7 +48,7 @@
 			<key>Title</key>
 			<string>Hardware Keyboard</string>
 			<key>FooterText</key>
-			<string>*Mapping only works for English, disabled otherwise.</string>
+			<string>Mapping caps lock has caveats. See &quot;:h ios-external-keyboard&quot;. Mapping [alt] enables iVim take over alt- keystrokes.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -71,6 +71,16 @@
 				<string>esc</string>
 				<string>ctrl</string>
 			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Enable [alt] Mapping</string>
+			<key>Key</key>
+			<string>kUDOptionMapping</string>
+			<key>DefaultValue</key>
+			<false/>
 		</dict>
 	</array>
 </dict>
