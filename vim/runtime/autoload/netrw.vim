@@ -246,12 +246,23 @@ if !exists("g:netrw_scp_cmd")
   else
    call s:NetrwInit("g:netrw_scp_cmd", 'pscp -q')
   endif
- else
+  " addition: scp is done using curl
+ elseif executable("curl")
+   call s:NetrwInit("g:netrw_scp_cmd" , "curl")
+ else 
   call s:NetrwInit("g:netrw_scp_cmd" , "scp -q")
  endif
 endif
 
-call s:NetrwInit("g:netrw_sftp_cmd" , "sftp")
+if !exists("g:netrw_sftp_cmd")
+    if executable("sftp")
+	call s:NetrwInit("g:netrw_sftp_cmd" , "sftp")
+    elseif executable("curl")
+	call s:NetrwInit("g:netrw_sftp_cmd" , "curl")
+    else 
+	call s:NetrwInit("g:netrw_sftp_cmd" , "sftp")
+    endif
+endif 
 call s:NetrwInit("g:netrw_ssh_cmd"  , "ssh")
 
 if (has("win32") || has("win95") || has("win64") || has("win16"))
@@ -344,7 +355,9 @@ if !exists("g:netrw_list_cmd")
   else
    let g:netrw_list_cmd= g:netrw_ssh_cmd." USEPORT HOSTNAME ls -FLa"
   endif
- else
+ elseif executable("curl")
+   let g:netrw_list_cmd= "curl"
+ else 
 "  call Decho(g:netrw_ssh_cmd." is not executable")
   let g:netrw_list_cmd= ""
  endif
@@ -1488,6 +1501,7 @@ fun! netrw#Obtain(islocal,fname,...)
     else
      let localfile= a:fname
     endif
+
     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1).shellescape(localfile)." ".shellescape(tgtdir))
 
    elseif !exists("b:netrw_method") || b:netrw_method < 0
@@ -2096,7 +2110,11 @@ fun! netrw#NetRead(mode,...)
    elseif     b:netrw_method  == 4	" read with scp
 "    call Decho("read via scp (method #4)")
     if exists("g:netrw_port") && g:netrw_port != ""
-     let useport= " ".g:netrw_scpport." ".g:netrw_port
+	if g:netrw_scp_cmd == "curl"
+	    let useport = ":".g:netrw_port
+	else
+	    let useport= " ".g:netrw_scpport." ".g:netrw_port
+	endif
     else
      let useport= ""
     endif
@@ -2107,7 +2125,12 @@ fun! netrw#NetRead(mode,...)
     else
       let tmpfile_get = tmpfile
     endif
-    call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".shellescape(g:netrw_machine.":".b:netrw_fname,1)." ".shellescape(tmpfile_get,1))
+    if g:netrw_scp_cmd == "curl"
+    	" implement scp using curl
+    	call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_scp_cmd." ".shellescape("scp://".g:netrw_machine.useport."/".b:netrw_fname,1)." -o ".shellescape(tmpfile,1))
+    else 
+      call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".shellescape(g:netrw_machine.":".b:netrw_fname,1)." ".shellescape(tmpfile_get,1))
+    endif
     let result           = s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
     let b:netrw_lastfile = choice
 
@@ -2226,9 +2249,14 @@ fun! netrw#NetRead(mode,...)
    ".........................................
    " NetRead: (sftp) NetRead Method #9 {{{3
    elseif     b:netrw_method  == 9
-"    call Decho("read via sftp (method #9)")
-    call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1)." ".tmpfile)
-    let result		= s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
+       "    call Decho("read via sftp (method #9)")
+       if g:netrw_sftp_cmd == "curl"
+	   " implement sftp using curl
+	   call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape("sftp://".g:netrw_machine."/".b:netrw_fname,1)." -o ".shellescape(tmpfile,1))
+       else
+	   call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1)." ".tmpfile)
+       endif
+       let result		= s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
     let b:netrw_lastfile = choice
 
    ".........................................
@@ -2519,7 +2547,12 @@ fun! netrw#NetWrite(...) range
     else
      let useport= ""
     endif
-    call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".shellescape(tmpfile,1)." ".shellescape(g:netrw_machine.":".b:netrw_fname,1))
+    if g:netrw_scp_cmd == "curl"
+	" implement scp using curl
+	call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_scp_cmd." -T ".shellescape(tmpfile,1)." ".shellescape("scp://".g:netrw_machine.useport."/".b:netrw_fname,1))
+    else 
+	call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".shellescape(tmpfile,1)." ".shellescape(g:netrw_machine.":".b:netrw_fname,1))
+    endif 
     let b:netrw_lastfile = choice
 
    ".........................................
@@ -9248,8 +9281,42 @@ fun! s:NetrwRemoteListing()
      NetrwKeepj call histdel("/",-1)
     endif
    endif
-
-   else
+   elseif g:netrw_list_cmd =~ '^curl'
+       " use curl sftp:// to get remote file listing 
+       let listcmd = "curl -s "
+       if s:user == ""
+       	   let userhostname = "sftp://".s:machine
+       else
+       	   let userhostname = "sftp://".s:user."@".s:machine
+	  " let sshcmd = substitute(a:sshcmd,'\<HOSTNAME\>',s:user."@".s:machine,'')
+       endif
+       if exists("g:netrw_port") && g:netrw_port != ""
+       	   let listingport = ":".g:netrw_port
+       elseif exists("s:port") && s:port != ""
+       	   let listingport = ":".g:netrw_port
+       else 
+       	   let listingport = ""
+       endif
+       if s:path == ""
+	   "     call Decho("2: exe r! ".listcmd)
+	   exe "NetrwKeepj keepalt r! ".listcmd.userhostname.listingport."/"
+       else
+	   "     call Decho("3: exe r! ".listcmd.' '.shellescape(fnameescape(s:path),1))
+	   exe "NetrwKeepj keepalt r! ".listcmd.userhostname.listingport."/".s:path
+	   "     call Decho("listcmd<".listcmd."> path<".s:path.">")
+       endif
+       " remove rubbish and adjust listing format of 'pscp' to 'ssh ls -FLa' like
+       sil! NetrwKeepj g/^Listing directory/NetrwKeepj d
+       sil! NetrwKeepj g/^d[-rwx][-rwx][-rwx]/NetrwKeepj s+$+/+e
+       sil! NetrwKeepj g/^l[-rwx][-rwx][-rwx]/NetrwKeepj s+$+@+e
+       NetrwKeepj call histdel("/",-1)
+       NetrwKeepj call histdel("/",-1)
+       NetrwKeepj call histdel("/",-1)
+       if g:netrw_liststyle != s:LONGLIST
+            sil! NetrwKeepj g/^[dlsp-][-rwx][-rwx][-rwx]/NetrwKeepj s/^.*\s\(\S\+\)$/\1/e
+            NetrwKeepj call histdel("/",-1)
+       endif
+   else 
    " use ssh to get remote file listing {{{3
 "   call Decho("use ssh to get remote file listing: s:path<".s:path.">")
    let listcmd= s:MakeSshCmd(g:netrw_list_cmd)
