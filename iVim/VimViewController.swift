@@ -42,10 +42,13 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
+    var currentCapslockDst: CapsLockDestination = .none
+    
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: .UIKeyboardWillChangeFrame, object: nil)
         nfc.addObserver(self, selector: #selector(self.keyboardDidChangeFrame(_:)), name: .UIKeyboardDidChangeFrame, object: nil)
+        self.registerExternalKeyboardNotifications(to: nfc)
     }
     
     override func viewDidLoad() {
@@ -213,7 +216,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     //MARK: OnScreen Keyboard Handling
     private func tuneFrameAccordingToKeyboard(_ notification: Notification) {
         guard self.shouldTuneFrame,
-            let frame = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as AnyObject).cgRectValue,
+            let frame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? CGRect,
             let v = self.view,
             let window = v.window
             else { return }

@@ -42,6 +42,46 @@
 			<key>DefaultValue</key>
 			<false/>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Hardware Keyboard</string>
+			<key>FooterText</key>
+			<string>Mapping caps lock has caveats. See &quot;:h ios-external-keyboard&quot;. Mapping [alt] enables iVim take over alt- keystrokes.</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Map [caps lock] to</string>
+			<key>Key</key>
+			<string>kUDCapsLockMapping</string>
+			<key>DefaultValue</key>
+			<string>none</string>
+			<key>Titles</key>
+			<array>
+				<string>none</string>
+				<string>esc</string>
+				<string>ctrl</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>none</string>
+				<string>esc</string>
+				<string>ctrl</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Enable [alt] Mapping</string>
+			<key>Key</key>
+			<string>kUDOptionMapping</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
 	</array>
 </dict>
 </plist>
