@@ -14,13 +14,51 @@ private let symbolKeys = "`-=~!@#$%^&*()_+[]\\{}|;':\",./<>?"
 private let escapedKeys = "\t\r"
 private let specialKeys = [UIKeyInputEscape, UIKeyInputUpArrow, UIKeyInputDownArrow, UIKeyInputLeftArrow, UIKeyInputRightArrow]
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
+private let kUDOptionMapping = "kUDOptionMapping"
 
 extension VimViewController {
     override var keyCommands: [UIKeyCommand]? {
-        return VimViewController.externalKeys
+        switch self.currentCapslockDst {
+        case .none:
+            return self.isOptionMappingEnabled ?
+                VimViewController.externalKeysWithOption :
+                VimViewController.externalKeys
+        case .esc: return VimViewController.capslockToEsc
+        case .ctrl: return VimViewController.capslockToCtrl
+        }
     }
     
-    static let externalKeys: [UIKeyCommand] =
+    private var isInEnglish: Bool {
+        return self.textInputMode?.primaryLanguage?.hasPrefix("en") ?? false
+    }
+    
+    func registerExternalKeyboardNotifications(to nfc: NotificationCenter) {
+        nfc.addObserver(self, selector: #selector(self.keyboardDidChange(_:)), name: .UITextInputCurrentInputModeDidChange, object: nil)
+        nfc.addObserver(self, selector: #selector(self.appDidBecomeActive(_:)), name: .UIApplicationDidBecomeActive, object: nil)
+    }
+    
+    @objc func appDidBecomeActive(_ notification: Notification) {
+        self.updateCapslockDst()
+    }
+    
+    @objc func keyboardDidChange(_ notification: Notification) {
+        self.updateCapslockDst()
+    }
+    
+    private func updateCapslockDst() {
+        let dst = self.isInEnglish ? self.capslockDestination : .none
+        guard self.currentCapslockDst != dst else { return }
+        DispatchQueue.main.async {
+            if dst == .none {
+                gSVO.showErrContent("[caps lock] mapping DISABLED.")
+            } else {
+                gSVO.showContent("[caps lock] mapping to [\(dst.rawValue)]", withCommand: nil)
+            }
+        }
+        self.currentCapslockDst = dst
+    }
+    
+    private static let externalKeys: [UIKeyCommand] =
         VimViewController.keyCommands(
             inputs: specialKeys,
             modifierFlags: [[], .control, .command, .alternate, .shift]) +
@@ -30,6 +68,32 @@ extension VimViewController {
         VimViewController.keyCommands(
             keys: escapedKeys,
             modifierFlags: [.control, .command, .alternate, .shift])
+    
+    private static let optionKeys: [UIKeyCommand] =
+        VimViewController.keyCommands(
+            keys: alphabetaKeys + numericKeys + symbolKeys,
+            modifierFlags: [.alternate])
+    
+    private static let externalKeysWithOption: [UIKeyCommand] =
+        VimViewController.externalKeys +
+        VimViewController.optionKeys
+    
+    private static let capslockToEsc: [UIKeyCommand] =
+        VimViewController.externalKeys +
+        VimViewController.optionKeys +
+        VimViewController.keyCommands(keys: alphabetaKeys, modifierFlags: [[]]) +
+        [VimViewController.keyCommand(input: "", modifierFlags: .alphaShift)]
+    
+    private static let capslockToCtrl: [UIKeyCommand] =
+        VimViewController.capslockToEsc +
+        VimViewController.keyCommands(inputs: specialKeys, modifierFlags: [.alphaShift]) +
+        VimViewController.keyCommands(
+            keys: alphabetaKeys + numericKeys + symbolKeys + escapedKeys,
+            modifierFlags: [.alphaShift])
+    
+    private var isOptionMappingEnabled: Bool {
+        return UserDefaults.standard.bool(forKey: kUDOptionMapping)
+    }
     
     private static func keyCommand(input: String, modifierFlags: UIKeyModifierFlags = [], title: String? = nil) -> UIKeyCommand {
         let re = UIKeyCommand(input: input, modifierFlags: modifierFlags, action: #selector(self.keyCommandTriggered(_:)))
@@ -71,16 +135,17 @@ extension VimViewController {
     private func handleKeyCommand(_ command: UIKeyCommand) {
         let flags = command.modifierFlags
         if flags.rawValue == 0 {
-            switch command.input {
-            case UIKeyInputEscape?: self.pressESC()
-            case UIKeyInputUpArrow?: self.pressArrow(keyUP)
-            case UIKeyInputDownArrow?: self.pressArrow(keyDOWN)
-            case UIKeyInputLeftArrow?: self.pressArrow(keyLEFT)
-            case UIKeyInputRightArrow?: self.pressArrow(keyRIGHT)
-            default: break//self.insertText(command.input)
+            guard let input = command.input else { return }
+            switch input {
+            case UIKeyInputEscape: self.pressESC()
+            case UIKeyInputUpArrow: self.pressArrow(keyUP)
+            case UIKeyInputDownArrow: self.pressArrow(keyDOWN)
+            case UIKeyInputLeftArrow: self.pressArrow(keyLEFT)
+            case UIKeyInputRightArrow: self.pressArrow(keyRIGHT)
+            default: self.insertText(input)
             }
-//        } else if flags.contains(.alphaShift) {
-//            self.handleCapsLock(with: command)
+        } else if flags.contains(.alphaShift) {
+            self.handleCapsLock(with: command)
         } else {
             var keys = ""
             if flags.contains(.command) {
@@ -90,7 +155,9 @@ extension VimViewController {
                 self.ctrlButton?.tryRestore()
                 keys.append("C-")
             }
+            var hasOption = false
             if flags.contains(.alternate) {
+                hasOption = true
                 keys.append("A-")
             }
             if flags.contains(.shift) {
@@ -106,34 +173,66 @@ extension VimViewController {
             case "\r"?: keys.append("CR")
             case "2"? where flags == [.control]: keys.append("@")
             case "6"? where flags == [.control]: keys.append("^")
-            default: keys.append(command.input!)
+            default:
+                let l = command.input ?? ""
+                if hasOption && !self.isOptionMappingEnabled {
+                    self.insertText(l)
+                    return
+                }
+                keys.append(l)
             }
             input_special_name("<\(keys)>")
         }
     }
     
-//    private enum CapsLockDestination: String {
-//        case none
-//        case esc
-//        case ctrl
-//    }
-//    
-//    private var capslockDestination: CapsLockDestination {
-//        return UserDefaults.standard.string(forKey: kUDCapsLockMapping).map
-//            { CapsLockDestination(rawValue: $0)! } ?? .none
-//    }
-//    
-//    private func handleCapsLock(with command: UIKeyCommand) {
-//        let dst = self.capslockDestination
-//        var newInput = command.input
-//        var newModifierFlags = command.modifierFlags
-//        newModifierFlags.remove(.alphaShift)
-//        switch dst {
-//        case .esc: newInput = UIKeyInputEscape
-//        case .ctrl: newModifierFlags.formUnion(.control)
-//        case .none: break
-//        }
-//        let newCommand = VimViewController.keyCommand(input: newInput, modifierFlags: newModifierFlags)
-//        self.handleKeyCommand(newCommand)
-//    }
+    enum CapsLockDestination: String {
+        case none
+        case esc
+        case ctrl
+    }
+
+    private var capslockDestination: CapsLockDestination {
+        return UserDefaults.standard.string(forKey: kUDCapsLockMapping).map
+            { CapsLockDestination(rawValue: $0)! } ?? .none
+    }
+    
+    private func handleCapsLock(with command: UIKeyCommand) {
+        let dst = self.capslockDestination
+        var newInput = command.input ?? ""
+        var newModifierFlags = command.modifierFlags
+        newModifierFlags.remove(.alphaShift)
+        if dst == .esc {
+            newInput = UIKeyInputEscape
+        } else {
+            if newInput.isEmpty { return }
+            newModifierFlags.formUnion(.control)
+        }
+        let newCommand = VimViewController.keyCommand(input: newInput, modifierFlags: newModifierFlags)
+        self.handleKeyCommand(newCommand)
+    }
+    
+    private func triggerReservedKeyCommand(input: String, modifierFlags: UIKeyModifierFlags) {
+        let kc = VimViewController.keyCommand(input: input, modifierFlags: modifierFlags)
+        self.keyCommandTriggered(kc)
+    }
+    
+    override func copy(_ sender: Any?) {
+        //handle <D-c>
+        self.triggerReservedKeyCommand(input: "c", modifierFlags: .command)
+    }
+    
+    override func cut(_ sender: Any?) {
+        //handle <D-x>
+        self.triggerReservedKeyCommand(input: "x", modifierFlags: .command)
+    }
+    
+    override func paste(_ sender: Any?) {
+        //handle <D-v>
+        self.triggerReservedKeyCommand(input: "v", modifierFlags: .command)
+    }
+    
+    override func selectAll(_ sender: Any?) {
+        //handle <D-a>
+        self.triggerReservedKeyCommand(input: "a", modifierFlags: .command)
+    }
 }
