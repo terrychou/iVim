@@ -100,18 +100,6 @@ static void* run_function(void* parameters) {
     return NULL;
 }
 
-// Apple utilities:
-// #include "file_cmds_ios.h"
-// #include "shell_cmds_ios.h"
-// #include "text_cmds_ios.h"
-// #include "network_cmds_ios.h"
-// Other utilities
-// #include "curl_ios.h"
-// #include "libarchive_ios.h"
-// #include "Python_ios.h"
-// #include "lua_ios.h"
-// #include "texlive_ios.h"
-
 static NSDictionary *commandList = nil;
 
 static void initializeCommandList()
@@ -169,7 +157,7 @@ static void initializeCommandList()
                     @"fgrep"  : [NSValue valueWithPointer: grep_main],
 #endif
 #ifdef NETWORK_UTILITIES
-                    // This doesn't make sense inside iVim
+                    // Use with caution. Doesn't make sense except inside a terminal.
                     // Commands from Apple network_cmds:
                     @"ping"  : [NSValue valueWithPointer: ping_main],
 #endif
