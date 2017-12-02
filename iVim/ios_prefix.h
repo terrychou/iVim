@@ -13,6 +13,7 @@
 #import <TargetConditionals.h>
 
 #define OK 1
+#define IVIM 1
 #define HAVE_DIRENT_H 1
 #define HAVE_STDARG_H 1
 #define HAVE_OPENDIR 1

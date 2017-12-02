@@ -12630,6 +12630,9 @@ f_has(argvars, rettv)
 #ifdef __BEOS__
 	"beos",
 #endif
+#ifdef IOS
+	"ios",
+#endif
 #ifdef MSDOS
 # ifdef DJGPP
 	"dos32",
@@ -12809,6 +12812,9 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_GUI_GNOME
 	"gui_gnome",
+#endif
+#ifdef FEAT_GUI_IOS
+	"gui_ios",
 #endif
 #ifdef FEAT_GUI_MAC
 	"gui_mac",
@@ -13101,6 +13107,9 @@ f_has(argvars, rettv)
 #endif
 #if defined(UNIX) && defined(FEAT_X11)
 	"X11",
+#endif
+#ifdef IVIM
+	"ivim",
 #endif
 	NULL
     };
