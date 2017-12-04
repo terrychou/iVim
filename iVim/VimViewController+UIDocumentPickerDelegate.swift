@@ -10,7 +10,7 @@ import UIKit
 
 extension VimViewController: UIDocumentPickerDelegate {
     private func showPicker(in mode: UIDocumentPickerMode) {
-        let types = ["public.text", "public.data"]
+        let types = ["public.text", "public.data", "public.folder"]
         let picker = UIDocumentPickerViewController(documentTypes: types, in: mode)
         picker.delegate = self
         self.switchExtendedBarTemporarily(hide: true)
