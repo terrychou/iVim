@@ -13,16 +13,12 @@
 		2219E3461FD824B500675252 /* libarchive_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E34B1FD824B500675252 /* libarchive_ios.framework */; };
 		2219E3471FD824B500675252 /* shell_cmds_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E34C1FD824B500675252 /* shell_cmds_ios.framework */; };
 		2219E3481FD824B500675252 /* text_cmds_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E34D1FD824B500675252 /* text_cmds_ios.framework */; };
-		2219E35C1FD824F800675252 /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3541FD824DD00675252 /* lua_ios.framework */; };
-		2219E35D1FD824F800675252 /* Python_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E35B1FD824E500675252 /* Python_ios.framework */; };
 		2219E3631FD8252F00675252 /* libbibtex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E35E1FD8252E00675252 /* libbibtex.dylib */; };
 		2219E3641FD8252F00675252 /* libluatex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E35F1FD8252E00675252 /* libluatex.dylib */; };
 		2219E3651FD8252F00675252 /* libtexlua52.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3601FD8252F00675252 /* libtexlua52.5.dylib */; };
 		2219E3661FD8252F00675252 /* libpdftex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3611FD8252F00675252 /* libpdftex.dylib */; };
 		2219E3671FD8252F00675252 /* libkpathsea.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3621FD8252F00675252 /* libkpathsea.6.dylib */; };
 		2219E36A1FD8275800675252 /* ios_system.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3421FD821D800675252 /* ios_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2219E36B1FD829CD00675252 /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3541FD824DD00675252 /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2219E36C1FD829D400675252 /* Python_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E35B1FD824E500675252 /* Python_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2219E36D1FD82A5B00675252 /* curl_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3491FD824B500675252 /* curl_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2219E36E1FD82A5B00675252 /* file_cmds_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E34A1FD824B500675252 /* file_cmds_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2219E36F1FD82A5B00675252 /* libarchive_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E34B1FD824B500675252 /* libarchive_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -33,9 +29,12 @@
 		2219E3741FD82A8F00675252 /* libluatex.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E35F1FD8252E00675252 /* libluatex.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2219E3751FD82A8F00675252 /* libpdftex.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3611FD8252F00675252 /* libpdftex.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2219E3761FD82A8F00675252 /* libtexlua52.5.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2219E3601FD8252F00675252 /* libtexlua52.5.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		22C467CB1FD9D7FE00AB2C6E /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22C467CD1FD9D7FE00AB2C6E /* lua_ios.framework */; };
+		22C467CF1FD9D80500AB2C6E /* Python_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22C467CE1FD9D7FE00AB2C6E /* Python_ios.framework */; };
+		22C467D01FD9D80500AB2C6E /* Python_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22C467CE1FD9D7FE00AB2C6E /* Python_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		22C467D21FD9D80B00AB2C6E /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22C467CD1FD9D7FE00AB2C6E /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22D364031FC37D95008A8A76 /* if_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC271F209A93007AFD63 /* if_lua.c */; settings = {COMPILER_FLAGS = "-I ../lua_ios/lua-5.3.4/src/"; }; };
 		22D3640F1FC45ECA008A8A76 /* if_python.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC301F209A93007AFD63 /* if_python.c */; settings = {COMPILER_FLAGS = "-I ../python_ios/Python-2.7.13/Include/ -I ../python_ios/"; }; };
-		22D4BE3F1FBF3995007EDB4B /* ios_system.m in Sources */ = {isa = PBXBuildFile; fileRef = 22D4BE3E1FBF3995007EDB4B /* ios_system.m */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
 		DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D51F6E13CD00373B92 /* ctags_ios.m */; };
@@ -186,20 +185,6 @@
 			remoteGlobalIDString = 223496AB1FD5FC71007ED1A9;
 			remoteInfo = ios_system;
 		};
-		2219E3531FD824DD00675252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2219E34E1FD824DC00675252 /* lua_ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2262086A1FD55B6600E93426;
-			remoteInfo = lua_ios;
-		};
-		2219E35A1FD824E500675252 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2219E3551FD824E400675252 /* Python_ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 22FCCF4F1F0BCFB800F67B0B;
-			remoteInfo = Python_ios;
-		};
 		DE531B071F20941200D71DB3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DE531AEA1F20941100D71DB3 /* Project object */;
@@ -234,14 +219,14 @@
 				2219E3731FD82A8F00675252 /* libkpathsea.6.dylib in Embed Frameworks */,
 				2219E3741FD82A8F00675252 /* libluatex.dylib in Embed Frameworks */,
 				2219E3751FD82A8F00675252 /* libpdftex.dylib in Embed Frameworks */,
+				22C467D01FD9D80500AB2C6E /* Python_ios.framework in Embed Frameworks */,
+				22C467D21FD9D80B00AB2C6E /* lua_ios.framework in Embed Frameworks */,
 				2219E3761FD82A8F00675252 /* libtexlua52.5.dylib in Embed Frameworks */,
 				2219E36D1FD82A5B00675252 /* curl_ios.framework in Embed Frameworks */,
 				2219E36E1FD82A5B00675252 /* file_cmds_ios.framework in Embed Frameworks */,
 				2219E36F1FD82A5B00675252 /* libarchive_ios.framework in Embed Frameworks */,
 				2219E3701FD82A5B00675252 /* shell_cmds_ios.framework in Embed Frameworks */,
 				2219E3711FD82A5B00675252 /* text_cmds_ios.framework in Embed Frameworks */,
-				2219E36C1FD829D400675252 /* Python_ios.framework in Embed Frameworks */,
-				2219E36B1FD829CD00675252 /* lua_ios.framework in Embed Frameworks */,
 				2219E36A1FD8275800675252 /* ios_system.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -267,14 +252,13 @@
 		2219E34B1FD824B500675252 /* libarchive_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = libarchive_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2219E34C1FD824B500675252 /* shell_cmds_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = shell_cmds_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2219E34D1FD824B500675252 /* text_cmds_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = text_cmds_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		2219E34E1FD824DC00675252 /* lua_ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = lua_ios.xcodeproj; path = ../lua_ios/lua_ios.xcodeproj; sourceTree = "<group>"; };
-		2219E3551FD824E400675252 /* Python_ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Python_ios.xcodeproj; path = ../python_ios/Python_ios.xcodeproj; sourceTree = "<group>"; };
 		2219E35E1FD8252E00675252 /* libbibtex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbibtex.dylib; path = ../blink/Frameworks/libbibtex.dylib; sourceTree = "<group>"; };
 		2219E35F1FD8252E00675252 /* libluatex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libluatex.dylib; path = ../blink/Frameworks/libluatex.dylib; sourceTree = "<group>"; };
 		2219E3601FD8252F00675252 /* libtexlua52.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtexlua52.5.dylib; path = ../blink/Frameworks/libtexlua52.5.dylib; sourceTree = "<group>"; };
 		2219E3611FD8252F00675252 /* libpdftex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpdftex.dylib; path = ../blink/Frameworks/libpdftex.dylib; sourceTree = "<group>"; };
 		2219E3621FD8252F00675252 /* libkpathsea.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libkpathsea.6.dylib; path = ../blink/Frameworks/libkpathsea.6.dylib; sourceTree = "<group>"; };
-		22D4BE3E1FBF3995007EDB4B /* ios_system.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ios_system.m; sourceTree = "<group>"; };
+		22C467CD1FD9D7FE00AB2C6E /* lua_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = lua_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		22C467CE1FD9D7FE00AB2C6E /* Python_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Python_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
 		DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UIDocumentPickerDelegate.swift"; sourceTree = "<group>"; };
@@ -3066,9 +3050,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				22C467CF1FD9D80500AB2C6E /* Python_ios.framework in Frameworks */,
+				22C467CB1FD9D7FE00AB2C6E /* lua_ios.framework in Frameworks */,
 				2219E3431FD823EF00675252 /* ios_system.framework in Frameworks */,
-				2219E35C1FD824F800675252 /* lua_ios.framework in Frameworks */,
-				2219E35D1FD824F800675252 /* Python_ios.framework in Frameworks */,
 				2219E3441FD824B500675252 /* curl_ios.framework in Frameworks */,
 				2219E3451FD824B500675252 /* file_cmds_ios.framework in Frameworks */,
 				2219E3461FD824B500675252 /* libarchive_ios.framework in Frameworks */,
@@ -3114,25 +3098,11 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2219E34F1FD824DC00675252 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2219E3541FD824DD00675252 /* lua_ios.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		2219E3561FD824E400675252 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2219E35B1FD824E500675252 /* Python_ios.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		22D4BE5D1FC076F4007EDB4B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				22C467CD1FD9D7FE00AB2C6E /* lua_ios.framework */,
+				22C467CE1FD9D7FE00AB2C6E /* Python_ios.framework */,
 				2219E35E1FD8252E00675252 /* libbibtex.dylib */,
 				2219E3621FD8252F00675252 /* libkpathsea.6.dylib */,
 				2219E35F1FD8252E00675252 /* libluatex.dylib */,
@@ -6708,8 +6678,6 @@
 		DE531AE91F20941100D71DB3 = {
 			isa = PBXGroup;
 			children = (
-				2219E3551FD824E400675252 /* Python_ios.xcodeproj */,
-				2219E34E1FD824DC00675252 /* lua_ios.xcodeproj */,
 				2219E3381FD821D800675252 /* ios_system.xcodeproj */,
 				DE5C50C41F6E13CD00373B92 /* ctags58 */,
 				DE44D42D1F209A89007AFD63 /* vim */,
@@ -6754,7 +6722,6 @@
 				DE44D4241F209661007AFD63 /* URLSchemeWorker.swift */,
 				DE44D4251F209661007AFD63 /* GlobalConfiguration.swift */,
 				DE44DC011F209A93007AFD63 /* gui_ios.m */,
-				22D4BE3E1FBF3995007EDB4B /* ios_system.m */,
 				DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */,
 				DE7BA7A71F21AFD300705E67 /* iVim-Bridging-Header.h */,
 				DE531AF91F20941100D71DB3 /* Main.storyboard */,
@@ -7109,14 +7076,6 @@
 					ProductGroup = 2219E3391FD821D800675252 /* Products */;
 					ProjectRef = 2219E3381FD821D800675252 /* ios_system.xcodeproj */;
 				},
-				{
-					ProductGroup = 2219E34F1FD824DC00675252 /* Products */;
-					ProjectRef = 2219E34E1FD824DC00675252 /* lua_ios.xcodeproj */;
-				},
-				{
-					ProductGroup = 2219E3561FD824E400675252 /* Products */;
-					ProjectRef = 2219E3551FD824E400675252 /* Python_ios.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -7134,20 +7093,6 @@
 			fileType = wrapper.framework;
 			path = ios_system.framework;
 			remoteRef = 2219E3411FD821D800675252 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2219E3541FD824DD00675252 /* lua_ios.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = lua_ios.framework;
-			remoteRef = 2219E3531FD824DD00675252 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2219E35B1FD824E500675252 /* Python_ios.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Python_ios.framework;
-			remoteRef = 2219E35A1FD824E500675252 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -7210,7 +7155,6 @@
 				DE5C51911F6E159C00373B92 /* erlang.c in Sources */,
 				DE7BA7B91F21EB3300705E67 /* syntax.c in Sources */,
 				DE7BA7BA1F21EB5600705E67 /* ex_eval.c in Sources */,
-				22D4BE3F1FBF3995007EDB4B /* ios_system.m in Sources */,
 				DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */,
 				DE5C51AB1F6E16A000373B92 /* perl.c in Sources */,
 				DE7BA7C11F21EED100705E67 /* buffer.c in Sources */,
@@ -7516,6 +7460,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
 				DEVELOPMENT_TEAM = VG8Z23C8YL;
+				ENABLE_BITCODE = NO;
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
 				INFOPLIST_FILE = iVim/Info.plist;
@@ -7548,6 +7493,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
 				DEVELOPMENT_TEAM = VG8Z23C8YL;
+				ENABLE_BITCODE = NO;
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
 				INFOPLIST_FILE = iVim/Info.plist;
