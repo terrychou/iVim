@@ -91,11 +91,13 @@ extension VimViewController {
     
     func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
         //print(#function)
+        guard fromPosition.isValid && toPosition.isValid else { return nil }
         return VimTextRange(start: fromPosition.position, end: toPosition.position)
     }
     
     func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
         //print(#function)
+        guard position.isValid else { return nil }
         let loc = position.position.location
         let new = loc + offset
         guard new >= 0 && new <= self.currentTextLength else { return nil }
@@ -139,6 +141,7 @@ extension VimViewController {
     
     func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
         //print(#function)
+        guard from.isValid && toPosition.isValid else { return 0 }
         return toPosition.position.location - from.position.location
     }
     
@@ -227,7 +230,40 @@ extension VimViewController {
     }
 }
 
+extension VimViewController {
+    func insertDictationResult(_ dictationResult: [UIDictationPhrase]) {
+        guard !dictationResult.isEmpty else { return }
+        let text = dictationResult.map { $0.text }.joined()
+        gAddNonCSITextToInputBuffer(text)
+    }
+    
+    func dictationRecordingDidEnd() {
+//        NSLog("dictation END")
+    }
+    
+    func dictationRecognitionFailed() {
+//        NSLog("dictation FAILED")
+        DispatchQueue.main.async {
+            gSVO.showErrContent("dictation FAILED")
+        }
+    }
+    
+    var insertDictationResultPlaceholder: Any {
+        return 1
+    }
+    
+    func removeDictationResultPlaceholder(_ placeholder: Any, willInsertResult: Bool) {
+        //this method is needed for preventing unclear whitespaces from being inserted
+        return
+    }
+}
+
 private extension UITextPosition {
+    var isValid: Bool {
+        //first time I wrote something like this, but it works
+        return self != nil
+    }
+    
     var position: VimTextPosition {
         return self as! VimTextPosition
     }
