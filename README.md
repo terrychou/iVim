@@ -51,7 +51,7 @@ The modification is that you *can* call shell commands (a first for iOS).
 
 There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside iVim sandbox. The other is that you need to redirect the output: "!ls" produces nothing, "!ls > result" does. Commands sent by iVim plugins do this naturally, but it also applies to commands you write yourself.
 
-There is only a small number of shell commands available. They come from the [ios_system](https://github.com/holzschu/ios_system) package, which you will have to download separately. 
+There is only a small number of shell commands available. They come from the [ios_system](https://github.com/holzschu/ios_system) package. If you want to edit commands (add new commands, remove some...) you can download the source and compile it. 
 
 The most useful commands are: 
 - rmdir (not available otherwise), 
