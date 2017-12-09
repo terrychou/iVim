@@ -9,7 +9,8 @@ curl -OL $HHROOT/iVim/releases/download/v0.1/frameworks.tar.gz
 ( tar xvzf frameworks.tar.gz && rm frameworks.tar.gz ) || { echo "ios_system failed to download"; exit 1; }
 )
 
-# Optional: get also sources for Python and Lua:
+# We need the sources for Python and Lua, for the headers
+# included by if_lua and if_python.
 ( # Python_ios
 cd "${BASH_SOURCE%/*}/.."
 git clone https://github.com/holzschu/python_ios
@@ -22,4 +23,4 @@ git clone https://github.com/holzschu/lua_ios
 cd "lua_ios"
 sh ./get_lua_source.sh
 )
-
+echo "All done. Now open iVim.xcodeproj, enter your Apple ID, and compile"
