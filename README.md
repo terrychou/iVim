@@ -36,7 +36,7 @@ To download iVim and the associated frameworks, after you've cloned it, type:
 ```bash
  ./get_frameworks.sh
 ``` 
-This will download precompiled frameworks for `ios_system` (including Python and Lua) and TeX. Then, compile: 
+This will download precompiled frameworks for `ios_system` (including Python and Lua) and TeX, plus the headers required to compile iVim with Python or Lua support. Then, compile: 
 
 1. Open iVim.xcodeproj in Xcode
 2. In General > Identity of target iVim and iVimShare, change their bundle identities to your own unique ones, and select your Apple ID to sign them. As to the App Group, it requires a paid Apple ID. If yours is, change the App Group identifier for these two targets to your own; if not, just turn them off (the only difference is that you cannot share text to iVim when it is off)
