@@ -62,6 +62,21 @@ The most useful commands are:
 
 Additional commands are available from my ports of [python](https://github.com/holzschu/python_ios), [lua](https://github.com/holzschu/lua_ios) and [TeX](https://github.com/holzschu/lib-tex). These only provide the commands. You will need to download the auxiliary files (python modules, TeX formats and style files) yourself, inside iVim file system.
 
+### Environment variables
+
+In iOS, you cannot write in the `~` directory, only in `~/Documents/`, `~/Library/` and `~/tmp`. Most Unix programs assume the configuration files are in `$HOME`. To solve this, iVim redefined `$HOME` to `~/Documents/`. You might still need to redefine environment variables (in your .vimrc) for several programs:
+
+Here's what I have in my .vimrc:
+```vimscript
+let $PATH .= ':'.$HOME.'/../Library/bin:'.$HOME.'/bin'
+let $PYTHONHOME = $HOME.'/../Library/'
+let $SSH_HOME = $HOME
+let $CURL_HOME = $HOME
+les $SSL_CERT_FILE = $HOME.'/cacert.pem'
+let $HGRCPATH = $HOME.'/.hgrc'
+map <D-o> :idocuments <CR>
+```
+
 ## Giants' shoulders
 
 iVim was inspired by and based on 3 projects:
