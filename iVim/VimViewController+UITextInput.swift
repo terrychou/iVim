@@ -91,14 +91,16 @@ extension VimViewController {
     
     func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
         //print(#function)
-        guard fromPosition.isValid && toPosition.isValid else { return nil }
-        return VimTextRange(start: fromPosition.position, end: toPosition.position)
+        guard let fp = fromPosition as? VimTextPosition,
+            let tp = toPosition as? VimTextPosition else { return nil }
+
+        return VimTextRange(start: fp, end: tp)
     }
     
     func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
         //print(#function)
-        guard position.isValid else { return nil }
-        let loc = position.position.location
+        guard let p = position as? VimTextPosition else { return nil }
+        let loc = p.location
         let new = loc + offset
         guard new >= 0 && new <= self.currentTextLength else { return nil }
         
@@ -128,11 +130,14 @@ extension VimViewController {
     
     func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
         //print(#function)
-        let lhp = position.position.location
-        let rhp = other.position.location
-        if lhp == rhp {
-            return .orderedSame
-        } else if lhp < rhp {
+        let lhp = (position as? VimTextPosition)?.location
+        let rhp = (other as? VimTextPosition)?.location
+        guard lhp != rhp else { return .orderedSame }
+        if lhp == nil {
+            return .orderedAscending
+        } else if rhp == nil {
+            return .orderedDescending
+        } else if lhp! < rhp! {
             return .orderedAscending
         } else {
             return .orderedDescending
@@ -141,13 +146,16 @@ extension VimViewController {
     
     func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
         //print(#function)
-        guard from.isValid && toPosition.isValid else { return 0 }
-        return toPosition.position.location - from.position.location
+        guard let fp = from as? VimTextPosition,
+            let tp = toPosition as? VimTextPosition else { return 0 }
+        
+        return tp.location - fp.location
     }
     
     func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
         //print(#function)
-        let r = (range as! VimTextRange).nsrange
+        guard let vtr = range as? VimTextRange else { return nil }
+        let r = vtr.nsrange
         let newLoc: Int
         switch direction {
         case .up, .left: newLoc = r.location
@@ -159,7 +167,8 @@ extension VimViewController {
     
     func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
         //print(#function)
-        let oldLoc = position.position.location
+        guard let p = position as? VimTextPosition else { return nil }
+        let oldLoc = p.location
         let newLoc: Int
         switch direction {
         case .up, .left: newLoc = oldLoc - 1
@@ -255,17 +264,6 @@ extension VimViewController {
     func removeDictationResultPlaceholder(_ placeholder: Any, willInsertResult: Bool) {
         //this method is needed for preventing unclear whitespaces from being inserted
         return
-    }
-}
-
-private extension UITextPosition {
-    var isValid: Bool {
-        //first time I wrote something like this, but it works
-        return self != nil
-    }
-    
-    var position: VimTextPosition {
-        return self as! VimTextPosition
     }
 }
 
