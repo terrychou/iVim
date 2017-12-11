@@ -2718,15 +2718,20 @@ list_version()
     MSG_PUTS(_("\n16-bit MS-DOS version"));
 # endif
 #endif
-#ifdef MACOS
-# ifdef MACOS_X
-#  ifdef MACOS_X_UNIX
-    MSG_PUTS(_("\nMacOS X (unix) version"));
-#  else
-    MSG_PUTS(_("\nMacOS X version"));
-#  endif
+#ifdef FEAT_GUI_IOS
+    MSG_PUTS(_("\n"));
+    MSG_PUTS(_(gui_version_info()));
 #else
+# ifdef MACOS
+#  ifdef MACOS_X
+#   ifdef MACOS_X_UNIX
+    MSG_PUTS(_("\nMacOS X (unix) version"));
+#   else
+    MSG_PUTS(_("\nMacOS X version"));
+#   endif
+#  else
     MSG_PUTS(_("\nMacOS version"));
+#  endif
 # endif
 #endif
 
@@ -3019,7 +3024,10 @@ intro_message(colon)
 	N_("version "),
 	N_("by Bram Moolenaar et al."),
 #ifdef MODIFIED_BY
-	" ",
+    " ",
+//# ifdef FEAT_GUI_IOS
+//    gui_version_info(),
+//# endif
 #endif
 	N_("Vim is open source and freely distributable"),
 	"",
@@ -3159,8 +3167,14 @@ do_intro_line(row, mesg, add_version, attr)
 
     if (*mesg == ' ')
     {
-	vim_strncpy(modby, (char_u *)_("Modified by "), MODBY_LEN - 1);
-	l = STRLEN(modby);
+# ifdef FEAT_GUI_IOS
+        vim_strncpy(modby, gui_version_info(), MODBY_LEN - 1);
+        int gl = STRLEN(modby);
+        vim_strncpy(modby + gl, (char_u *)_(" by "), MODBY_LEN - gl - 1);
+# else
+        vim_strncpy(modby, (char_u *)_("Modified by "), MODBY_LEN - 1);
+# endif
+    l = STRLEN(modby);
 	vim_strncpy(modby + l, (char_u *)MODIFIED_BY, MODBY_LEN - l - 1);
 	mesg = modby;
     }

@@ -121,10 +121,10 @@ void input_special_name(const char * name) {
     add_to_input_buf(re, len);
 }
 
-NSString *lookupStringConstant(NSString *constantName) {
-    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetMainBundle(), (__bridge CFStringRef)constantName);
-    return (__bridge NSString *)(dataPtr ? *dataPtr : nil);
-}
+//NSString *lookupStringConstant(NSString *constantName) {
+//    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetMainBundle(), (__bridge CFStringRef)constantName);
+//    return (__bridge NSString *)(dataPtr ? *dataPtr : nil);
+//}
 
 
 #define RGB(r,g,b)	((r) << 16) + ((g) << 8) + (b)
@@ -166,6 +166,26 @@ static VimView * shellView(void) {
     }
     
     return view;
+}
+
+static NSString * bundle_info_for_name(NSString * name) {
+    return [[NSBundle mainBundle] objectForInfoDictionaryKey:name];
+}
+
+/*
+ * gui version info line
+ */
+char_u * gui_version_info(void) {
+    static char_u * info;
+    if (info == NULL) {
+        NSString * name = bundle_info_for_name(@"CFBundleName");
+        NSString * version = bundle_info_for_name(@"CFBundleShortVersionString");
+        NSString * build = bundle_info_for_name((NSString *)kCFBundleVersionKey);
+        NSString * line = [NSString stringWithFormat:@"%@ version %@(%@)", name, version, build];
+        info = TOCHARS(line);
+    }
+    
+    return info;
 }
 
 CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
