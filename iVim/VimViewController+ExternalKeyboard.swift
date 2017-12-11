@@ -28,8 +28,10 @@ extension VimViewController {
         }
     }
     
-    private var isInEnglish: Bool {
-        return self.textInputMode?.primaryLanguage?.hasPrefix("en") ?? false
+    private var shouldRemapCapslock: Bool {
+        guard let lang = self.textInputMode?.primaryLanguage else { return false }
+
+        return lang.hasPrefix("en") || lang.hasPrefix("dictation")
     }
     
     func registerExternalKeyboardNotifications(to nfc: NotificationCenter) {
@@ -46,7 +48,7 @@ extension VimViewController {
     }
     
     private func updateCapslockDst() {
-        let dst = self.isInEnglish ? self.capslockDestination : .none
+        let dst = self.shouldRemapCapslock ? self.capslockDestination : .none
         guard self.currentCapslockDst != dst else { return }
         DispatchQueue.main.async {
             if dst == .none {
