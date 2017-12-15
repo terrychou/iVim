@@ -31,15 +31,18 @@ extension VimViewController {
             self.resetKeyboard()
             self.unmarkText()
         } else {
-            input_special_key(key)
+            self.insertSpecialKey(key)
         }
     }
     
     func pressESC() {
-        if self.markedInfo == nil {
-            self.insertText(keyESC.unicoded)
-        } else {
+        if self.markedInfo != nil {
             self.cancelCurrentMarkedText()
+        } else if self.dictationHypothesis != nil {
+            self.cleanupDictationHypothesis()
+            self.resetKeyboard()
+        } else {
+            self.insertText(keyESC.unicoded)
         }
     }
     

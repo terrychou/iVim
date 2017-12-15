@@ -220,12 +220,12 @@ static void show_error_message(NSString * err_msg) {
 /* 
  * Declarations for ex command functions
  */
-void ex_ifont(exarg_T *);
-void ex_ideletefont(exarg_T *);
-void ex_idocuments(exarg_T *);
-void ex_ishare(exarg_T *);
-void ex_ictags(exarg_T *);
-//void ex_ifontsize(exarg_T * eap);
+static void ex_ifont(exarg_T *);
+static void ex_ideletefont(exarg_T *);
+static void ex_idocuments(exarg_T *);
+static void ex_ishare(exarg_T *);
+static void ex_ictags(exarg_T *);
+//static void ex_ifontsize(exarg_T * eap);
 
 /*
  * Extended ex commands dispatcher
@@ -256,7 +256,7 @@ void ex_ios_cmds(exarg_T * eap) {
  * Handling function for command *ifont*
  */
 
-void ex_ifont(exarg_T * eap) {
+static void ex_ifont(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0) {
         NSString * cmd = TONSSTRING(eap->cmd);
@@ -269,7 +269,7 @@ void ex_ifont(exarg_T * eap) {
 /*
  * Handling function for command *ideletefont*
  */
-void ex_ideletefont(exarg_T * eap) {
+static void ex_ideletefont(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0) {
         [[VimFontsManager shared] showAvailableFontsWithCommand:TONSSTRING(eap->cmd)];
@@ -281,7 +281,7 @@ void ex_ideletefont(exarg_T * eap) {
 /*
  * Handling function for command *idocuments*
  */
-void ex_idocuments(exarg_T * eap) {
+static void ex_idocuments(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0 || [arg isEqualToString:@"open"]) {
         [shellViewController() pickDocument];
@@ -295,7 +295,7 @@ void ex_idocuments(exarg_T * eap) {
  */
 static void execute_ctags(NSString *);
 static NSArray * ctags_args(NSString *);
-void ex_ictags(exarg_T * eap) {
+static void ex_ictags(exarg_T * eap) {
     execute_ctags(TONSSTRING(eap->cmd));
 }
 
@@ -390,7 +390,7 @@ NSString * get_text_between(linenr_T line1, linenr_T line2) {
 /*
  * Handling function for command *ishare*
  */
-void ex_ishare(exarg_T * eap) {
+static void ex_ishare(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if (eap->addr_count > 0) {
         NSString * text = get_text_between(eap->line1, eap->line2);

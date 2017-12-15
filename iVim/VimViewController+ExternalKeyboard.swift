@@ -183,7 +183,7 @@ extension VimViewController {
                 }
                 keys.append(l)
             }
-            input_special_name("<\(keys)>")
+            self.insertSpecialName("<\(keys)>")
         }
     }
     

@@ -19,6 +19,7 @@ extension VimViewController {
     
     func text(in range: UITextRange) -> String? {
         //print(#function)
+        if self.isInDictation { return self.dictationHypothesis }
         guard let range = range as? VimTextRange else { return nil }
         
         return self.currentText?.nsstring.substring(with: range.nsrange)
@@ -26,6 +27,7 @@ extension VimViewController {
     
     func replace(_ range: UITextRange, withText text: String) {
         //print(#function)
+        self.updateDictationHypothesis(with: text)
     }
     
     var selectedTextRange: UITextRange? {
@@ -34,6 +36,7 @@ extension VimViewController {
             return VimTextRange(range: self.markedInfo?.selectedRange)
         }
         set {
+            //print(#function)
             guard let nv = newValue as? VimTextRange else { return }
             self.markedInfo?.selectedRange = nv.nsrange
         }
@@ -240,10 +243,41 @@ extension VimViewController {
 }
 
 extension VimViewController {
+    private var isInDictation: Bool {
+        return self.dictationHypothesis != nil ||
+            (self.textInputMode?.primaryLanguage?.hasPrefix("dictation") ?? false)
+    }
+    
+    private var shouldDoLiveDictation: Bool {
+        return !is_in_normal_mode()
+    }
+    
+    private func updateDictationHypothesis(with text: String) {
+        guard self.isInDictation else { return }
+        self.cleanupDictationHypothesis(andSet: text)
+        guard self.shouldDoLiveDictation else { return }
+        gFeedKeys(text, mode: "n")
+    }
+    
+    func cleanupDictationHypothesis(andSet text: String? = nil) {
+        if let len = self.dictationHypothesis?.nsLength,
+            self.shouldDoLiveDictation {
+            gFeedKeys("\\<BS>", for: len, mode: "n")
+        }
+        self.dictationHypothesis = text
+    }
+    
     func insertDictationResult(_ dictationResult: [UIDictationPhrase]) {
+        if self.dictationHypothesis == nil { return } //do nothing if cancelled
         guard !dictationResult.isEmpty else { return }
         let text = dictationResult.map { $0.text }.joined()
-        gAddNonCSITextToInputBuffer(text)
+        self.cleanupDictationHypothesis()
+        let allowsMapping = is_in_normal_mode()
+        if !allowsMapping {
+            gFeedKeys(text, mode: "n")
+        } else {
+            gAddNonCSITextToInputBuffer(text.trimmingCharacters(in: .whitespaces))
+        }
     }
     
     func dictationRecordingDidEnd() {
@@ -252,6 +286,7 @@ extension VimViewController {
     
     func dictationRecognitionFailed() {
 //        NSLog("dictation FAILED")
+        self.cleanupDictationHypothesis()
         DispatchQueue.main.async {
             gSVO.showErrContent("dictation FAILED")
         }
@@ -329,10 +364,11 @@ extension MarkedInfo {
     }
     
     private func deleteBackward(for times: Int) {
+        gFeedKeys("\\<BS>", for: times, mode: "n")
 //        gAddTextToInputBuffer(keyBS.unicoded, for: times)
-        for _ in 0..<times {
-            input_special_key(keyBS)
-        }
+//        for _ in 0..<times {
+//            input_special_key(keyBS)
+//        }
     }
     
     func deleteOldMarkedText() {

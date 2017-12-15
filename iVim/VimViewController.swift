@@ -35,6 +35,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var textTokenizer: UITextInputStringTokenizer!
     var markedInfo: MarkedInfo?
+    var dictationHypothesis: String?
     var isNormalPending = false
     
     var shouldTuneFrame = true
@@ -174,11 +175,15 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         return true
     }
     
+    var allowsInsertingText: Bool {
+        return self.dictationHypothesis == nil
+    }
+    
     func handleModifiers(with text: String) -> Bool {
         if self.ctrlEnabled {
             self.ctrlButton!.tryRestore()
             let t = text == "\n" ? "CR" : text
-            input_special_name("<C-\(t)>")
+            self.insertSpecialName("<C-\(t)>")
             return true
         }
         
@@ -192,7 +197,18 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }
     }
     
+    func insertSpecialKey(_ key: Int32) {
+        guard self.allowsInsertingText else { return }
+        input_special_key(key)
+    }
+    
+    func insertSpecialName(_ name: String) {
+        guard self.allowsInsertingText else { return }
+        input_special_name(name)
+    }
+    
     func insertText(_ text: String) {
+        guard self.allowsInsertingText else { return } //no input during dictation
         self.markedInfo?.deleteOldMarkedText() //handle the alt- input
         if self.handleModifiers(with: text) { return }
         self.addToInputBuffer(self.escapingText(text))
