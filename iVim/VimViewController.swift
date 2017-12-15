@@ -10,7 +10,7 @@
 import UIKit
 import MobileCoreServices
 
-enum blink_state {
+private enum blink_state {
     case none     /* not blinking at all */
     case off     /* blinking, cursor is not shown */
     case on        /* blinking, cursor is shown */
@@ -23,7 +23,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     @objc var blink_wait: CLong = 1000
     @objc var blink_on: CLong = 1000
     @objc var blink_off: CLong = 1000
-    var state: blink_state = .none
+    private var state: blink_state = .none
     var blinkTimer: Timer?
     
     var documentController: UIDocumentInteractionController?
@@ -195,11 +195,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         case "\n": return keyCAR.unicoded
         default: return text
         }
-    }
-    
-    func insertSpecialKey(_ key: Int32) {
-        guard self.allowsInsertingText else { return }
-        input_special_key(key)
     }
     
     func insertSpecialName(_ name: String) {

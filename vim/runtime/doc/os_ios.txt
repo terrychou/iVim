@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Nov 29
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Dec 15
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -22,15 +22,16 @@ the newer iOS systems. This project started from it.
 
 ==============================================================================
 
-1. File system				|ios-file-system|
-2. Font management			|ios-font-management|
-3. Extended keyboard			|ios-extended-keyboard|
-4. Multi-stage language support		|ios-multistage-language|
-5. Share				|ios-share|
-6. Settings				|ios-settings|
-7. External keyboard			|ios-external-keyboard|
-8. Integrated Exuberant Ctags		|ios-exuberant-ctags|
-9. Miscellaneous			|ios-miscellaneous|
+1.  File system				|ios-file-system|
+2.  Font management			|ios-font-management|
+3.  Extended keyboard			|ios-extended-keyboard|
+4.  Multi-stage language support	|ios-multistage-language|
+5.  Dictation				|ios-dictation|
+6.  Share				|ios-share|
+7.  Settings				|ios-settings|
+8.  External keyboard			|ios-external-keyboard|
+9.  Integrated Exuberant Ctags		|ios-exuberant-ctags|
+10. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -142,18 +143,71 @@ inserted at the cursor. The candidates will be listed at the top of the
 keyboard. When a candidate is confirmed, it will replace the existing keys 
 and this session ends.
 
-Pressing ESC will cancel current multistage input session and all input keys 
+Pressing `esc` will cancel current multistage input session and all input keys 
 will be deleted.
 
 Tapping on screen or pressing arrow keys will end current multistage input 
 session and the existing keys will be confirmed as the result.
 
-Note: The key pressings will be translated into normal ones if it is not in 
-INSERT mode.
+Note: a. The key pressings will be translated into normal ones if it is not in 
+|Insert| mode. b. Multistage input will stop working during dictation as
+mentioned in |ios-dictation|.
 
 
 ==============================================================================
-5. Share				*ios-share*
+5. Dictation				*ios-dictation*
+
+iVim supports dictation input of iOS systems.
+
+Behaviors ~
+
+In most scenarios, dictation input is live. It means that the hypothesis will 
+keep updating during a dictation session. As a result, mappings will be
+ignored while dictating.
+
+One exception is the |Normal| mode:
+
+a. The dictation result will not count as the input until the session is done.
+
+b. Mappings will work.
+
+c. The spaces at the ends of the final result will be trimmed.
+
+d. All the special designs are for a better user control in this mode. (e.g.
+mapping phrases to trigger commands.)
+
+Interruptions ~
+
+Besides the normal ways to stop a dictation session, you could interrupt it by
+doing one of the followings:
+
+a. Pressing `esc` will cancel the input. It will clean the exisitng hypothesis
+and exit dictation.
+
+b. Pressing any arrow key will stop the input. It will accept the exiting
+result and exit dictation.
+
+c. Tapping the screen will act as the arrow keys do.
+
+d. Any other key pressing will be ignored during a session.
+
+External Hardware Keyboard ~
+
+If you have a hardware keyboard connected, some points are worth mentioning:
+
+a. Normally, the on-screen keyboard is hidden. To activate the dictation, you
+need to toggle it out first. (pressing `eject` key may do.)
+
+b. Sometimes the dictation button may not appear on the on-screen keyboard. 
+Changing to another keyboard then back may bring it back.
+
+c. Multistage input will stop working while the dictation keyboard is present.
+
+d. Keyboard layout settings may not be respected during dictation.
+
+
+==============================================================================
+6. Share				*ios-share*
 
 Sharing makes iVim's editing power available to more apps. 
 
@@ -209,7 +263,7 @@ Type ":help :ishare" or ":help :idocuments" for more detailed information.
 
 
 ==============================================================================
-6. Settings						*ios-settings*
+7. Settings						*ios-settings*
 
 Because there are scenarios where vim's options cannot cover, iVim also
 provides some setting options in the system's Settings app.
@@ -241,7 +295,7 @@ input.
 
 
 ==============================================================================
-7. External keyboard				*ios-external-keyboard*
+8. External keyboard				*ios-external-keyboard*
 
 iVim supports the external hardware keyboard. You can connect the keyboard to
 your iOS device and start typing in iVim.
@@ -270,9 +324,11 @@ input will be ignored; for an alternative to extended symbol input, you may
 refer to |digraph|; however, the `alt` mapping mentioned in c. will still work 
 if enabled.
 
+h. there are some caveats worth noting when it comes to |ios-dictation|.
+
 
 ==============================================================================
-8. Integrated Exuberant Ctags			*ios-exuberant-ctags*
+9. Integrated Exuberant Ctags			*ios-exuberant-ctags*
 
 Exuberant Ctags |Exuberant_ctags| is a great tool to generate tags for
 programming languages. Its resulting tags are directly supported by vim. 
@@ -289,7 +345,7 @@ Type ":help :ictags" for details about the command.
 
 
 ==============================================================================
-9. Miscellaneous			*ios-miscellaneous* *ios-misc*
+10. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 

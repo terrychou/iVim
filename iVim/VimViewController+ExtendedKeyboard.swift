@@ -30,8 +30,10 @@ extension VimViewController {
         if self.markedInfo != nil {
             self.resetKeyboard()
             self.unmarkText()
+        } else if self.dictationHypothesis != nil {
+            self.resetKeyboard()
         } else {
-            self.insertSpecialKey(key)
+            input_special_key(key)
         }
     }
     
