@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Dec 15
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Dec 18
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -159,23 +159,44 @@ mentioned in |ios-dictation|.
 
 iVim supports dictation input of iOS systems.
 
-Behaviors ~
+Behavior ~
 
 In most scenarios, dictation input is live. It means that the hypothesis will 
 keep updating during a dictation session. As a result, mappings will be
-ignored while dictating.
+ignored while dictating. One exception is the |Normal| mode, as described
+below.
 
-One exception is the |Normal| mode:
+Normal mode ~
 
-a. The dictation result will not count as the input until the session is done.
+Because of the characteristics of dictation input and |Normal| mode, the 
+former needs special handling for the latter in two ways:
 
-b. Mappings will work.
+a. Automatical mode jumping
 
-c. The spaces at the ends of the final result will be trimmed.
+iVim will change the mode from |Normal| to a chosen one when dictation happens
+in the |Normal| mode. The existing dictation result will be passed to the new
+mode. This can be set up as described in `Dictation` part of |ios-settings|.
 
-d. All the special designs are for a better user control in this mode. (e.g.
-mapping phrases to trigger commands.)
+b. Leaving it to users
 
+In this case, the dictation result will be passed to iVim as if users had 
+typed it. For example, if the result is "insert", iVim will enter the |Insert|
+mode and "nsert" will be inserted.
+
+For a better user control in this way, the dication results will be handled
+specially. A dictation result won't be counted as the input until the user
+confirms by ending the session explicitly. The space characters at the ends of
+the final result, if there is any, will be trimmed. Mappings will work in this
+situation for users to obtain more concise commands. Example: >
+
+	John sets a normal mode mapping from "insert mode" to "i". In the 
+	normal mode, he activates the dication keyboard, says "insert mode",
+	and ends the session by tapping the "Done" button. Although the 
+	dictation result is actually " insert mode", the first space char is
+	trimmed and "insert mode" is passed to iVim. Then iVim finds the
+	existing mapping for it, and it is mapped to the target "i". As a 
+	result, iVim enters the insert mode.
+<
 Interruptions ~
 
 Besides the normal ways to stop a dictation session, you could interrupt it by
@@ -191,19 +212,21 @@ c. Tapping the screen will act as the arrow keys do.
 
 d. Any other key pressing will be ignored during a session.
 
-External Hardware Keyboard ~
+External hardware keyboard ~
 
 If you have a hardware keyboard connected, some points are worth mentioning:
 
-a. Normally, the on-screen keyboard is hidden. To activate the dictation, you
-need to toggle it out first. (pressing `eject` key may do.)
+a. Activate dictatoin input
 
-b. Sometimes the dictation button may not appear on the on-screen keyboard. 
-Changing to another keyboard then back may bring it back.
+Normally, the on-screen keyboard is hidden. To activate the dictation, you
+need to toggle it out first (pressing `eject` key would do). Sometimes, the 
+dictation button may not appear on the on-screen keyboard. Changing to another 
+keyboard then back may bring it out again.
 
-c. Multistage input will stop working while the dictation keyboard is present.
+b. Things broken
 
-d. Keyboard layout settings may not be respected during dictation.
+Multistage input will stop working while the dictation keyboard is present. 
+And keyboard layout settings may not be respected during dictation.
 
 
 ==============================================================================
@@ -292,6 +315,16 @@ b. Enable [alt] Mapping
 When enabled, it will map keystrokes with modifier `alt` to |<A-| chords in 
 iVim. Otherwise, they will be handled by iOS system for extended symbols 
 input.
+
+Dictation ~
+
+Force normal mode to
+Dictation input is handled specially in |Normal| mode. This option tells iVim
+the target mode to jump to when dictation happens in |Normal| mode. 
+
+`insert_mode` means iVim will enter |Insert| mode; `command_line_mode` targets
+|Cmdline| mode; `none` will not do mode jumping at all. Refer to `Normal_mode`
+part of |ios-dictation| for details.
 
 
 ==============================================================================

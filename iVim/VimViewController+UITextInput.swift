@@ -8,6 +8,8 @@
 
 import UIKit
 
+private let kUDDictationNormalModeTarget = "kUDDictationNormalModeTarget"
+
 extension VimViewController {
     private var currentText: String? {
         return self.markedInfo?.text
@@ -243,13 +245,38 @@ extension VimViewController {
 }
 
 extension VimViewController {
+    private enum DictationNormalModeTarget: String {
+        case insert
+        case cmdline
+        case none
+    }
+    
+    private var normalModeTarget: DictationNormalModeTarget {
+        guard let v = UserDefaults.standard.string(
+            forKey: kUDDictationNormalModeTarget) else { return .insert }
+        
+        return DictationNormalModeTarget(rawValue: v)!
+    }
+    
+    private func shouldGoOnAfterHandlingDictationInNormalMode() -> Bool {
+        guard is_in_normal_mode() else { return true }
+        var jumpCmd: String?
+        switch self.normalModeTarget {
+        case .insert: jumpCmd = "i"
+        case .cmdline: jumpCmd = ":"
+        case .none: break
+        }
+        if let jc = jumpCmd {
+            gFeedKeys(jc, mode: "n")
+            return true
+        } else {
+            return false
+        }
+    }
+    
     private var isInDictation: Bool {
         return self.dictationHypothesis != nil ||
             (self.textInputMode?.primaryLanguage?.hasPrefix("dictation") ?? false)
-    }
-    
-    private var shouldDoLiveDictation: Bool {
-        return !is_in_normal_mode()
     }
     
     private func inputTextWithoutMapping(_ text: String) {
@@ -260,13 +287,14 @@ extension VimViewController {
     private func updateDictationHypothesis(with text: String) {
         guard self.isInDictation else { return }
         self.cleanupDictationHypothesis(andSet: text)
-        guard self.shouldDoLiveDictation else { return }
-        self.inputTextWithoutMapping(text)
+        if self.shouldGoOnAfterHandlingDictationInNormalMode() {
+            self.inputTextWithoutMapping(text)
+        }
     }
     
     func cleanupDictationHypothesis(andSet text: String? = nil) {
         if let len = self.dictationHypothesis?.nsLength,
-            self.shouldDoLiveDictation {
+            !is_in_normal_mode() {
             gFeedKeys("\\<BS>", for: len, mode: "n")
         }
         self.dictationHypothesis = text
@@ -277,8 +305,7 @@ extension VimViewController {
         guard !dictationResult.isEmpty else { return }
         let text = dictationResult.map { $0.text }.joined()
         self.cleanupDictationHypothesis()
-        let allowsMapping = is_in_normal_mode()
-        if !allowsMapping {
+        if !is_in_normal_mode() {
             self.inputTextWithoutMapping(text)
         } else {
             gAddNonCSITextToInputBuffer(text.trimmingCharacters(in: .whitespaces))

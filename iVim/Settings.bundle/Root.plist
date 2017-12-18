@@ -82,6 +82,36 @@
 			<key>DefaultValue</key>
 			<false/>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Dictation</string>
+			<key>FooterText</key>
+			<string>Force mode jumping when dictation happens in normal mode. See &quot;:h ios-dictation&quot;.</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Force normal mode to</string>
+			<key>Key</key>
+			<string>kUDDictationNormalModeTarget</string>
+			<key>DefaultValue</key>
+			<string>insert</string>
+			<key>Titles</key>
+			<array>
+				<string>insert mode</string>
+				<string>command line mode</string>
+				<string>none</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>insert</string>
+				<string>cmdline</string>
+				<string>none</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
