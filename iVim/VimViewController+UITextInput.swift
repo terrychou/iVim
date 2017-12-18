@@ -252,11 +252,16 @@ extension VimViewController {
         return !is_in_normal_mode()
     }
     
+    private func inputTextWithoutMapping(_ text: String) {
+        let escaped = text.replacingOccurrences(of: "\"", with: "\\\"")
+        gFeedKeys(escaped, mode: "n")
+    }
+    
     private func updateDictationHypothesis(with text: String) {
         guard self.isInDictation else { return }
         self.cleanupDictationHypothesis(andSet: text)
         guard self.shouldDoLiveDictation else { return }
-        gFeedKeys(text, mode: "n")
+        self.inputTextWithoutMapping(text)
     }
     
     func cleanupDictationHypothesis(andSet text: String? = nil) {
@@ -274,7 +279,7 @@ extension VimViewController {
         self.cleanupDictationHypothesis()
         let allowsMapping = is_in_normal_mode()
         if !allowsMapping {
-            gFeedKeys(text, mode: "n")
+            self.inputTextWithoutMapping(text)
         } else {
             gAddNonCSITextToInputBuffer(text.trimmingCharacters(in: .whitespaces))
         }
