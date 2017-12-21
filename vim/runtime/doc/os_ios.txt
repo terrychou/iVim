@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Dec 18
+*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Dec 21
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -216,7 +216,7 @@ External hardware keyboard ~
 
 If you have a hardware keyboard connected, some points are worth mentioning:
 
-a. Activate dictatoin input
+a. Activate dictation input
 
 Normally, the on-screen keyboard is hidden. To activate the dictation, you
 need to toggle it out first (pressing `eject` key would do). Sometimes, the 
