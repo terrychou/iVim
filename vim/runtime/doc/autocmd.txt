@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.4.  Last change: 2015 Aug 18
+*autocmd.txt*   For Vim version 8.0.  Last change: 2017 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -33,7 +33,7 @@ files matching *.c.  You can also use autocommands to implement advanced
 features, such as editing compressed files (see |gzip-example|).  The usual
 place to put autocommands is in your .vimrc or .exrc file.
 
-						*E203* *E204* *E143* *E855*
+					*E203* *E204* *E143* *E855* *E937*
 WARNING: Using autocommands is very powerful, and may lead to unexpected side
 effects.  Be careful not to destroy your text.
 - It's a good idea to do some testing on an expendable copy of a file first.
@@ -52,9 +52,6 @@ effects.  Be careful not to destroy your text.
 ==============================================================================
 2. Defining autocommands				*autocmd-define*
 
-Note: The ":autocmd" command cannot be followed by another command, since any
-'|' is considered part of the command.
-
 							*:au* *:autocmd*
 :au[tocmd] [group] {event} {pat} [nested] {cmd}
 			Add {cmd} to the list of commands that Vim will
@@ -67,6 +64,19 @@ Note: The ":autocmd" command cannot be followed by another command, since any
 The special pattern <buffer> or <buffer=N> defines a buffer-local autocommand.
 See |autocmd-buflocal|.
 
+Note: The ":autocmd" command can only be followed by another command when the
+'|' appears before {cmd}.  This works: >
+	:augroup mine | au! BufRead | augroup END
+But this sees "augroup" as part of the defined command: >
+	:augroup mine | au! BufRead * | augroup END
+	:augroup mine | au BufRead * set tw=70 | augroup END
+Instead you can put the group name into the command: >
+	:au! mine BufRead *
+	:au mine BufRead * set tw=70
+Or use `:execute`: >
+	:augroup mine | exe "au! BufRead *" | augroup END
+	:augroup mine | exe "au BufRead * set tw=70" | augroup END
+
 Note that special characters (e.g., "%", "<cword>") in the ":autocmd"
 arguments are not expanded when the autocommand is defined.  These will be
 expanded when the Event is recognized, and the {cmd} is executed.  The only
@@ -76,11 +86,15 @@ exception is that "<sfile>" is expanded when the autocmd is defined.  Example:
 
 Here Vim expands <sfile> to the name of the file containing this line.
 
-When your .vimrc file is sourced twice, the autocommands will appear twice.
-To avoid this, put this command in your .vimrc file, before defining
-autocommands: >
+`:autocmd` adds to the list of autocommands regardless of whether they are
+already present.  When your .vimrc file is sourced twice, the autocommands
+will appear twice.  To avoid this, define your autocommands in a group, so
+that you can easily clear them: >
 
-	:autocmd!	" Remove ALL autocommands for the current group.
+	augroup vimrc
+	  autocmd!	" Remove all vimrc autocommands
+	  au BufNewFile,BufRead *.html so <sfile>:h/html.vim
+	augroup END
 
 If you don't want to remove all autocommands, you can instead use a variable
 to ensure that Vim includes the autocommands only once: >
@@ -127,8 +141,13 @@ prompt.  When one command outputs two messages this can happen anyway.
 
 :au[tocmd]! [group] {event}
 			Remove ALL autocommands for {event}.
+			Warning: You should not do this without a group for
+			|BufRead| and other common events, it can break
+			plugins, syntax highlighting, etc.
 
 :au[tocmd]! [group]	Remove ALL autocommands.
+			Warning: You should normally not do this without a
+			group, it breaks plugins, syntax highlighting, etc.
 
 When the [group] argument is not given, Vim uses the current group (as defined
 with ":augroup"); otherwise, Vim uses the group defined with [group].
@@ -293,6 +312,9 @@ Name			triggered by ~
 |CursorMoved|		the cursor was moved in Normal mode
 |CursorMovedI|		the cursor was moved in Insert mode
 
+|WinNew|		after creating a new window
+|TabNew|		after creating a new tab page
+|TabClosed|		after closing a tab page
 |WinEnter|		after entering another window
 |WinLeave|		before leaving a window
 |TabEnter|		after entering another tab page
@@ -308,6 +330,7 @@ Name			triggered by ~
 
 |TextChanged|		after a change was made to the text in Normal mode
 |TextChangedI|		after a change was made to the text in Insert mode
+|TextYankPost|		after text is yanked or deleted
 
 |ColorScheme|		after loading a color scheme
 
@@ -413,8 +436,8 @@ BufUnload			Before unloading a buffer.  This is when the
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
 				buffer being unloaded "<afile>".
-				Don't change to another buffer, it will cause
-				problems.
+				Don't change to another buffer or window, it
+				will cause problems!
 				When exiting and v:dying is 2 or more this
 				event is not triggered.
 							*BufWinEnter*
@@ -477,6 +500,22 @@ CmdUndefined			When a user command is used but it isn't
 				command is defined.  An alternative is to
 				always define the user command and have it
 				invoke an autoloaded function.  See |autoload|.
+							*CmdlineEnter*
+CmdlineEnter			After moving the cursor to the command line,
+				where the user can type a command or search
+				string.
+				<afile> is set to a single character,
+				indicating the type of command-line.
+				|cmdwin-char|
+							*CmdlineLeave*
+CmdlineLeave			Before leaving the command line.
+				Also when abandoning the command line, after
+				typing CTRL-C or <Esc>.
+				When the commands result in an error the
+				command line is still executed.
+				<afile> is set to a single character,
+				indicating the type of command-line.
+				|cmdwin-char|
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for
@@ -539,6 +578,9 @@ CursorHold			When the user doesn't press a key for the time
 				versions}
 							*CursorHoldI*
 CursorHoldI			Just like CursorHold, but in Insert mode.
+				Not triggered when waiting for another key,
+				e.g. after CTRL-V, and not when in CTRL-X mode
+				|insert_expand|.
 
 							*CursorMoved*
 CursorMoved			After the cursor was moved in Normal or Visual
@@ -592,7 +634,7 @@ FileChangedShell		When Vim notices that the modification time of
 				|timestamp|
 				Mostly triggered after executing a shell
 				command, but also with a |:checktime| command
-				or when Gvim regains input focus.
+				or when gvim regains input focus.
 				This autocommand is triggered for each changed
 				file.  It is not used when 'autoread' is set
 				and the buffer was not changed.  If a
@@ -603,7 +645,7 @@ FileChangedShell		When Vim notices that the modification time of
 				to tell Vim what to do next.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
-				buffer that was changed "<afile>".
+				buffer that was changed, which is in "<afile>".
 				NOTE: The commands must not change the current
 				buffer, jump to another buffer or delete a
 				buffer.  *E246* *E811*
@@ -633,7 +675,8 @@ FileType			When the 'filetype' option has been set.  The
 				pattern is matched against the filetype.
 				<afile> can be used for the name of the file
 				where this option was set, and <amatch> for
-				the new value of 'filetype'.
+				the new value of 'filetype'.  Navigating to
+				another window or buffer is not allowed.
 				See |filetypes|.
 							*FileWriteCmd*
 FileWriteCmd			Before writing to a file, when not writing the
@@ -775,7 +818,9 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:vimgrepadd|, |:lvimgrepadd|, |:cscope|,
 				|:cfile|, |:cgetfile|, |:caddfile|, |:lfile|,
 				|:lgetfile|, |:laddfile|, |:helpgrep|,
-				|:lhelpgrep|).
+				|:lhelpgrep|, |:cexpr|, |:cgetexpr|,
+				|:caddexpr|, |:cbuffer|, |:cgetbuffer|,
+				|:caddbuffer|).
 				The pattern is matched against the command
 				being run.  When |:grep| is used but 'grepprg'
 				is set to "internal" it still matches "grep".
@@ -871,6 +916,8 @@ Syntax				When the 'syntax' option has been set.  The
 				where this option was set, and <amatch> for
 				the new value of 'syntax'.
 				See |:syn-on|.
+							*TabClosed*
+TabClosed			After closing a tab page.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before
@@ -879,6 +926,10 @@ TabEnter			Just after entering a tab page. |tab-page|
 TabLeave			Just before leaving a tab page. |tab-page|
 				A WinLeave event will have been triggered
 				first.
+							*TabNew*
+TabNew				When a tab page was created. |tab-page|
+				A WinEnter event will have been triggered
+				first, TabEnter follows.
 							*TermChanged*
 TermChanged			After the value of 'term' has changed.  Useful
 				for re-loading the syntax file to update the
@@ -906,6 +957,25 @@ TextChangedI			After a change was made to the text in the
 				current buffer in Insert mode.
 				Not triggered when the popup menu is visible.
 				Otherwise the same as TextChanged.
+							*TextYankPost*
+TextYankPost			After text has been yanked or deleted in the
+				current buffer.  The following values of
+				|v:event| can be used to determine the operation
+				that triggered this autocmd:
+				   operator    	The operation performed.
+				   regcontents 	Text that was stored in the
+						register, as a list of lines,
+						like with: >
+						getreg(r, 1, 1)
+<				   regname	Name of the |register| or
+						empty string for the unnamed
+						register.
+				   regtype	Type of the register, see
+						|getregtype()|.
+				Not triggered when |quote_| is used nor when
+				called recursively.
+				It is not allowed to change the buffer text,
+				see |textlock|.
 							*User*
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with
@@ -918,7 +988,15 @@ VimEnter			After doing all the startup stuff, including
 				loading .vimrc files, executing the "-c cmd"
 				arguments, creating all windows and loading
 				the buffers in them.
-							*VimLeave*
+				Just before this event is triggered the
+				|v:vim_did_enter| variable is set, so that you
+				can do: >
+				   if v:vim_did_enter
+				     call s:init()
+				   else
+ 	  			     au VimEnter * call s:init()
+				   endif
+<							*VimLeave*
 VimLeave			Before exiting Vim, just after writing the
 				.viminfo file.  Executed only once, like
 				VimLeavePre.
@@ -955,6 +1033,11 @@ WinLeave			Before leaving a window.  If the window to be
 				executes the BufLeave autocommands before the
 				WinLeave autocommands (but not for ":new").
 				Not used for ":qa" or ":q" when exiting Vim.
+
+							*WinNew*
+WinNew				When a new window was created.  Not done for
+				the first window, when Vim has just started.
+				Before a WinEnter event.
 
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{pat}*
@@ -1036,6 +1119,9 @@ The pattern is interpreted like mostly used in file names:
 Note that for all systems the '/' character is used for path separator (even
 MS-DOS and OS/2).  This was done because the backslash is difficult to use
 in a pattern and to make the autocommands portable across different systems.
+
+It is possible to use |pattern| items, but they may not work as expected,
+because of the translation done for the above.
 
 							*autocmd-changes*
 Matching with the pattern is done when an event is triggered.  Changing the
@@ -1131,11 +1217,16 @@ name!
 :aug[roup] {name}		Define the autocmd group name for the
 				following ":autocmd" commands.  The name "end"
 				or "END" selects the default group.
+				To avoid confusion, the name should be
+				different from existing {event} names, as this
+				most likely will not do what you intended.
 
-						*:augroup-delete* *E367*
+					*:augroup-delete* *E367* *W19* *E936*
 :aug[roup]! {name}		Delete the autocmd group {name}.  Don't use
 				this if there is still an autocommand using
-				this group!  This is not checked.
+				this group!  You will get a warning if doing
+				it anyway. when the group is the current group
+				you will get error E936.
 
 To enter autocommands for a specific group, use this method:
 1. Select the group with ":augroup {name}".
@@ -1190,6 +1281,8 @@ option will not cause any commands to be executed.
 			argument is present. You probably want to use
 			<nomodeline> for events that are not used when loading
 			a buffer, such as |User|.
+			Processing modelines is also skipped when no
+			matching autocommands were executed.
 
 						*:doautoa* *:doautoall*
 :doautoa[ll] [<nomodeline>] [group] {event} [fname]

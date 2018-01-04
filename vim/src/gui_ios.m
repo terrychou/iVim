@@ -114,7 +114,7 @@ void input_special_key(int key) {
 void input_special_name(const char * name) {
     char_u * n = (char_u *)name;
     char_u re[6];
-    int len = trans_special(&n, re, TRUE);
+    int len = trans_special(&n, re, TRUE, FALSE);
     for (int i = 0; i < len; i += 3) {
         if (re[i] == K_SPECIAL) { re[i] = CSI; }
     }
@@ -1092,6 +1092,15 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     [shellView() fillRect:rect with:CGColorCreateFromVimColor(color)];
 }
 
+int gui_mch_is_blinking(void)
+{
+	return FALSE;
+}
+
+int gui_mch_is_blink_off(void)
+{
+	return FALSE;
+}
 
 /*
  * Cursor blink functions.

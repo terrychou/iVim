@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2014 Jul 19
+" Last Change: 2017 Sep 30
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -55,14 +55,19 @@ function! s:Highlight_Matching_Pair()
   let before = 0
 
   let text = getline(c_lnum)
-  let c = text[c_col - 1]
+  let matches = matchlist(text, '\(.\)\=\%'.c_col.'c\(.\=\)')
+  if empty(matches)
+    let [c_before, c] = ['', '']
+  else
+    let [c_before, c] = matches[1:2]
+  endif
   let plist = split(&matchpairs, '.\zs[:,]')
   let i = index(plist, c)
   if i < 0
     " not found, in Insert mode try character before the cursor
     if c_col > 1 && (mode() == 'i' || mode() == 'R')
-      let before = 1
-      let c = text[c_col - 2]
+      let before = strlen(c_before)
+      let c = c_before
       let i = index(plist, c)
     endif
     if i < 0
@@ -181,9 +186,23 @@ function! s:Highlight_Matching_Pair()
 endfunction
 
 " Define commands that will disable and enable the plugin.
-command! NoMatchParen windo silent! call matchdelete(3) | unlet! g:loaded_matchparen |
-	  \ au! matchparen
-command! DoMatchParen runtime plugin/matchparen.vim | windo doau CursorMoved
+command! DoMatchParen call s:DoMatchParen()
+command! NoMatchParen call s:NoMatchParen()
+
+func! s:NoMatchParen()
+  let w = winnr()
+  noau windo silent! call matchdelete(3)
+  unlet! g:loaded_matchparen
+  exe "noau ". w . "wincmd w"
+  au! matchparen
+endfunc
+
+func! s:DoMatchParen()
+  runtime plugin/matchparen.vim
+  let w = winnr()
+  silent windo doau CursorMoved
+  exe "noau ". w . "wincmd w"
+endfunc
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

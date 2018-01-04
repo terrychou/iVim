@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -35,19 +35,8 @@
 # ifdef AMIGA
 #  include "os_amiga.pro"
 # endif
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 #  include "os_unix.pro"
-# endif
-# if defined(MSDOS) || defined(WIN16)
-#  include "os_msdos.pro"
-# endif
-# ifdef WIN16
-   typedef LPSTR LPWSTR;
-   typedef LPCSTR LPCWSTR;
-   typedef int LPBOOL;
-#  include "os_win16.pro"
-#  include "os_mswin.pro"
-#  include "winclip.pro"
 # endif
 # ifdef WIN3264
 #  include "os_win32.pro"
@@ -55,7 +44,7 @@
 #  include "winclip.pro"
 #  if (defined(__GNUC__) && !defined(__MINGW32__)) \
 	|| (defined(__BORLANDC__) && __BORLANDC__ < 0x502)
-extern int _stricoll __ARGS((char *a, char *b));
+extern int _stricoll(char *a, char *b);
 #  endif
 # endif
 # ifdef VMS
@@ -78,10 +67,12 @@ extern int _stricoll __ARGS((char *a, char *b));
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif
+# include "dict.pro"
 # include "diff.pro"
 # include "digraph.pro"
 # include "edit.pro"
 # include "eval.pro"
+# include "evalfunc.pro"
 # include "ex_cmds.pro"
 # include "ex_cmds2.pro"
 # include "ex_docmd.pro"
@@ -95,6 +86,8 @@ extern int _stricoll __ARGS((char *a, char *b));
 # endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "json.pro"
+# include "list.pro"
 # include "main.pro"
 # include "mark.pro"
 # include "memfile.pro"
@@ -102,48 +95,50 @@ extern int _stricoll __ARGS((char *a, char *b));
 # ifdef FEAT_MENU
 #  include "menu.pro"
 # endif
-
-# if !defined MESSAGE_FILE || defined(HAVE_STDARG_H)
-    /* These prototypes cannot be produced automatically and conflict with
-     * the old-style prototypes in message.c. */
-int
-#  ifdef __BORLANDC__
-_RTLENTRYF
-#  endif
-smsg __ARGS((char_u *, ...));
-
-int
-#  ifdef __BORLANDC__
-_RTLENTRYF
-#  endif
-smsg_attr __ARGS((int, char_u *, ...));
-
-int
-#  ifdef __BORLANDC__
-_RTLENTRYF
-#  endif
-vim_snprintf_add __ARGS((char *, size_t, char *, ...));
-
-int
-#  ifdef __BORLANDC__
-_RTLENTRYF
-#  endif
-vim_snprintf __ARGS((char *, size_t, char *, ...));
-
-#  if defined(HAVE_STDARG_H)
-int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
-#  endif
+# ifdef FEAT_FKMAP
+#  include "farsi.pro"
 # endif
+# ifdef FEAT_ARABIC
+#  include "arabic.pro"
+# endif
+
+/* These prototypes cannot be produced automatically. */
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+smsg(char_u *, ...);
+
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+smsg_attr(int, char_u *, ...);
+
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+vim_snprintf_add(char *, size_t, char *, ...);
+
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+vim_snprintf(char *, size_t, char *, ...);
+
+int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap);
+int vim_vsnprintf_typval(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
 
 # include "message.pro"
 # include "misc1.pro"
 # include "misc2.pro"
 #ifndef HAVE_STRPBRK	    /* not generated automatically from misc2.c */
-char_u *vim_strpbrk __ARGS((char_u *s, char_u *charset));
+char_u *vim_strpbrk(char_u *s, char_u *charset);
 #endif
 #ifndef HAVE_QSORT
 /* Use our own qsort(), don't define the prototype when not used. */
-void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *)));
+void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
 #endif
 # include "move.pro"
 # if defined(FEAT_MBYTE) || defined(FEAT_XIM) || defined(FEAT_KEYMAP) \
@@ -164,14 +159,19 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # endif
 # include "search.pro"
 # include "spell.pro"
+# include "spellfile.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"
+# ifdef FEAT_TERMINAL
+#  include "terminal.pro"
+# endif
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
 # endif
 # include "ui.pro"
 # include "undo.pro"
+# include "userfunc.pro"
 # include "version.pro"
 # include "window.pro"
 
@@ -201,28 +201,32 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 
 /* Ugly solution for "BalloonEval" not being defined while it's used in some
  * .pro files. */
-# ifndef FEAT_BEVAL
+# ifdef FEAT_BEVAL
+#  include "beval.pro"
+# else
 #  define BalloonEval int
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
 #  include "netbeans.pro"
 # endif
+# ifdef FEAT_JOB_CHANNEL
+#  include "channel.pro"
+# endif
+
+# if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
+#  if defined(UNIX) || defined(MACOS_X)
+#   include "pty.pro"
+#  endif
+# endif
 
 # ifdef FEAT_GUI
 #  include "gui.pro"
-#  if defined(UNIX) || defined(MACOS)
-#   include "pty.pro"
-#  endif
 #  if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(VMS)
-//this seems to fix the SWIFT Debugger
-//extern int putenv __ARGS((const char *string));		/* from pty.c */
+extern int putenv(const char *string);			/* in misc2.c */
 #   ifdef USE_VIMPTY_GETENV
-extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
+extern char_u *vimpty_getenv(const char_u *string);	/* in misc2.c */
 #   endif
-#  endif
-#  ifdef FEAT_GUI_W16
-#   include "gui_w16.pro"
 #  endif
 #  ifdef FEAT_GUI_W32
 #   include "gui_w32.pro"
@@ -238,7 +242,7 @@ extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
 #  ifdef FEAT_GUI_ATHENA
 #   include "gui_athena.pro"
 #   ifdef FEAT_BROWSE
-extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg));
+extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg);
 #   endif
 #  endif
 #  ifdef FEAT_GUI_MAC
@@ -287,7 +291,7 @@ extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path,
 #ifdef MACOS_CONVERT
 # include "os_mac_conv.pro"
 #endif
-#if defined(MACOS_X_UNIX) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+#if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 /* functions in os_macosx.m */
 void clip_mch_lose_selection(VimClipboard *cbd);
 int clip_mch_own_selection(VimClipboard *cbd);

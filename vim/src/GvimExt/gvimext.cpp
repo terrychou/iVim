@@ -38,7 +38,7 @@ STGMEDIUM medium;
 HRESULT hres = 0;
 UINT cbFiles = 0;
 
-/* The buffers size used to be MAX_PATH (256 bytes), but that's not always
+/* The buffers size used to be MAX_PATH (260 bytes), but that's not always
  * enough */
 #define BUFSIZE 1100
 
@@ -158,6 +158,7 @@ HBITMAP IconToBitmap(HICON hIcon, HBRUSH hBackground, int width, int height)
 # define VIMPACKAGE "vim"
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
+#  define GETTEXT_DLL_ALT "libintl-8.dll"
 # endif
 
 // Dummy functions
@@ -194,21 +195,40 @@ dyn_libintl_init(char *dir)
 	{(char *)"bindtextdomain",	(FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
     };
+    DWORD	len, len2;
+    LPWSTR	buf = NULL;
+    LPWSTR	buf2 = NULL;
 
     // No need to initialize twice.
     if (hLibintlDLL)
 	return 1;
 
-    // Load gettext library, first try the Vim runtime directory, then search
-    // the path.
-    strcat(dir, GETTEXT_DLL);
-    hLibintlDLL = LoadLibrary(dir);
-    if (!hLibintlDLL)
+    // Load gettext library from $VIMRUNTIME\GvimExt{64,32} directory.
+    // Add the directory to $PATH temporarily.
+    len = GetEnvironmentVariableW(L"PATH", NULL, 0);
+    len2 = MAX_PATH + 1 + len;
+    buf = (LPWSTR)malloc(len * sizeof(WCHAR));
+    buf2 = (LPWSTR)malloc(len2 * sizeof(WCHAR));
+    if (buf != NULL && buf2 != NULL)
     {
+	GetEnvironmentVariableW(L"PATH", buf, len);
+#ifdef _WIN64
+	_snwprintf(buf2, len2, L"%S\\GvimExt64;%s", dir, buf);
+#else
+	_snwprintf(buf2, len2, L"%S\\GvimExt32;%s", dir, buf);
+#endif
+	SetEnvironmentVariableW(L"PATH", buf2);
 	hLibintlDLL = LoadLibrary(GETTEXT_DLL);
+#ifdef GETTEXT_DLL_ALT
 	if (!hLibintlDLL)
-	    return 0;
+	    hLibintlDLL = LoadLibrary(GETTEXT_DLL_ALT);
+#endif
+	SetEnvironmentVariableW(L"PATH", buf);
     }
+    free(buf);
+    free(buf2);
+    if (!hLibintlDLL)
+	return 0;
 
     // Get the addresses of the functions we need.
     for (i = 0; libintl_entry[i].name != NULL
@@ -867,37 +887,7 @@ BOOL CShellExt::LoadMenuIcon()
 	return TRUE;
 }
 
-#ifdef WIN32
-// This symbol is not defined in older versions of the SDK or Visual C++.
-
-#ifndef VER_PLATFORM_WIN32_WINDOWS
-# define VER_PLATFORM_WIN32_WINDOWS 1
-#endif
-
-static DWORD g_PlatformId;
-
-//
-// Set g_PlatformId to VER_PLATFORM_WIN32_NT (NT) or
-// VER_PLATFORM_WIN32_WINDOWS (Win95).
-//
-    static void
-PlatformId(void)
-{
-    static int done = FALSE;
-
-    if (!done)
-    {
-	OSVERSIONINFO ovi;
-
-	ovi.dwOSVersionInfoSize = sizeof(ovi);
-	GetVersionEx(&ovi);
-
-	g_PlatformId = ovi.dwPlatformId;
-	done = TRUE;
-    }
-}
-
-# ifndef __BORLANDC__
+#ifndef __BORLANDC__
     static char *
 searchpath(char *name)
 {
@@ -906,28 +896,17 @@ searchpath(char *name)
 
     // There appears to be a bug in FindExecutableA() on Windows NT.
     // Use FindExecutableW() instead...
-    PlatformId();
-    if (g_PlatformId == VER_PLATFORM_WIN32_NT)
+    MultiByteToWideChar(CP_ACP, 0, (LPCSTR)name, -1,
+	    (LPWSTR)widename, BUFSIZE);
+    if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
+		(LPWSTR)location) > (HINSTANCE)32)
     {
-	MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)name, -1,
-		(LPWSTR)widename, BUFSIZE);
-	if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
-		    (LPWSTR)location) > (HINSTANCE)32)
-	{
-	    WideCharToMultiByte(CP_ACP, 0, (LPWSTR)location, -1,
-		    (LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
-	    return widename;
-	}
-    }
-    else
-    {
-	if (FindExecutableA((LPCTSTR)name, (LPCTSTR)"",
-		    (LPTSTR)location) > (HINSTANCE)32)
-	    return location;
+	WideCharToMultiByte(CP_ACP, 0, (LPWSTR)location, -1,
+		(LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
+	return widename;
     }
     return (char *)"";
 }
-# endif
 #endif
 
 STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,

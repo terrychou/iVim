@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved    by Bram Moolenaar
  *
@@ -51,6 +51,15 @@
 # undef F_BLANK
 #endif
 
+#ifdef HAVE_STRFTIME
+# undef HAVE_STRFTIME
+#endif
+#ifdef HAVE_STRING_H
+# undef HAVE_STRING_H
+#endif
+#ifdef HAVE_PUTENV
+# undef HAVE_PUTENV
+#endif
 #ifdef HAVE_STDARG_H
 # undef HAVE_STDARG_H   /* Python's config.h defines it as well. */
 #endif
@@ -65,10 +74,6 @@
 
 #include <Python.h>
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-# include "macglue.h"
-# include <CodeFragments.h>
-#endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
@@ -686,16 +691,16 @@ py3_runtime_link_init(char *libname, int verbose)
     int
 python3_enabled(int verbose)
 {
-    return py3_runtime_link_init(DYNAMIC_PYTHON3_DLL, verbose) == OK;
+    return py3_runtime_link_init((char *)p_py3dll, verbose) == OK;
 }
 
 /* Load the standard Python exceptions - don't import the symbols from the
  * DLL, as this can cause errors (importing data symbols is not reliable).
  */
-static void get_py3_exceptions __ARGS((void));
+static void get_py3_exceptions(void);
 
     static void
-get_py3_exceptions()
+get_py3_exceptions(void)
 {
     PyObject *exmod = PyImport_ImportModule("builtins");
     PyObject *exdict = PyModule_GetDict(exmod);
@@ -724,8 +729,8 @@ get_py3_exceptions()
 #endif /* DYNAMIC_PYTHON3 */
 
 static int py3initialised = 0;
-
 #define PYINITIALISED py3initialised
+static int python_end_called = FALSE;
 
 #define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self)
 
@@ -800,7 +805,7 @@ static PyObject *Py3Init_vim(void);
  */
 
     void
-python3_end()
+python3_end(void)
 {
     static int recurse = 0;
 
@@ -808,6 +813,7 @@ python3_end()
     if (recurse != 0)
 	return;
 
+    python_end_called = TRUE;
     ++recurse;
 
 #ifdef DYNAMIC_PYTHON3
@@ -830,7 +836,7 @@ python3_end()
 
 #if (defined(DYNAMIC_PYTHON3) && defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON) && defined(UNIX)) || defined(PROTO)
     int
-python3_loaded()
+python3_loaded(void)
 {
     return (hinstPy3 != 0);
 }
@@ -853,16 +859,16 @@ Python3_Init(void)
 
 
 #ifdef PYTHON3_HOME
-	Py_SetPythonHome(PYTHON3_HOME);
+# ifdef DYNAMIC_PYTHON3
+	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
+# endif
+	    Py_SetPythonHome(PYTHON3_HOME);
 #endif
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
-#if !defined(MACOS) || defined(MACOS_X_UNIX)
 	Py_Initialize();
-#else
-	PyMac_Initialize();
-#endif
+
 	/* Initialise threads, and below save the state using
 	 * PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
 	 * specific state (such as the system trace hook), will be lost
@@ -916,9 +922,6 @@ fail:
     static void
 DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 {
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    GrafPtr		oldPort;
-#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     char		*saved_locale;
 #endif
@@ -926,12 +929,9 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     PyObject		*cmdbytes;
     PyGILState_STATE	pygilstate;
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    GetPort(&oldPort);
-    /* Check if the Python library is available */
-    if ((Ptr)PyMac_Initialize == (Ptr)kUnresolvedCFragSymbolAddress)
+    if (python_end_called)
 	goto theend;
-#endif
+
     if (Python3_Init())
 	goto theend;
 
@@ -976,9 +976,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 
     Python_Lock_Vim();		    /* enter vim */
     PythonIO_Flush();
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    SetPort(oldPort);
-#endif
 
 theend:
     return;	    /* keeps lint happy */
@@ -991,6 +988,9 @@ theend:
 ex_py3(exarg_T *eap)
 {
     char_u *script;
+
+    if (p_pyx == 0)
+	p_pyx = 3;
 
     script = script_get(eap, eap->arg);
     if (!eap->skip)
@@ -1015,6 +1015,9 @@ ex_py3file(exarg_T *eap)
     const char *file;
     char *p;
     int i;
+
+    if (p_pyx == 0)
+	p_pyx = 3;
 
     /* Have to do it like this. PyRun_SimpleFile requires you to pass a
      * stdio file pointer, but Vim and the Python DLL are compiled with
@@ -1068,6 +1071,9 @@ ex_py3file(exarg_T *eap)
     void
 ex_py3do(exarg_T *eap)
 {
+    if (p_pyx == 0)
+	p_pyx = 3;
+
     DoPyCommand((char *)eap->arg,
 	    (rangeinitializer)init_range_cmd,
 	    (runner)run_do,
@@ -1088,6 +1094,10 @@ OutputGetattro(PyObject *self, PyObject *nameobj)
 
     if (strcmp(name, "softspace") == 0)
 	return PyLong_FromLong(((OutputObject *)(self))->softspace);
+    else if (strcmp(name, "errors") == 0)
+	return PyString_FromString("strict");
+    else if (strcmp(name, "encoding") == 0)
+	return PyString_FromString(ENC_OPT);
 
     return PyObject_GenericGetAttr(self, nameobj);
 }
@@ -1516,14 +1526,16 @@ ListSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     static PyObject *
 FunctionGetattro(PyObject *self, PyObject *nameobj)
 {
+    PyObject		*r;
     FunctionObject	*this = (FunctionObject *)(self);
 
     GET_ATTR_STRING(name, nameobj);
 
-    if (strcmp(name, "name") == 0)
-	return PyUnicode_FromString((char *)(this->name));
-
-    return PyObject_GenericGetAttr(self, nameobj);
+    r = FunctionAttr(this, name);
+    if (r || PyErr_Occurred())
+	return r;
+    else
+	return PyObject_GenericGetAttr(self, nameobj);
 }
 
 /* External interface
@@ -1540,7 +1552,6 @@ python3_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 python3_window_free(win_T *win)
 {
@@ -1562,7 +1573,6 @@ python3_tabpage_free(tabpage_T *tab)
 	TAB_PYTHON_REF(tab) = NULL;
     }
 }
-#endif
 
     static PyObject *
 Py3Init_vim(void)
@@ -1642,9 +1652,17 @@ do_py3eval (char_u *str, typval_T *rettv)
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
 	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
 	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
+	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
 	case VAR_UNKNOWN:
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = 0;
+	    break;
+	case VAR_NUMBER:
+	case VAR_STRING:
+	case VAR_FLOAT:
+	case VAR_SPECIAL:
+	case VAR_JOB:
+	case VAR_CHANNEL:
 	    break;
     }
 }

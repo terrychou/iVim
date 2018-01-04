@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2015 Aug 25
+*editing.txt*   For Vim version 8.0.  Last change: 2017 Nov 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -78,7 +78,9 @@ g CTRL-G		Prints the current position of the cursor in five
 			than one position on the screen (<Tab> or special
 			character), both the "real" column and the screen
 			column are shown, separated with a dash.
-			See also 'ruler' option.  {not in Vi}
+			Also see the 'ruler' option and the |wordcount()|
+			function.
+			{not in Vi}
 
 							*v_g_CTRL-G*
 {Visual}g CTRL-G	Similar to "g CTRL-G", but Word, Character, Line, and
@@ -179,7 +181,8 @@ start editing another file, Vim will refuse this.  In order to overrule this
 protection, add a '!' to the command.  The changes will then be lost.  For
 example: ":q" will not work if the buffer was changed, but ":q!" will.  To see
 whether the buffer was changed use the "CTRL-G" command.  The message includes
-the string "[Modified]" if the buffer has been changed.
+the string "[Modified]" if the buffer has been changed, or "+" if the 'm' flag
+is in 'shortmess'.
 
 If you want to automatically save the changes without asking, switch on the
 'autowriteall' option.  'autowrite' is the associated Vi-compatible option
@@ -273,7 +276,7 @@ If you want to keep the changed buffer without saving it, switch on the
 
 							*:vie* *:view*
 :vie[w][!] [++opt] [+cmd] file
-			When used in Ex mode: Leave |Ex mode|, go back to
+			When used in Ex mode: Leave |Ex-mode|, go back to
 			Normal mode.  Otherwise same as |:edit|, but set
 			'readonly' option for this buffer.  {not in Vi}
 
@@ -391,7 +394,7 @@ These are the common ones:
 To avoid the special meaning of the wildcards prepend a backslash.  However,
 on MS-Windows the backslash is a path separator and "path\[abc]" is still seen
 as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
-is to use "path\[[]abc]".  Then the file "path[abc]" literally.
+is to use "path\[[]abc]", this matches the file "path\[abc]".
 
 					*starstar-wildcard*
 Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
@@ -401,16 +404,21 @@ Note there are some commands where this works slightly differently, see
 Example: >
 	:n **/*.txt
 Finds files:
-	ttt.txt
-	subdir/ttt.txt
-	a/b/c/d/ttt.txt
-When non-wildcard characters are used these are only matched in the first
-directory.  Example: >
-	:n /usr/inc**/*.h
+	aaa.txt ~
+	subdir/bbb.txt ~
+	a/b/c/d/ccc.txt ~
+When non-wildcard characters are used right before or after "**" these are
+only matched in the top directory.  They are not used for directories further
+down in the tree. For example: >
+	:n /usr/inc**/types.h
 Finds files:
-	/usr/include/types.h
-	/usr/include/sys/types.h
-	/usr/inc_old/types.h
+	/usr/include/types.h ~
+	/usr/include/sys/types.h ~
+	/usr/inc/old/types.h ~
+Note that the path with "/sys" is included because it does not need to match
+"/inc".  Thus it's like matching "/usr/inc*/*/*...", not
+"/usr/inc*/inc*/inc*".
+
 					*backtick-expansion* *`-expansion*
 On Unix and a few other systems you can also use backticks for the file name
 argument, for example: >
@@ -609,16 +617,16 @@ list of the current window.
 			Also see |++opt| and |+cmd|.
 			{Vi: no ++opt}
 
-:[count]arge[dit][!] [++opt] [+cmd] {name}		*:arge* *:argedit*
-			Add {name} to the argument list and edit it.
+:[count]arge[dit][!] [++opt] [+cmd] {name} ..		*:arge* *:argedit*
+			Add {name}s to the argument list and edit it.
 			When {name} already exists in the argument list, this
 			entry is edited.
 			This is like using |:argadd| and then |:edit|.
-			Note that only one file name is allowed, and spaces
-			inside the file name are allowed, like with |:edit|.
+			Spaces in filenames have to be escaped with "\".
 			[count] is used like with |:argadd|.
-			[!] is required if the current file cannot be
-			|abandon|ed.
+			If the current file cannot be |abandon|ed {name}s will
+			still be added to the argument list, but won't be
+			edited. No check for duplicates is done.
 			Also see |++opt| and |+cmd|.
 			{not in Vi}
 
@@ -637,6 +645,7 @@ list of the current window.
 				:0argadd x	x a b c
 				:1argadd x	a x b c
 				:$argadd x	a b c x
+			And after the last one:
 				:+2argadd y	a b c x y
 			There is no check for duplicates, it is possible to
 			add a file to the argument list twice.
@@ -891,7 +900,7 @@ Note: When the 'write' option is off, you are not able to write any file.
 
 							*:w* *:write*
 						*E502* *E503* *E504* *E505*
-						*E512* *E514* *E667* *E796*
+						*E512* *E514* *E667* *E796* *E949*
 :w[rite] [++opt]	Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is
@@ -947,6 +956,9 @@ used, for example, when the write fails and you want to try again later with
 ":w #".  This can be switched off by removing the 'A' flag from the
 'cpoptions' option.
 
+Note that the 'fsync' option matters here.  If it's set it may make writes
+slower (but safer).
+
 							*:sav* *:saveas*
 :sav[eas][!] [++opt] {file}
 			Save the current buffer under the name {file} and set
@@ -968,12 +980,12 @@ WRITING WITH MULTIPLE BUFFERS				*buffer-write*
 
 							*:wa* *:wall*
 :wa[ll]			Write all changed buffers.  Buffers without a file
-			name or which are readonly are not written. {not in
-			Vi}
+			name cause an error message.  Buffers which are
+			readonly are not written. {not in Vi}
 
 :wa[ll]!		Write all changed buffers, even the ones that are
 			readonly.  Buffers without a file name are not
-			written. {not in Vi}
+			written and cause an error message. {not in Vi}
 
 
 Vim will warn you if you try to overwrite a file that has been changed
@@ -1008,7 +1020,7 @@ the newly written file (it might be there but contain bogus data).  In that
 case try recovery, because the swap file is synced to disk and might still be
 there. |:recover|
 
-The directories given with the 'backupdir' option is used to put the backup
+The directories given with the 'backupdir' option are used to put the backup
 file in.  (default: same directory as the written file).
 
 Whether the backup is a new file, which is a copy of the original file, or the
@@ -1100,16 +1112,19 @@ The names can be in upper- or lowercase.
 			window in the current tab page the current tab page is
 			closed |tab-page|.
 			Triggers the |QuitPre| autocommand event.
+			See |CTRL-W_q| for quitting another window.
 
 :conf[irm] q[uit]	Quit, but give prompt when changes have been made, or
 			the last file in the argument list has not been
 			edited.  See |:confirm| and 'confirm'.  {not in Vi}
 
-:q[uit]!		Quit without writing, also when currently visible
-			buffers have changes.  Does not exit when this is the
-			last window and there is a changed hidden buffer.
-			In this case, the first changed hidden buffer becomes
-			the current buffer.
+:q[uit]!		Quit without writing, also when the current buffer has
+			changes.  The buffer is unloaded, also when it has
+			'hidden' set.
+			If this is the last window and there is a modified
+			hidden buffer, the current buffer is abandoned and the
+			first changed hidden buffer becomes the current
+			buffer.
 			Use ":qall!" to exit always.
 
 :cq[uit]		Quit always, without writing, and return an error
@@ -1213,7 +1228,7 @@ Examples: >
 
 If you want to always use ":confirm", set the 'confirm' option.
 
-			*:browse* *:bro* *E338* *E614* *E615* *E616* *E578*
+			*:browse* *:bro* *E338* *E614* *E615* *E616*
 :bro[wse] {command}	Open a file selection dialog for an argument to
 			{command}.  At present this works for |:e|, |:w|,
 			|:wall|, |:wq|, |:wqall|, |:x|, |:xall|, |:exit|,
@@ -1317,9 +1332,11 @@ present in 'cpoptions' and "!" is not used in the command.
 :chd[ir][!] [path]	Same as |:cd|.
 
 							*:lc* *:lcd*
-:lc[d][!] {path}	Like |:cd|, but only set the current directory for the
-			current window.  The current directory for other
-			windows is not changed. {not in Vi}
+:lc[d][!] {path}	Like |:cd|, but only set the current directory when
+			the cursor is in the current window.  The current
+			directory for other windows is not changed, switching
+			to another window will stop using {path}.
+			{not in Vi}
 
 							*:lch* *:lchdir*
 :lch[dir][!]		Same as |:lcd|. {not in Vi}
@@ -1456,6 +1473,18 @@ using zip, "[blowfish]" when using blowfish, etc.
 When writing an undo file, the same key and method will be used for the text
 in the undo file. |persistent-undo|.
 
+To test for blowfish support you can use these conditions: >
+	has('crypt-blowfish')
+	has('crypt-blowfish2')
+This works since Vim 7.4.1099 while blowfish support was added earlier.
+Thus the condition failing doesn't mean blowfish is not supported. You can
+test for blowfish with: >
+	v:version >= 703
+And for blowfish2 with: >
+	v:version > 704 || (v:version == 704 && has('patch401'))
+If you are sure Vim includes patch 7.4.237 a simpler check is: >
+	has('patch-7.4.401')
+<
 						*E817* *E818* *E819* *E820*
 When encryption does not work properly, you would be able to write your text
 to a file and never be able to read it back.  Therefore a test is performed to
@@ -1534,6 +1563,13 @@ focus.
 If you want to automatically reload a file when it has been changed outside of
 Vim, set the 'autoread' option.  This doesn't work at the moment you write the
 file though, only when the file wasn't changed inside of Vim.
+
+If you do not want to be asked or automatically reload the file, you can use
+this: >
+	set buftype=nofile
+
+Or, when starting gvim from a shell: >
+	gvim file.log -c "set buftype=nofile"
 
 Note that if a FileChangedShell autocommand is defined you will not get a
 warning message or prompt.  The autocommand is expected to handle this.
@@ -1705,7 +1741,7 @@ There are three different types of searching:
    This searches the same directories, but in a different order.
 
    Note that completion for ":find", ":sfind", and ":tabfind" commands do not
-   currently work with 'path' items that contain a url or use the double star
+   currently work with 'path' items that contain a URL or use the double star
    with depth limiter (/usr/**2) or upward search (;) notations.
 
  vim:tw=78:ts=8:ft=help:norl:

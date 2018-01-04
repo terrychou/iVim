@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -8,20 +8,15 @@
  */
 
 /*
- * os_macosx.m -- Mac specific things for Mac OS/X.
+ * os_macosx.m -- Mac specific things for Mac OS X.
  */
-
-#ifndef MACOS_X_UNIX
-    Error: MACOS 9 is no longer supported in Vim 7
-#endif
 
 /* Avoid a conflict for the definition of Boolean between Mac header files and
  * X11 header files. */
 #define NO_X11_INCLUDES
-#define BalloonEval int   /* used in header files */
 
 #include "vim.h"
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 
 /*
@@ -37,13 +32,13 @@
 NSString *VimPboardType = @"VimPboardType";
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(VimClipboard *cbd UNUSED)
 {
 }
 
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(VimClipboard *cbd UNUSED)
 {
     /* This is called whenever there is a new selection and 'guioptions'
      * contains the "a" flag (automatically copy selection).  Return TRUE, else

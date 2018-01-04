@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *				GUI/Motif support by Robert Webb
@@ -14,34 +14,34 @@
 gui_T gui;
 
 #if defined(FEAT_MBYTE) && !defined(FEAT_GUI_GTK)
-static void set_guifontwide __ARGS((char_u *font_name));
+static void set_guifontwide(char_u *font_name);
 #endif
-static void gui_check_pos __ARGS((void));
-static void gui_position_components __ARGS((int));
-static void gui_outstr __ARGS((char_u *, int));
-static int gui_screenchar __ARGS((int off, int flags, guicolor_T fg, guicolor_T bg, int back));
+static void gui_check_pos(void);
+static void gui_position_components(int);
+static void gui_outstr(char_u *, int);
+static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
 #ifdef FEAT_GUI_GTK
-static int gui_screenstr __ARGS((int off, int len, int flags, guicolor_T fg, guicolor_T bg, int back));
+static int gui_screenstr(int off, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 #endif
-static void gui_delete_lines __ARGS((int row, int count));
-static void gui_insert_lines __ARGS((int row, int count));
-static void fill_mouse_coord __ARGS((char_u *p, int col, int row));
+static void gui_delete_lines(int row, int count);
+static void gui_insert_lines(int row, int count);
+static void fill_mouse_coord(char_u *p, int col, int row);
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
-static int gui_has_tabline __ARGS((void));
+static int gui_has_tabline(void);
 #endif
-static void gui_do_scrollbar __ARGS((win_T *wp, int which, int enable));
-static colnr_T scroll_line_len __ARGS((linenr_T lnum));
-static linenr_T gui_find_longest_lnum __ARGS((void));
-static void gui_update_horiz_scrollbar __ARGS((int));
-static void gui_set_fg_color __ARGS((char_u *name));
-static void gui_set_bg_color __ARGS((char_u *name));
-static win_T *xy2win __ARGS((int x, int y));
+static void gui_do_scrollbar(win_T *wp, int which, int enable);
+static colnr_T scroll_line_len(linenr_T lnum);
+static linenr_T gui_find_longest_lnum(void);
+static void gui_update_horiz_scrollbar(int);
+static void gui_set_fg_color(char_u *name);
+static void gui_set_bg_color(char_u *name);
+static win_T *xy2win(int x, int y);
 
-#if defined(UNIX) && !defined(MACOS_X) && !defined(__APPLE__)
+#if defined(UNIX) && !defined(FEAT_GUI_MAC) && !defined(FEAT_GUI_IOS)
 # define MAY_FORK
-static void gui_do_fork __ARGS((void));
+static void gui_do_fork(void);
 
-static int gui_read_child_pipe __ARGS((int fd));
+static int gui_read_child_pipe(int fd);
 
 /* Return values for gui_read_child_pipe */
 enum {
@@ -52,7 +52,7 @@ enum {
 
 #endif /* MAY_FORK */
 
-static void gui_attempt_start __ARGS((void));
+static void gui_attempt_start(void);
 
 static int can_update_cursor = TRUE; /* can display the cursor */
 
@@ -73,7 +73,7 @@ static int can_update_cursor = TRUE; /* can display the cursor */
  * recursive call.
  */
     void
-gui_start()
+gui_start(void)
 {
     char_u	*old_term;
     static int	recursive = 0;
@@ -105,7 +105,7 @@ gui_start()
 	/* If there is 'f' in 'guioptions' and specify -g argument,
 	 * gui_mch_init_check() was not called yet.  */
 	if (gui_mch_init_check() != OK)
-	    exit(1);
+	    getout_preserve_modified(1);
 #endif
 	gui_attempt_start();
     }
@@ -152,7 +152,7 @@ gui_start()
  * full_screen will be set to TRUE again by a successful termcapinit().
  */
     static void
-gui_attempt_start()
+gui_attempt_start(void)
 {
     static int recursive = 0;
 
@@ -204,7 +204,7 @@ gui_attempt_start()
  * and the child will return.
  */
     static void
-gui_do_fork()
+gui_do_fork(void)
 {
     int		pipefd[2];	/* pipe between parent and child */
     int		pipe_error;
@@ -272,7 +272,7 @@ gui_do_fork()
 #ifdef FEAT_GUI_GTK
     /* Call gtk_init_check() here after fork(). See gui_init_check(). */
     if (gui_mch_init_check() != OK)
-	exit(1);
+	getout_preserve_modified(1);
 #endif
 
 # if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
@@ -309,7 +309,7 @@ gui_do_fork()
 
     /* If we failed to start the GUI, exit now. */
     if (!gui.in_use)
-	exit(1);
+	getout_preserve_modified(1);
 }
 
 /*
@@ -345,9 +345,7 @@ gui_read_child_pipe(int fd)
  * Call this when vim starts up, whether or not the GUI is started
  */
     void
-gui_prepare(argc, argv)
-    int	    *argc;
-    char    **argv;
+gui_prepare(int *argc, char **argv)
 {
     gui.in_use = FALSE;		    /* No GUI yet (maybe later) */
     gui.starting = FALSE;	    /* No GUI yet (maybe later) */
@@ -361,7 +359,7 @@ gui_prepare(argc, argv)
  * Returns FAIL or OK.
  */
     int
-gui_init_check()
+gui_init_check(void)
 {
     static int result = MAYBE;
 
@@ -449,7 +447,7 @@ gui_init_check()
      * See gui_do_fork().
      * Use a simpler check if the GUI window can probably be opened.
      */
-    result = gui.dofork ? gui_mch_early_init_check() : gui_mch_init_check();
+    result = gui.dofork ? gui_mch_early_init_check(TRUE) : gui_mch_init_check();
 # else
     result = gui_mch_init_check();
 # endif
@@ -461,7 +459,7 @@ gui_init_check()
  * This is the call which starts the GUI.
  */
     void
-gui_init()
+gui_init(void)
 {
     win_T	*wp;
     static int	recursive = 0;
@@ -573,7 +571,7 @@ gui_init()
 	    {
 #ifdef UNIX
 		{
-		    struct stat s;
+		    stat_T s;
 
 		    /* if ".gvimrc" file is not owned by user, set 'secure'
 		     * mode */
@@ -632,7 +630,7 @@ gui_init()
      * where Vim was started. */
     emsg_on_display = FALSE;
     msg_scrolled = 0;
-    clear_sb_text();
+    clear_sb_text(TRUE);
     need_wait_return = FALSE;
     msg_didany = FALSE;
 
@@ -695,7 +693,7 @@ gui_init()
 #ifndef FEAT_GUI_GTK
     /* Set the shell size, adjusted for the screen size.  For GTK this only
      * works after the shell has been opened, thus it is further down. */
-    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -734,15 +732,18 @@ gui_init()
 # endif
 
 	/* Now make sure the shell fits on the screen. */
-	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 	/* When 'lines' was set while starting up the topframe may have to be
 	 * resized. */
 	win_new_shellsize();
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	/* Always create the Balloon Evaluation area, but disable it when
-	 * 'ballooneval' is off */
+	 * 'ballooneval' is off. */
+	if (balloonEval != NULL)
+	    vim_free(balloonEval);
+	balloonEvalForTerm = FALSE;
 # ifdef FEAT_GUI_GTK
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
 						     &general_beval_cb, NULL);
@@ -789,8 +790,7 @@ error:
 
 
     void
-gui_exit(rc)
-    int		rc;
+gui_exit(int rc)
 {
     /* don't free the fonts, it leads to a BUS error
      * richard@whitequeen.com Jul 99 */
@@ -809,7 +809,7 @@ gui_exit(rc)
  * When this function returns, Vim should NOT exit!
  */
     void
-gui_shell_closed()
+gui_shell_closed(void)
 {
     cmdmod_T	    save_cmdmod;
 
@@ -825,7 +825,7 @@ gui_shell_closed()
 # endif
     /* If there are changed buffers, present the user with a dialog if
      * possible, otherwise give an error message. */
-    if (!check_changed_any(FALSE))
+    if (!check_changed_any(FALSE, FALSE))
 	getout(0);
 
     exiting = FALSE;
@@ -843,9 +843,7 @@ gui_shell_closed()
  * the fonts are unchanged.
  */
     int
-gui_init_font(font_list, fontset)
-    char_u	*font_list;
-    int		fontset UNUSED;
+gui_init_font(char_u *font_list, int fontset UNUSED)
 {
 #define FONTLEN 320
     char_u	font_name[FONTLEN];
@@ -914,7 +912,7 @@ gui_init_font(font_list, fontset)
 # endif
 	    gui_mch_set_font(gui.norm_font);
 #endif
-	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
     }
 
     return ret;
@@ -926,8 +924,7 @@ gui_init_font(font_list, fontset)
  * Try setting 'guifontwide' to a font twice as wide as "name".
  */
     static void
-set_guifontwide(name)
-    char_u	*name;
+set_guifontwide(char_u *name)
 {
     int		i = 0;
     char_u	wide_name[FONTLEN + 10]; /* room for 2 * width and '*' */
@@ -976,7 +973,7 @@ set_guifontwide(name)
  * Return FAIL for an invalid font name.
  */
     int
-gui_get_wide_font()
+gui_get_wide_font(void)
 {
     GuiFont	font = NOFONT;
     char_u	font_name[FONTLEN];
@@ -1024,9 +1021,7 @@ gui_get_wide_font()
 #endif
 
     void
-gui_set_cursor(row, col)
-    int	    row;
-    int	    col;
+gui_set_cursor(int row, int col)
 {
     gui.row = row;
     gui.col = col;
@@ -1036,7 +1031,7 @@ gui_set_cursor(row, col)
  * gui_check_pos - check if the cursor is on the screen.
  */
     static void
-gui_check_pos()
+gui_check_pos(void)
 {
     if (gui.row >= screen_Rows)
 	gui.row = screen_Rows - 1;
@@ -1052,15 +1047,19 @@ gui_check_pos()
  * otherwise this goes wrong.  May need to call out_flush() first.
  */
     void
-gui_update_cursor(force, clear_selection)
-    int		force;		/* when TRUE, update even when not moved */
-    int		clear_selection;/* clear selection under cursor */
+gui_update_cursor(
+    int		force,		/* when TRUE, update even when not moved */
+    int		clear_selection)/* clear selection under cursor */
 {
     int		cur_width = 0;
     int		cur_height = 0;
     int		old_hl_mask;
-    int		idx;
+    cursorentry_T *shape;
     int		id;
+#ifdef FEAT_TERMINAL
+    guicolor_T	shape_fg = INVALCOLOR;
+    guicolor_T	shape_bg = INVALCOLOR;
+#endif
     guicolor_T	cfg, cbg, cc;	/* cursor fore-/background color */
     int		cattr;		/* cursor attributes */
     int		attr;
@@ -1079,7 +1078,7 @@ gui_update_cursor(force, clear_selection)
 	gui_undraw_cursor();
 	if (gui.row < 0)
 	    return;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	if (gui.row != gui.cursor_row || gui.col != gui.cursor_col)
 	    im_set_position(gui.row, gui.col);
 #endif
@@ -1102,24 +1101,42 @@ gui_update_cursor(force, clear_selection)
 
 	/*
 	 * How the cursor is drawn depends on the current mode.
+	 * When in a terminal window use the shape/color specified there.
 	 */
-	idx = get_shape_idx(FALSE);
-	if (State & LANGMAP)
-	    id = shape_table[idx].id_lm;
+#ifdef FEAT_TERMINAL
+	if (terminal_is_active())
+	    shape = term_get_cursor_shape(&shape_fg, &shape_bg);
 	else
-	    id = shape_table[idx].id;
+#endif
+	    shape = &shape_table[get_shape_idx(FALSE)];
+	if (State & LANGMAP)
+	    id = shape->id_lm;
+	else
+	    id = shape->id;
 
 	/* get the colors and attributes for the cursor.  Default is inverted */
 	cfg = INVALCOLOR;
 	cbg = INVALCOLOR;
 	cattr = HL_INVERSE;
-	gui_mch_set_blinking(shape_table[idx].blinkwait,
-			     shape_table[idx].blinkon,
-			     shape_table[idx].blinkoff);
+	gui_mch_set_blinking(shape->blinkwait,
+			     shape->blinkon,
+			     shape->blinkoff);
+	if (shape->blinkwait == 0 || shape->blinkon == 0
+						       || shape->blinkoff == 0)
+	    gui_mch_stop_blink();
+#ifdef FEAT_TERMINAL
+	if (shape_bg != INVALCOLOR)
+	{
+	    cattr = 0;
+	    cfg = shape_fg;
+	    cbg = shape_bg;
+	}
+	else
+#endif
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(USE_IM_CONTROL) || defined(FEAT_HANGULIN)
+#if defined(FEAT_XIM) || defined(FEAT_HANGULIN)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
@@ -1210,7 +1227,7 @@ gui_update_cursor(force, clear_selection)
 	}
 
 	old_hl_mask = gui.highlight_mask;
-	if (shape_table[idx].shape == SHAPE_BLOCK
+	if (shape->shape == SHAPE_BLOCK
 #ifdef FEAT_HANGULIN
 		|| composing_hangul
 #endif
@@ -1223,8 +1240,19 @@ gui_update_cursor(force, clear_selection)
 	    gui.highlight_mask = (cattr | attr);
 #ifdef FEAT_HANGULIN
 	    if (composing_hangul)
-		(void)gui_outstr_nowrap(composing_hangul_buffer, 2,
-			GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR, cfg, cbg, 0);
+	    {
+		char_u *comp_buf;
+		int comp_len;
+
+		comp_buf = hangul_composing_buffer_get(&comp_len);
+		if (comp_buf)
+		{
+		    (void)gui_outstr_nowrap(comp_buf, comp_len,
+					    GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
+					    cfg, cbg, 0);
+		    vim_free(comp_buf);
+		}
+	    }
 	    else
 #endif
 		(void)gui_screenchar(LineOffset[gui.row] + gui.col,
@@ -1239,16 +1267,14 @@ gui_update_cursor(force, clear_selection)
 	     * First draw the partial cursor, then overwrite with the text
 	     * character, using a transparent background.
 	     */
-	    if (shape_table[idx].shape == SHAPE_VER)
+	    if (shape->shape == SHAPE_VER)
 	    {
 		cur_height = gui.char_height;
-		cur_width = (gui.char_width * shape_table[idx].percentage
-								  + 99) / 100;
+		cur_width = (gui.char_width * shape->percentage + 99) / 100;
 	    }
 	    else
 	    {
-		cur_height = (gui.char_height * shape_table[idx].percentage
-								  + 99) / 100;
+		cur_height = (gui.char_height * shape->percentage + 99) / 100;
 		cur_width = gui.char_width;
 	    }
 #ifdef FEAT_MBYTE
@@ -1256,7 +1282,7 @@ gui_update_cursor(force, clear_selection)
 				    LineOffset[gui.row] + screen_Columns) > 1)
 	    {
 		/* Double wide character. */
-		if (shape_table[idx].shape != SHAPE_VER)
+		if (shape->shape != SHAPE_VER)
 		    cur_width += gui.char_width;
 # ifdef FEAT_RIGHTLEFT
 		if (CURSOR_BAR_RIGHT)
@@ -1277,7 +1303,7 @@ gui_update_cursor(force, clear_selection)
 		--gui.col;
 #endif
 
-#if !defined(FEAT_GUI_MSWIN) //&& !defined(FEAT_GUI_IOS)	    /* doesn't seem to work for MSWindows */
+#ifndef FEAT_GUI_MSWIN	    /* doesn't seem to work for MSWindows */
 	    gui.highlight_mask = ScreenAttrs[LineOffset[gui.row] + gui.col];
 	    (void)gui_screenchar(LineOffset[gui.row] + gui.col,
 		    GUI_MON_TRS_CURSOR | GUI_MON_NOCLEAR,
@@ -1290,7 +1316,7 @@ gui_update_cursor(force, clear_selection)
 
 #if defined(FEAT_MENU) || defined(PROTO)
     void
-gui_position_menu()
+gui_position_menu(void)
 {
 # if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
     if (gui.menu_is_active && gui.in_use)
@@ -1304,8 +1330,7 @@ gui_position_menu()
  * scrollbars are NOT handled here.  See gui_update_scrollbars().
  */
     static void
-gui_position_components(total_width)
-    int	    total_width UNUSED;
+gui_position_components(int total_width UNUSED)
 {
     int	    text_area_x;
     int	    text_area_y;
@@ -1377,7 +1402,7 @@ gui_position_components(total_width)
  * Get the width of the widgets and decorations to the side of the text area.
  */
     int
-gui_get_base_width()
+gui_get_base_width(void)
 {
     int	    base_width;
 
@@ -1393,7 +1418,7 @@ gui_get_base_width()
  * Get the height of the widgets and decorations above and below the text area.
  */
     int
-gui_get_base_height()
+gui_get_base_height(void)
 {
     int	    base_height;
 
@@ -1438,9 +1463,7 @@ gui_get_base_height()
  * the new width and height of the shell in pixels.
  */
     void
-gui_resize_shell(pixel_width, pixel_height)
-    int		pixel_width;
-    int		pixel_height;
+gui_resize_shell(int pixel_width, int pixel_height)
 {
     static int	busy = FALSE;
 
@@ -1459,6 +1482,8 @@ gui_resize_shell(pixel_width, pixel_height)
     }
 
 again:
+    new_pixel_width = 0;
+    new_pixel_height = 0;
     busy = TRUE;
 
     /* Flush pending output before redrawing */
@@ -1468,8 +1493,8 @@ again:
     gui.num_rows = (pixel_height - gui_get_base_height()) / gui.char_height;
 
     gui_position_components(pixel_width);
-
     gui_reset_scroll_region();
+
     /*
      * At the "more" and ":confirm" prompt there is no redraw, put the cursor
      * at the last line here (why does it have to be one row too low?).
@@ -1491,17 +1516,22 @@ again:
 
     busy = FALSE;
 
-    /*
-     * We could have been called again while redrawing the screen.
-     * Need to do it all again with the latest size then.
-     */
+    /* We may have been called again while redrawing the screen.
+     * Need to do it all again with the latest size then.  But only if the size
+     * actually changed. */
     if (new_pixel_height)
     {
-	pixel_width = new_pixel_width;
-	pixel_height = new_pixel_height;
-	new_pixel_width = 0;
-	new_pixel_height = 0;
-	goto again;
+	if (pixel_width == new_pixel_width && pixel_height == new_pixel_height)
+	{
+	    new_pixel_width = 0;
+	    new_pixel_height = 0;
+	}
+	else
+	{
+	    pixel_width = new_pixel_width;
+	    pixel_height = new_pixel_height;
+	    goto again;
+	}
     }
 }
 
@@ -1509,24 +1539,16 @@ again:
  * Check if gui_resize_shell() must be called.
  */
     void
-gui_may_resize_shell()
+gui_may_resize_shell(void)
 {
-    int		h, w;
-
     if (new_pixel_height)
-    {
 	/* careful: gui_resize_shell() may postpone the resize again if we
 	 * were called indirectly by it */
-	w = new_pixel_width;
-	h = new_pixel_height;
-	new_pixel_width = 0;
-	new_pixel_height = 0;
-	gui_resize_shell(w, h);
-    }
+	gui_resize_shell(new_pixel_width, new_pixel_height);
 }
 
     int
-gui_get_shellsize()
+gui_get_shellsize(void)
 {
     Rows = gui.num_rows;
     Columns = gui.num_cols;
@@ -1537,12 +1559,14 @@ gui_get_shellsize()
  * Set the size of the Vim shell according to Rows and Columns.
  * If "fit_to_display" is TRUE then the size may be reduced to fit the window
  * on the screen.
+ * When "mustset" is TRUE the size was set by the user. When FALSE a UI
+ * component was added or removed (e.g., a scrollbar).
  */
     void
-gui_set_shellsize(mustset, fit_to_display, direction)
-    int		mustset UNUSED;		/* set by the user */
-    int		fit_to_display;
-    int		direction;		/* RESIZE_HOR, RESIZE_VER */
+gui_set_shellsize(
+    int		mustset UNUSED,
+    int		fit_to_display,
+    int		direction)		/* RESIZE_HOR, RESIZE_VER */
 {
     int		base_width;
     int		base_height;
@@ -1564,7 +1588,8 @@ gui_set_shellsize(mustset, fit_to_display, direction)
 #if defined(MSWIN) || defined(FEAT_GUI_GTK)
     /* If not setting to a user specified size and maximized, calculate the
      * number of characters that fit in the maximized window. */
-    if (!mustset && gui_mch_maximized())
+    if (!mustset && (vim_strchr(p_go, GO_KEEPWINSIZE) != NULL
+						       || gui_mch_maximized()))
     {
 	gui_mch_newfont();
 	return;
@@ -1626,9 +1651,7 @@ gui_set_shellsize(mustset, fit_to_display, direction)
 
     min_width = base_width + MIN_COLUMNS * gui.char_width;
     min_height = base_height + MIN_LINES * gui.char_height;
-#ifdef FEAT_WINDOWS
     min_height += tabline_height() * gui.char_height;
-#endif
 
 #ifdef FEAT_GUI_GTK
     if (un_maximize)
@@ -1665,7 +1688,7 @@ gui_set_shellsize(mustset, fit_to_display, direction)
  * Called when Rows and/or Columns has changed.
  */
     void
-gui_new_shellsize()
+gui_new_shellsize(void)
 {
     gui_reset_scroll_region();
 }
@@ -1674,7 +1697,7 @@ gui_new_shellsize()
  * Make scroll region cover whole screen.
  */
     void
-gui_reset_scroll_region()
+gui_reset_scroll_region(void)
 {
     gui.scroll_region_top = 0;
     gui.scroll_region_bot = gui.num_rows - 1;
@@ -1683,8 +1706,7 @@ gui_reset_scroll_region()
 }
 
     void
-gui_start_highlight(mask)
-    int	    mask;
+gui_start_highlight(int mask)
 {
     if (mask > HL_ALL)		    /* highlight code */
 	gui.highlight_mask = mask;
@@ -1693,8 +1715,7 @@ gui_start_highlight(mask)
 }
 
     void
-gui_stop_highlight(mask)
-    int	    mask;
+gui_stop_highlight(int mask)
 {
     if (mask > HL_ALL)		    /* highlight code */
 	gui.highlight_mask = HL_NORMAL;
@@ -1707,11 +1728,11 @@ gui_stop_highlight(mask)
  * (row2, col2) inclusive.
  */
     void
-gui_clear_block(row1, col1, row2, col2)
-    int	    row1;
-    int	    col1;
-    int	    row2;
-    int	    col2;
+gui_clear_block(
+    int	    row1,
+    int	    col1,
+    int	    row2,
+    int	    col2)
 {
     /* Clear the selection if we are about to write over it */
     clip_may_clear_selection(row1, row2);
@@ -1729,15 +1750,15 @@ gui_clear_block(row1, col1, row2, col2)
  * output buffer before calling gui_update_cursor().
  */
     void
-gui_update_cursor_later()
+gui_update_cursor_later(void)
 {
     OUT_STR(IF_EB("\033|s", ESC_STR "|s"));
 }
 
     void
-gui_write(s, len)
-    char_u	*s;
-    int		len;
+gui_write(
+    char_u	*s,
+    int		len)
 {
     char_u	*p;
     int		arg1 = 0, arg2 = 0;
@@ -1775,7 +1796,7 @@ gui_write(s, len)
 	if (s[0] == ESC && s[1] == '|')
 	{
 	    p = s + 2;
-	    if (VIM_ISDIGIT(*p))
+	    if (VIM_ISDIGIT(*p) || (*p == '-' && VIM_ISDIGIT(*(p + 1))))
 	    {
 		arg1 = getdigits(&p);
 		if (p > s + len)
@@ -1814,7 +1835,6 @@ gui_write(s, len)
 			gui.scroll_region_bot = arg1;
 		    }
 		    break;
-#ifdef FEAT_VERTSPLIT
 		case 'V':	/* Set vertical scroll region */
 		    if (arg1 < arg2)
 		    {
@@ -1827,7 +1847,6 @@ gui_write(s, len)
 			gui.scroll_region_right = arg1;
 		    }
 		    break;
-#endif
 		case 'd':	/* Delete line */
 		    gui_delete_lines(gui.row, 1);
 		    break;
@@ -1966,18 +1985,19 @@ gui_write(s, len)
  * gui_can_update_cursor() afterwards.
  */
     void
-gui_dont_update_cursor()
+gui_dont_update_cursor(int undraw)
 {
     if (gui.in_use)
     {
 	/* Undraw the cursor now, we probably can't do it after the change. */
-	gui_undraw_cursor();
+	if (undraw)
+	    gui_undraw_cursor();
 	can_update_cursor = FALSE;
     }
 }
 
     void
-gui_can_update_cursor()
+gui_can_update_cursor(void)
 {
     can_update_cursor = TRUE;
     /* No need to update the cursor right now, there is always more output
@@ -1985,9 +2005,7 @@ gui_can_update_cursor()
 }
 
     static void
-gui_outstr(s, len)
-    char_u  *s;
-    int	    len;
+gui_outstr(char_u *s, int len)
 {
     int	    this_len;
 #ifdef FEAT_MBYTE
@@ -2049,11 +2067,12 @@ gui_outstr(s, len)
  * Returns FAIL or OK, just like gui_outstr_nowrap().
  */
     static int
-gui_screenchar(off, flags, fg, bg, back)
-    int		off;	    /* Offset from start of screen */
-    int		flags;
-    guicolor_T	fg, bg;	    /* colors for cursor */
-    int		back;	    /* backup this many chars when using bold trick */
+gui_screenchar(
+    int		off,	    /* Offset from start of screen */
+    int		flags,
+    guicolor_T	fg,	    /* colors for cursor */
+    guicolor_T	bg,	    /* colors for cursor */
+    int		back)	    /* backup this many chars when using bold trick */
 {
 #ifdef FEAT_MBYTE
     char_u	buf[MB_MAXBYTES + 1];
@@ -2090,12 +2109,13 @@ gui_screenchar(off, flags, fg, bg, back)
  * as possible to work nicely.  It's a lot faster as well.
  */
     static int
-gui_screenstr(off, len, flags, fg, bg, back)
-    int		off;	    /* Offset from start of screen */
-    int		len;	    /* string length in screen cells */
-    int		flags;
-    guicolor_T	fg, bg;	    /* colors for cursor */
-    int		back;	    /* backup this many chars when using bold trick */
+gui_screenstr(
+    int		off,	    /* Offset from start of screen */
+    int		len,	    /* string length in screen cells */
+    int		flags,
+    guicolor_T	fg,	    /* colors for cursor */
+    guicolor_T	bg,	    /* colors for cursor */
+    int		back)	    /* backup this many chars when using bold trick */
 {
     char_u  *buf;
     int	    outlen = 0;
@@ -2173,19 +2193,20 @@ gui_screenstr(off, len, flags, fg, bg, back)
  * FAIL (the caller should start drawing "back" chars back).
  */
     int
-gui_outstr_nowrap(s, len, flags, fg, bg, back)
-    char_u	*s;
-    int		len;
-    int		flags;
-    guicolor_T	fg, bg;	    /* colors for cursor */
-    int		back;	    /* backup this many chars when using bold trick */
+gui_outstr_nowrap(
+    char_u	*s,
+    int		len,
+    int		flags,
+    guicolor_T	fg,	    /* colors for cursor */
+    guicolor_T	bg,	    /* colors for cursor */
+    int		back)	    /* backup this many chars when using bold trick */
 {
     long_u	highlight_mask;
     long_u	hl_mask_todo;
     guicolor_T	fg_color;
     guicolor_T	bg_color;
     guicolor_T	sp_color;
-#if !defined(MSWIN16_FASTTEXT) && !defined(FEAT_GUI_GTK)
+#if !defined(FEAT_GUI_GTK)
     GuiFont	font = NOFONT;
 # ifdef FEAT_MBYTE
     GuiFont	wide_font = NOFONT;
@@ -2242,7 +2263,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	highlight_mask = gui.highlight_mask;
     hl_mask_todo = highlight_mask;
 
-#if !defined(MSWIN16_FASTTEXT) && !defined(FEAT_GUI_GTK)
+#if !defined(FEAT_GUI_GTK)
     /* Set the font */
     if (aep != NULL && aep->ae_u.gui.font != NOFONT)
 	font = aep->ae_u.gui.font;
@@ -2359,11 +2380,9 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	clip_may_clear_selection(gui.row, gui.row);
 
 
-#ifndef MSWIN16_FASTTEXT
     /* If there's no bold font, then fake it */
     if (hl_mask_todo & (HL_BOLD | HL_STANDOUT))
 	draw_flags |= DRAW_BOLD;
-#endif
 
     /*
      * When drawing bold or italic characters the spill-over from the left
@@ -2382,18 +2401,19 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     /* Do we underline the text? */
     if (hl_mask_todo & HL_UNDERLINE)
 	draw_flags |= DRAW_UNDERL;
+
 #else
     /* Do we underline the text? */
-    if ((hl_mask_todo & HL_UNDERLINE)
-# ifndef MSWIN16_FASTTEXT
-	    || (hl_mask_todo & HL_ITALIC)
-# endif
-       )
+    if ((hl_mask_todo & HL_UNDERLINE) || (hl_mask_todo & HL_ITALIC))
 	draw_flags |= DRAW_UNDERL;
 #endif
     /* Do we undercurl the text? */
     if (hl_mask_todo & HL_UNDERCURL)
 	draw_flags |= DRAW_UNDERC;
+
+    /* Do we strikethrough the text? */
+    if (hl_mask_todo & HL_STRIKETHROUGH)
+	draw_flags |= DRAW_STRIKE;
 
     /* Do we draw transparently? */
     if (flags & GUI_MON_TRS_CURSOR)
@@ -2418,9 +2438,14 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	int	cl;		/* byte length of current char */
 	int	comping;	/* current char is composing */
 	int	scol = col;	/* screen column */
-	int	curr_wide;	/* use 'guifontwide' */
+	int	curr_wide = FALSE;  /* use 'guifontwide' */
 	int	prev_wide = FALSE;
 	int	wide_changed;
+#  ifdef WIN3264
+	int	sep_comp = FALSE;   /* Don't separate composing chars. */
+#  else
+	int	sep_comp = TRUE;    /* Separate composing chars. */
+#  endif
 
 	/* Break the string at a composing character, it has to be drawn on
 	 * top of the previous character. */
@@ -2430,17 +2455,20 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	{
 	    c = utf_ptr2char(s + i);
 	    cn = utf_char2cells(c);
-	    if (cn > 1
-#  ifdef FEAT_XFONTSET
-		    && fontset == NOFONTSET
-#  endif
-		    && wide_font != NOFONT)
-		curr_wide = TRUE;
-	    else
-		curr_wide = FALSE;
 	    comping = utf_iscomposing(c);
 	    if (!comping)	/* count cells from non-composing chars */
 		cells += cn;
+	    if (!comping || sep_comp)
+	    {
+		if (cn > 1
+#  ifdef FEAT_XFONTSET
+			&& fontset == NOFONTSET
+#  endif
+			&& wide_font != NOFONT)
+		    curr_wide = TRUE;
+		else
+		    curr_wide = FALSE;
+	    }
 	    cl = utf_ptr2len(s + i);
 	    if (cl == 0)	/* hit end of string */
 		len = i + cl;	/* len must be wrong "cannot happen" */
@@ -2449,7 +2477,8 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 
 	    /* Print the string so far if it's the last character or there is
 	     * a composing character. */
-	    if (i + cl >= len || (comping && i > start) || wide_changed
+	    if (i + cl >= len || (comping && sep_comp && i > start)
+		    || wide_changed
 #  if defined(FEAT_GUI_X11)
 		    || (cn > 1
 #   ifdef FEAT_XFONTSET
@@ -2461,7 +2490,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 #  endif
 	       )
 	    {
-		if (comping || wide_changed)
+		if ((comping && sep_comp) || wide_changed)
 		    thislen = i - start;
 		else
 		    thislen = i - start + cl;
@@ -2479,7 +2508,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 		cells = 0;
 		/* Adjust to not draw a character which width is changed
 		 * against with last one. */
-		if (wide_changed && !comping)
+		if (wide_changed && !(comping && sep_comp))
 		{
 		    scol -= cn;
 		    cl = 0;
@@ -2498,9 +2527,9 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 #  endif
 	    }
 	    /* Draw a composing char on top of the previous char. */
-	    if (comping)
+	    if (comping && sep_comp)
 	    {
-#  if (defined(__APPLE_CC__) || defined(__MRC__)) && TARGET_API_MAC_CARBON
+#  if defined(__APPLE_CC__) && TARGET_API_MAC_CARBON
 		/* Carbon ATSUI autodraws composing char over previous char */
 		gui_mch_draw_string(gui.row, scol, s + i, cl,
 						    draw_flags | DRAW_TRANSP);
@@ -2565,16 +2594,26 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
  * position.  The character just before it too, for when it was in bold.
  */
     void
-gui_undraw_cursor()
+gui_undraw_cursor(void)
 {
     if (gui.cursor_is_valid)
     {
 #ifdef FEAT_HANGULIN
 	if (composing_hangul
 		    && gui.col == gui.cursor_col && gui.row == gui.cursor_row)
-	    (void)gui_outstr_nowrap(composing_hangul_buffer, 2,
-		    GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
-		    gui.norm_pixel, gui.back_pixel, 0);
+	{
+	    char_u *comp_buf;
+	    int comp_len;
+
+	    comp_buf = hangul_composing_buffer_get(&comp_len);
+	    if (comp_buf)
+	    {
+		(void)gui_outstr_nowrap(comp_buf, comp_len,
+					GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
+					gui.norm_pixel, gui.back_pixel, 0);
+		vim_free(comp_buf);
+	    }
+	}
 	else
 	{
 #endif
@@ -2596,11 +2635,11 @@ gui_undraw_cursor()
 }
 
     void
-gui_redraw(x, y, w, h)
-    int		x;
-    int		y;
-    int		w;
-    int		h;
+gui_redraw(
+    int		x,
+    int		y,
+    int		w,
+    int		h)
 {
     int		row1, col1, row2, col2;
 
@@ -2629,12 +2668,12 @@ gui_redraw(x, y, w, h)
  * different attributes (may have to be redrawn too).
  */
     int
-gui_redraw_block(row1, col1, row2, col2, flags)
-    int		row1;
-    int		col1;
-    int		row2;
-    int		col2;
-    int		flags;	/* flags for gui_outstr_nowrap() */
+gui_redraw_block(
+    int		row1,
+    int		col1,
+    int		row2,
+    int		col2,
+    int		flags)	/* flags for gui_outstr_nowrap() */
 {
     int		old_row, old_col;
     long_u	old_hl_mask;
@@ -2793,9 +2832,7 @@ gui_redraw_block(row1, col1, row2, col2, flags)
 }
 
     static void
-gui_delete_lines(row, count)
-    int	    row;
-    int	    count;
+gui_delete_lines(int row, int count)
 {
     if (count <= 0)
 	return;
@@ -2823,9 +2860,7 @@ gui_delete_lines(row, count)
 }
 
     static void
-gui_insert_lines(row, count)
-    int	    row;
-    int	    count;
+gui_insert_lines(int row, int count)
 {
     if (count <= 0)
 	return;
@@ -2850,6 +2885,34 @@ gui_insert_lines(row, count)
     }
 }
 
+#ifdef FEAT_TIMERS
+/*
+ * Passed to ui_wait_for_chars_or_timer(), ignoring extra arguments.
+ */
+    static int
+gui_wait_for_chars_3(
+    long wtime,
+    int *interrupted UNUSED,
+    int ignore_input UNUSED)
+{
+    return gui_mch_wait_for_chars(wtime);
+}
+#endif
+
+/*
+ * Returns OK if a character was found to be available within the given time,
+ * or FAIL otherwise.
+ */
+    static int
+gui_wait_for_chars_or_timer(long wtime)
+{
+#ifdef FEAT_TIMERS
+    return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3, NULL, 0);
+#else
+    return gui_mch_wait_for_chars(wtime);
+#endif
+}
+
 /*
  * The main GUI input routine.	Waits for a character from the keyboard.
  * wtime == -1	    Wait forever.
@@ -2859,10 +2922,12 @@ gui_insert_lines(row, count)
  * or FAIL otherwise.
  */
     int
-gui_wait_for_chars(wtime)
-    long    wtime;
+gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
     int	    retval;
+#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+    ELAPSED_TYPE start_tv;
+#endif
 
 #ifdef FEAT_MENU
     /*
@@ -2887,10 +2952,14 @@ gui_wait_for_chars(wtime)
 	/* Blink when waiting for a character.	Probably only does something
 	 * for showmatch() */
 	gui_mch_start_blink();
-	retval = gui_mch_wait_for_chars(wtime);
+	retval = gui_wait_for_chars_or_timer(wtime);
 	gui_mch_stop_blink();
 	return retval;
     }
+
+#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+    ELAPSED_INIT(start_tv);
+#endif
 
     /*
      * While we are waiting indefinitely for a character, blink the cursor.
@@ -2900,13 +2969,17 @@ gui_wait_for_chars(wtime)
     retval = FAIL;
     /*
      * We may want to trigger the CursorHold event.  First wait for
-     * 'updatetime' and if nothing is typed within that time put the
-     * K_CURSORHOLD key in the input buffer.
+     * 'updatetime' and if nothing is typed within that time, and feedkeys()
+     * wasn't used, put the K_CURSORHOLD key in the input buffer.
      */
-    if (gui_mch_wait_for_chars(p_ut) == OK)
+    if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
 #ifdef FEAT_AUTOCMD
-    else if (trigger_cursorhold())
+    else if (trigger_cursorhold()
+# ifdef ELAPSED_FUNC
+	    && ELAPSED_FUNC(start_tv) >= p_ut
+# endif
+	    && typebuf.tb_change_cnt == tb_change_cnt)
     {
 	char_u	buf[3];
 
@@ -2920,11 +2993,11 @@ gui_wait_for_chars(wtime)
     }
 #endif
 
-    if (retval == FAIL)
+    if (retval == FAIL && typebuf.tb_change_cnt == tb_change_cnt)
     {
 	/* Blocking wait. */
 	before_blocking();
-	retval = gui_mch_wait_for_chars(-1L);
+	retval = gui_wait_for_chars_or_timer(-1L);
     }
 
     gui_mch_stop_blink();
@@ -2932,13 +3005,26 @@ gui_wait_for_chars(wtime)
 }
 
 /*
+ * Equivalent of mch_inchar() for the GUI.
+ */
+    int
+gui_inchar(
+    char_u  *buf,
+    int	    maxlen,
+    long    wtime,		/* milli seconds */
+    int	    tb_change_cnt)
+{
+    if (gui_wait_for_chars(wtime, tb_change_cnt)
+	    && !typebuf_changed(tb_change_cnt))
+	return read_from_input_buf(buf, (long)maxlen);
+    return 0;
+}
+
+/*
  * Fill p[4] with mouse coordinates encoded for check_termcode().
  */
     static void
-fill_mouse_coord(p, col, row)
-    char_u	*p;
-    int		col;
-    int		row;
+fill_mouse_coord(char_u *p, int col, int row)
 {
     p[0] = (char_u)(col / 128 + ' ' + 1);
     p[1] = (char_u)(col % 128 + ' ' + 1);
@@ -2963,12 +3049,12 @@ fill_mouse_coord(p, col, row)
  * character.
  */
     void
-gui_send_mouse_event(button, x, y, repeated_click, modifiers)
-    int	    button;
-    int	    x;
-    int	    y;
-    int	    repeated_click;
-    int_u   modifiers;
+gui_send_mouse_event(
+    int	    button,
+    int	    x,
+    int	    y,
+    int	    repeated_click,
+    int_u   modifiers)
 {
     static int	    prev_row = 0, prev_col = 0;
     static int	    prev_button = -1;
@@ -3053,15 +3139,18 @@ button_set:
     {
 	case NORMAL_BUSY:
 	case OP_PENDING:
+# ifdef FEAT_TERMINAL
+	case TERMINAL:
+# endif
 	case NORMAL:		checkfor = MOUSE_NORMAL;	break;
 	case VISUAL:		checkfor = MOUSE_VISUAL;	break;
 	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
 	case REPLACE:
 	case REPLACE+LANGMAP:
-#ifdef FEAT_VREPLACE
+# ifdef FEAT_VREPLACE
 	case VREPLACE:
 	case VREPLACE+LANGMAP:
-#endif
+# endif
 	case INSERT:
 	case INSERT+LANGMAP:	checkfor = MOUSE_INSERT;	break;
 	case ASKMORE:
@@ -3097,16 +3186,11 @@ button_set:
      * Visual selection.
      */
     if ((State == NORMAL || State == NORMAL_BUSY || (State & INSERT))
-	    && Y_2_ROW(y) >= topframe->fr_height
-# ifdef FEAT_WINDOWS
-						+ firstwin->w_winrow
-# endif
+	    && Y_2_ROW(y) >= topframe->fr_height + firstwin->w_winrow
 	    && button != MOUSE_DRAG
 # ifdef FEAT_MOUSESHAPE
 	    && !drag_status_line
-#  ifdef FEAT_VERTSPLIT
 	    && !drag_sep_line
-#  endif
 # endif
 	    )
 	checkfor = MOUSE_NONE;
@@ -3278,10 +3362,7 @@ button_set:
  * returns column in "*colp" and row as return value;
  */
     int
-gui_xy2colrow(x, y, colp)
-    int		x;
-    int		y;
-    int		*colp;
+gui_xy2colrow(int x, int y, int *colp)
 {
     int		col = check_col(X_2_COL(x));
     int		row = check_row(Y_2_ROW(y));
@@ -3299,8 +3380,7 @@ gui_xy2colrow(x, y, colp)
  * Callback function for when a menu entry has been selected.
  */
     void
-gui_menu_cb(menu)
-    vimmenu_T *menu;
+gui_menu_cb(vimmenu_T *menu)
 {
     char_u  bytes[sizeof(long_u)];
 
@@ -3325,8 +3405,7 @@ static int	prev_which_scrollbars[3];
  * in p_go.
  */
     void
-gui_init_which_components(oldval)
-    char_u	*oldval UNUSED;
+gui_init_which_components(char_u *oldval UNUSED)
 {
 #ifdef FEAT_MENU
     static int	prev_menu_is_active = -1;
@@ -3342,7 +3421,7 @@ gui_init_which_components(oldval)
     static int	prev_footer = -1;
     int		using_footer = FALSE;
 #endif
-#if defined(FEAT_MENU) && !defined(WIN16)
+#if defined(FEAT_MENU)
     static int	prev_tearoff = -1;
     int		using_tearoff = FALSE;
 #endif
@@ -3387,7 +3466,6 @@ gui_init_which_components(oldval)
 	    case GO_RIGHT:
 		gui.which_scrollbars[SBAR_RIGHT] = TRUE;
 		break;
-#ifdef FEAT_VERTSPLIT
 	    case GO_VLEFT:
 		if (win_hasvertsplit())
 		    gui.which_scrollbars[SBAR_LEFT] = TRUE;
@@ -3396,7 +3474,6 @@ gui_init_which_components(oldval)
 		if (win_hasvertsplit())
 		    gui.which_scrollbars[SBAR_RIGHT] = TRUE;
 		break;
-#endif
 	    case GO_BOT:
 		gui.which_scrollbars[SBAR_BOTTOM] = TRUE;
 		break;
@@ -3419,7 +3496,7 @@ gui_init_which_components(oldval)
 		break;
 #endif
 	    case GO_TEAROFF:
-#if defined(FEAT_MENU) && !defined(WIN16)
+#if defined(FEAT_MENU)
 		using_tearoff = TRUE;
 #endif
 		break;
@@ -3459,11 +3536,8 @@ gui_init_which_components(oldval)
 	     * shown/unshown.  Thus we need two places to remember whether a
 	     * scrollbar is there or not. */
 	    if (gui.which_scrollbars[i] != prev_which_scrollbars[i]
-#ifdef FEAT_WINDOWS
 		    || gui.which_scrollbars[i]
-					!= curtab->tp_prev_which_scrollbars[i]
-#endif
-		    )
+					!= curtab->tp_prev_which_scrollbars[i])
 	    {
 		if (i == SBAR_BOTTOM)
 		    gui_mch_enable_scrollbar(&gui.bottom_sbar,
@@ -3485,9 +3559,7 @@ gui_init_which_components(oldval)
 			fix_size = TRUE;
 		}
 	    }
-#ifdef FEAT_WINDOWS
 	    curtab->tp_prev_which_scrollbars[i] = gui.which_scrollbars[i];
-#endif
 	    prev_which_scrollbars[i] = gui.which_scrollbars[i];
 	}
 
@@ -3526,7 +3598,7 @@ gui_init_which_components(oldval)
 		fix_size = TRUE;
 	}
 #endif
-#if defined(FEAT_MENU) && !defined(WIN16) && !(defined(WIN3264) && !defined(FEAT_TEAROFF))
+#if defined(FEAT_MENU) && !(defined(WIN3264) && !defined(FEAT_TEAROFF))
 	if (using_tearoff != prev_tearoff)
 	{
 	    gui_mch_toggle_tearoffs(using_tearoff);
@@ -3563,12 +3635,10 @@ gui_init_which_components(oldval)
 		Columns = prev_Columns;
 #endif
 	}
-#ifdef FEAT_WINDOWS
 	/* When the console tabline appears or disappears the window positions
 	 * change. */
 	if (firstwin->w_winrow != tabline_height())
 	    shell_new_rows();	/* recompute window positions and heights */
-#endif
     }
 }
 
@@ -3578,7 +3648,7 @@ gui_init_which_components(oldval)
  * It may still be hidden if 'showtabline' is zero.
  */
     int
-gui_use_tabline()
+gui_use_tabline(void)
 {
     return gui.in_use && vim_strchr(p_go, GO_TABLINE) != NULL;
 }
@@ -3588,7 +3658,7 @@ gui_use_tabline()
  * This uses 'showtabline'.
  */
     static int
-gui_has_tabline()
+gui_has_tabline(void)
 {
     if (!gui_use_tabline()
 	    || p_stal == 0
@@ -3602,7 +3672,7 @@ gui_has_tabline()
  * This may display/undisplay the tabline and update the labels.
  */
     void
-gui_update_tabline()
+gui_update_tabline(void)
 {
     int	    showit = gui_has_tabline();
     int	    shown = gui_mch_showing_tabline();
@@ -3630,9 +3700,9 @@ gui_update_tabline()
  * Get the label or tooltip for tab page "tp" into NameBuff[].
  */
     void
-get_tabline_label(tp, tooltip)
-    tabpage_T	*tp;
-    int		tooltip;	/* TRUE: get tooltip */
+get_tabline_label(
+    tabpage_T	*tp,
+    int		tooltip)	/* TRUE: get tooltip */
 {
     int		modified = FALSE;
     char_u	buf[40];
@@ -3723,8 +3793,7 @@ get_tabline_label(tp, tooltip)
  * that tab page or the cmdline window is open.
  */
     int
-send_tabline_event(nr)
-    int	    nr;
+send_tabline_event(int nr)
 {
     char_u string[3];
 
@@ -3756,9 +3825,7 @@ send_tabline_event(nr)
  * Send a tabline menu event
  */
     void
-send_tabline_menu_event(tabidx, event)
-    int	    tabidx;
-    int	    event;
+send_tabline_menu_event(int tabidx, int event)
 {
     char_u	    string[3];
 
@@ -3781,12 +3848,11 @@ send_tabline_menu_event(tabidx, event)
  * Scrollbar stuff:
  */
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Remove all scrollbars.  Used before switching to another tab page.
  */
     void
-gui_remove_scrollbars()
+gui_remove_scrollbars(void)
 {
     int	    i;
     win_T   *wp;
@@ -3805,13 +3871,9 @@ gui_remove_scrollbars()
 	curtab->tp_prev_which_scrollbars[i] = -1;
     }
 }
-#endif
 
     void
-gui_create_scrollbar(sb, type, wp)
-    scrollbar_T	*sb;
-    int		type;
-    win_T	*wp;
+gui_create_scrollbar(scrollbar_T *sb, int type, win_T *wp)
 {
     static int	sbar_ident = 0;
 
@@ -3826,9 +3888,7 @@ gui_create_scrollbar(sb, type, wp)
     sb->max = 1;
     sb->top = 0;
     sb->height = 0;
-#ifdef FEAT_VERTSPLIT
     sb->width = 0;
-#endif
     sb->status_height = 0;
     gui_mch_create_scrollbar(sb, (wp == NULL) ? SBAR_HORIZ : SBAR_VERT);
 }
@@ -3837,8 +3897,7 @@ gui_create_scrollbar(sb, type, wp)
  * Find the scrollbar with the given index.
  */
     scrollbar_T *
-gui_find_scrollbar(ident)
-    long	ident;
+gui_find_scrollbar(long ident)
 {
     win_T	*wp;
 
@@ -3870,14 +3929,9 @@ gui_find_scrollbar(ident)
  * are still characters to be processed.
  */
     void
-gui_drag_scrollbar(sb, value, still_dragging)
-    scrollbar_T	*sb;
-    long	value;
-    int		still_dragging;
+gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 {
-#ifdef FEAT_WINDOWS
     win_T	*wp;
-#endif
     int		sb_num;
 #ifdef USE_ON_FLY_SCROLL
     colnr_T	old_leftcol = curwin->w_leftcol;
@@ -3969,15 +4023,10 @@ gui_drag_scrollbar(sb, value, still_dragging)
     if (sb->wp != NULL)		/* vertical scrollbar */
     {
 	sb_num = 0;
-#ifdef FEAT_WINDOWS
 	for (wp = firstwin; wp != sb->wp && wp != NULL; wp = wp->w_next)
 	    sb_num++;
 	if (wp == NULL)
 	    return;
-#else
-	if (sb->wp != curwin)
-	    return;
-#endif
 
 #ifdef USE_ON_FLY_SCROLL
 	current_scrollbar = sb_num;
@@ -4067,7 +4116,7 @@ gui_drag_scrollbar(sb, value, still_dragging)
     {
 	do_check_scrollbind(TRUE);
 	/* need to update the window right here */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_redr_type > 0)
 		updateWindow(wp);
 	setcursor();
@@ -4086,12 +4135,11 @@ gui_drag_scrollbar(sb, value, still_dragging)
  * Scrollbar stuff:
  */
 
-#if defined(FEAT_AUTOCMD) || defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Called when something in the window layout has changed.
  */
     void
-gui_may_update_scrollbars()
+gui_may_update_scrollbars(void)
 {
     if (gui.in_use && starting == 0)
     {
@@ -4101,20 +4149,17 @@ gui_may_update_scrollbars()
     }
     need_mouse_correct = TRUE;
 }
-#endif
 
     void
-gui_update_scrollbars(force)
-    int		force;	    /* Force all scrollbars to get updated */
+gui_update_scrollbars(
+    int		force)	    /* Force all scrollbars to get updated */
 {
     win_T	*wp;
     scrollbar_T	*sb;
     long	val, size, max;		/* need 32 bits here */
     int		which_sb;
     int		h, y;
-#ifdef FEAT_VERTSPLIT
     static win_T *prev_curwin = NULL;
-#endif
 
     /* Update the horizontal scrollbar */
     gui_update_horiz_scrollbar(force);
@@ -4207,26 +4252,17 @@ gui_update_scrollbars(force)
 	    continue;
 	}
 	if (force || sb->height != wp->w_height
-#ifdef FEAT_WINDOWS
 	    || sb->top != wp->w_winrow
 	    || sb->status_height != wp->w_status_height
-# ifdef FEAT_VERTSPLIT
 	    || sb->width != wp->w_width
-	    || prev_curwin != curwin
-# endif
-#endif
-	    )
+	    || prev_curwin != curwin)
 	{
 	    /* Height, width or position of scrollbar has changed.  For
 	     * vertical split: curwin changed. */
 	    sb->height = wp->w_height;
-#ifdef FEAT_WINDOWS
 	    sb->top = wp->w_winrow;
 	    sb->status_height = wp->w_status_height;
-# ifdef FEAT_VERTSPLIT
 	    sb->width = wp->w_width;
-# endif
-#endif
 
 	    /* Calculate height and position in pixels */
 	    h = (sb->height + sb->status_height) * gui.char_height;
@@ -4252,9 +4288,7 @@ gui_update_scrollbars(force)
 		y += gui.tabline_height;
 #endif
 
-#ifdef FEAT_WINDOWS
 	    if (wp->w_winrow == 0)
-#endif
 	    {
 		/* Height of top scrollbar includes width of top border */
 		h += gui.border_offset;
@@ -4307,9 +4341,7 @@ gui_update_scrollbars(force)
 					    val, size, max);
 	}
     }
-#ifdef FEAT_VERTSPLIT
     prev_curwin = curwin;
-#endif
     --hold_gui_events;
 }
 
@@ -4319,12 +4351,11 @@ gui_update_scrollbars(force)
  * sometimes.
  */
     static void
-gui_do_scrollbar(wp, which, enable)
-    win_T	*wp;
-    int		which;	    /* SBAR_LEFT or SBAR_RIGHT */
-    int		enable;	    /* TRUE to enable scrollbar */
+gui_do_scrollbar(
+    win_T	*wp,
+    int		which,	    /* SBAR_LEFT or SBAR_RIGHT */
+    int		enable)	    /* TRUE to enable scrollbar */
 {
-#ifdef FEAT_VERTSPLIT
     int		midcol = curwin->w_wincol + curwin->w_width / 2;
     int		has_midcol = (wp->w_wincol <= midcol
 				     && wp->w_wincol + wp->w_width >= midcol);
@@ -4355,7 +4386,6 @@ gui_do_scrollbar(wp, which, enable)
 		enable = FALSE;
 	}
     }
-#endif
     gui_mch_enable_scrollbar(&wp->w_scrollbars[which], enable);
 }
 
@@ -4365,7 +4395,7 @@ gui_do_scrollbar(wp, which, enable)
  * or FALSE otherwise.
  */
     int
-gui_do_scroll()
+gui_do_scroll(void)
 {
     win_T	*wp, *save_wp;
     int		i;
@@ -4465,7 +4495,7 @@ gui_do_scroll()
 	pum_redraw();
 #endif
 
-    return (wp == curwin && !equalpos(curwin->w_cursor, old_cursor));
+    return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }
 
 
@@ -4477,8 +4507,7 @@ gui_do_scroll()
  * Return length of line "lnum" for horizontal scrolling.
  */
     static colnr_T
-scroll_line_len(lnum)
-    linenr_T	lnum;
+scroll_line_len(linenr_T lnum)
 {
     char_u	*p;
     colnr_T	col;
@@ -4490,7 +4519,7 @@ scroll_line_len(lnum)
 	for (;;)
 	{
 	    w = chartabsize(p, col);
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 	    if (*p == NUL)		/* don't count the last character */
 		break;
 	    col += w;
@@ -4507,7 +4536,7 @@ static linenr_T longest_lnum = 0;
  * by setting 'h' in "guioptions") then the current line number is returned.
  */
     static linenr_T
-gui_find_longest_lnum()
+gui_find_longest_lnum(void)
 {
     linenr_T ret = 0;
 
@@ -4548,8 +4577,7 @@ gui_find_longest_lnum()
 }
 
     static void
-gui_update_horiz_scrollbar(force)
-    int		force;
+gui_update_horiz_scrollbar(int force)
 {
     long	value, size, max;	/* need 32 bit ints here */
 
@@ -4572,14 +4600,14 @@ gui_update_horiz_scrollbar(force)
 	return;
     }
 
-    size = W_WIDTH(curwin);
+    size = curwin->w_width;
     if (curwin->w_p_wrap)
     {
 	value = 0;
 #ifdef SCROLL_PAST_END
 	max = 0;
 #else
-	max = W_WIDTH(curwin) - 1;
+	max = curwin->w_width - 1;
 #endif
     }
     else
@@ -4599,7 +4627,7 @@ gui_update_horiz_scrollbar(force)
 #endif
 
 #ifndef SCROLL_PAST_END
-	max += W_WIDTH(curwin) - 1;
+	max += curwin->w_width - 1;
 #endif
 	/* The line number isn't scrolled, thus there is less space when
 	 * 'number' or 'relativenumber' is set (also for 'foldcolumn'). */
@@ -4641,9 +4669,7 @@ gui_update_horiz_scrollbar(force)
  * Do a horizontal scroll.  Return TRUE if the cursor moved, FALSE otherwise.
  */
     int
-gui_do_horiz_scroll(leftcol, compute_longest_lnum)
-    long_u	leftcol;
-    int		compute_longest_lnum;
+gui_do_horiz_scroll(long_u leftcol, int compute_longest_lnum)
 {
     /* no wrapping, no scrolling */
     if (curwin->w_p_wrap)
@@ -4681,7 +4707,7 @@ gui_do_horiz_scroll(leftcol, compute_longest_lnum)
  * Check that none of the colors are the same as the background color
  */
     void
-gui_check_colors()
+gui_check_colors(void)
 {
     if (gui.norm_pixel == gui.back_pixel || gui.norm_pixel == INVALCOLOR)
     {
@@ -4692,16 +4718,14 @@ gui_check_colors()
 }
 
     static void
-gui_set_fg_color(name)
-    char_u	*name;
+gui_set_fg_color(char_u *name)
 {
     gui.norm_pixel = gui_get_color(name);
     hl_set_fg_color_name(vim_strsave(name));
 }
 
     static void
-gui_set_bg_color(name)
-    char_u	*name;
+gui_set_bg_color(char_u *name)
 {
     gui.back_pixel = gui_get_color(name);
     hl_set_bg_color_name(vim_strsave(name));
@@ -4712,8 +4736,7 @@ gui_set_bg_color(name)
  * Returns INVALCOLOR and gives an error message when failed.
  */
     guicolor_T
-gui_get_color(name)
-    char_u	*name;
+gui_get_color(char_u *name)
 {
     guicolor_T	t;
 
@@ -4734,10 +4757,9 @@ gui_get_color(name)
  * Return the grey value of a color (range 0-255).
  */
     int
-gui_get_lightness(pixel)
-    guicolor_T	pixel;
+gui_get_lightness(guicolor_T pixel)
 {
-    long_u	rgb = gui_mch_get_rgb(pixel);
+    long_u	rgb = (long_u)gui_mch_get_rgb(pixel);
 
     return  (int)(  (((rgb >> 16) & 0xff) * 299)
 		   + (((rgb >> 8) & 0xff) * 587)
@@ -4746,7 +4768,7 @@ gui_get_lightness(pixel)
 
 #if defined(FEAT_GUI_X11) || defined(PROTO)
     void
-gui_new_scrollbar_colors()
+gui_new_scrollbar_colors(void)
 {
     win_T	*wp;
 
@@ -4767,8 +4789,7 @@ gui_new_scrollbar_colors()
  * Call this when focus has changed.
  */
     void
-gui_focus_change(in_focus)
-    int		in_focus;
+gui_focus_change(int in_focus)
 {
 /*
  * Skip this code to avoid drawing the cursor when debugging and switching
@@ -4802,9 +4823,7 @@ gui_focus_change(in_focus)
  * Called when the mouse moved (but not when dragging).
  */
     void
-gui_mouse_moved(x, y)
-    int		x;
-    int		y;
+gui_mouse_moved(int x, int y)
 {
     win_T	*wp;
     char_u	st[8];
@@ -4836,11 +4855,9 @@ gui_mouse_moved(x, y)
 	if (wp == curwin || wp == NULL)
 	    return;	/* still in the same old window, or none at all */
 
-#ifdef FEAT_WINDOWS
 	/* Ignore position in the tab pages line. */
 	if (Y_2_ROW(y) < tabline_height())
 	    return;
-#endif
 
 	/*
 	 * format a mouse click on status line input
@@ -4859,11 +4876,7 @@ gui_mouse_moved(x, y)
 	st[2] = KE_FILLER;
 	st[3] = (char_u)MOUSE_LEFT;
 	fill_mouse_coord(st + 4,
-#ifdef FEAT_VERTSPLIT
 		wp->w_wincol == 0 ? -1 : wp->w_wincol + MOUSE_COLOFF,
-#else
-		-1,
-#endif
 		wp->w_height + W_WINROW(wp));
 
 	add_to_input_buf(st, 8);
@@ -4881,7 +4894,7 @@ gui_mouse_moved(x, y)
  * Called when mouse should be moved to window with focus.
  */
     void
-gui_mouse_correct()
+gui_mouse_correct(void)
 {
     int		x, y;
     win_T	*wp = NULL;
@@ -4895,11 +4908,7 @@ gui_mouse_correct()
     /* Don't move the mouse when it's left or right of the Vim window */
     if (x < 0 || x > Columns * gui.char_width)
 	return;
-    if (y >= 0
-# ifdef FEAT_WINDOWS
-	    && Y_2_ROW(y) >= tabline_height()
-# endif
-       )
+    if (y >= 0 && Y_2_ROW(y) >= tabline_height())
 	wp = xy2win(x, y);
     if (wp != curwin && wp != NULL)	/* If in other than current window */
     {
@@ -4911,14 +4920,11 @@ gui_mouse_correct()
 }
 
 /*
- * Find window where the mouse pointer "y" coordinate is in.
+ * Find window where the mouse pointer "x" / "y" coordinate is in.
  */
     static win_T *
-xy2win(x, y)
-    int		x UNUSED;
-    int		y UNUSED;
+xy2win(int x UNUSED, int y UNUSED)
 {
-#ifdef FEAT_WINDOWS
     int		row;
     int		col;
     win_T	*wp;
@@ -4928,7 +4934,9 @@ xy2win(x, y)
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
     wp = mouse_find_win(&row, &col);
-# ifdef FEAT_MOUSESHAPE
+    if (wp == NULL)
+	return NULL;
+#ifdef FEAT_MOUSESHAPE
     if (State == HITRETURN || State == ASKMORE)
     {
 	if (Y_2_ROW(y) >= msg_row)
@@ -4938,21 +4946,16 @@ xy2win(x, y)
     }
     else if (row > wp->w_height)	/* below status line */
 	update_mouseshape(SHAPE_IDX_CLINE);
-#  ifdef FEAT_VERTSPLIT
-    else if (!(State & CMDLINE) && W_VSEP_WIDTH(wp) > 0 && col == wp->w_width
+    else if (!(State & CMDLINE) && wp->w_vsep_width > 0 && col == wp->w_width
 	    && (row != wp->w_height || !stl_connected(wp)) && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_VSEP);
-#  endif
-    else if (!(State & CMDLINE) && W_STATUS_HEIGHT(wp) > 0
+    else if (!(State & CMDLINE) && wp->w_status_height > 0
 				  && row == wp->w_height && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_STATUS);
     else
 	update_mouseshape(-2);
-# endif
-    return wp;
-#else
-    return firstwin;
 #endif
+    return wp;
 }
 
 /*
@@ -4960,8 +4963,7 @@ xy2win(x, y)
  * File names may be given to redefine the args list.
  */
     void
-ex_gui(eap)
-    exarg_T	*eap;
+ex_gui(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
 
@@ -4972,7 +4974,7 @@ ex_gui(eap)
      */
     if (arg[0] == '-'
 	    && (arg[1] == 'f' || arg[1] == 'b')
-	    && (arg[2] == NUL || vim_iswhite(arg[2])))
+	    && (arg[2] == NUL || VIM_ISWHITE(arg[2])))
     {
 	gui.dofork = (arg[1] == 'b');
 	eap->arg = skipwhite(eap->arg + 2);
@@ -4983,8 +4985,8 @@ ex_gui(eap)
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
 	gui_start();
-#ifdef FEAT_NETBEANS_INTG
-	netbeans_gui_register();
+#ifdef FEAT_JOB_CHANNEL
+	channel_gui_register_all();
 #endif
     }
     if (!ends_excmd(*eap->arg))
@@ -4996,15 +4998,13 @@ ex_gui(eap)
 /*
  * This is shared between Athena, Motif and GTK.
  */
-static void gfp_setname __ARGS((char_u *fname, void *cookie));
+static void gfp_setname(char_u *fname, void *cookie);
 
 /*
  * Callback function for do_in_runtimepath().
  */
     static void
-gfp_setname(fname, cookie)
-    char_u	*fname;
-    void	*cookie;
+gfp_setname(char_u *fname, void *cookie)
 {
     char_u	*gfp_buffer = cookie;
 
@@ -5019,15 +5019,12 @@ gfp_setname(fname, cookie)
  * Return FAIL for failure and OK if buffer[MAXPATHL] contains the result.
  */
     int
-gui_find_bitmap(name, buffer, ext)
-    char_u	*name;
-    char_u	*buffer;
-    char	*ext;
+gui_find_bitmap(char_u *name, char_u *buffer, char *ext)
 {
     if (STRLEN(name) > MAXPATHL - 14)
 	return FAIL;
     vim_snprintf((char *)buffer, MAXPATHL, "bitmaps/%s.%s", name, ext);
-    if (do_in_runtimepath(buffer, FALSE, gfp_setname, buffer) == FAIL
+    if (do_in_runtimepath(buffer, 0, gfp_setname, buffer) == FAIL
 							    || *buffer == NUL)
 	return FAIL;
     return OK;
@@ -5042,10 +5039,7 @@ gui_find_bitmap(name, buffer, ext)
  * contains "name".
  */
     void
-gui_find_iconfile(name, buffer, ext)
-    char_u	*name;
-    char_u	*buffer;
-    char	*ext;
+gui_find_iconfile(char_u *name, char_u *buffer, char *ext)
 {
     char_u	buf[MAXPATHL + 1];
 
@@ -5058,7 +5052,7 @@ gui_find_iconfile(name, buffer, ext)
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(PROTO)
     void
-display_errors()
+display_errors(void)
 {
     char_u	*p;
 
@@ -5090,7 +5084,7 @@ display_errors()
  * allow typing on stdin.
  */
     int
-no_console_input()
+no_console_input(void)
 {
     return ((!gui.in_use || gui.starting)
 # ifndef NO_CONSOLE
@@ -5107,7 +5101,7 @@ no_console_input()
  * Update the current window and the screen.
  */
     void
-gui_update_screen()
+gui_update_screen(void)
 {
 #ifdef FEAT_CONCEAL
     linenr_T	conceal_old_cursor_line = 0;
@@ -5131,7 +5125,7 @@ gui_update_screen()
 		curwin->w_p_cole > 0
 # endif
 		)
-		     && !equalpos(last_cursormoved, curwin->w_cursor))
+		     && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
     {
 # ifdef FEAT_AUTOCMD
 	if (has_cursormoved())
@@ -5170,7 +5164,7 @@ gui_update_screen()
 #endif
 
 #if defined(FIND_REPLACE_DIALOG) || defined(PROTO)
-static void concat_esc __ARGS((garray_T *gap, char_u *text, int what));
+static void concat_esc(garray_T *gap, char_u *text, int what);
 
 /*
  * Get the text to use in a find/replace dialog.  Uses the last search pattern
@@ -5178,10 +5172,10 @@ static void concat_esc __ARGS((garray_T *gap, char_u *text, int what));
  * Returns an allocated string.
  */
     char_u *
-get_find_dialog_text(arg, wwordp, mcasep)
-    char_u	*arg;
-    int		*wwordp;	/* return: TRUE if \< \> found */
-    int		*mcasep;	/* return: TRUE if \C found */
+get_find_dialog_text(
+    char_u	*arg,
+    int		*wwordp,	/* return: TRUE if \< \> found */
+    int		*mcasep)	/* return: TRUE if \C found */
 {
     char_u	*text;
 
@@ -5239,10 +5233,7 @@ get_find_dialog_text(arg, wwordp, mcasep)
  * Concatenate "text" to grow array "gap", escaping "what" with a backslash.
  */
     static void
-concat_esc(gap, text, what)
-    garray_T	*gap;
-    char_u	*text;
-    int		what;
+concat_esc(garray_T *gap, char_u *text, int what)
 {
     while (*text != NUL)
     {
@@ -5268,11 +5259,11 @@ concat_esc(gap, text, what)
  * Return TRUE when something was added to the input buffer.
  */
     int
-gui_do_findrepl(flags, find_text, repl_text, down)
-    int		flags;		/* one of FRD_REPLACE, FRD_FINDNEXT, etc. */
-    char_u	*find_text;
-    char_u	*repl_text;
-    int		down;		/* Search downwards. */
+gui_do_findrepl(
+    int		flags,		/* one of FRD_REPLACE, FRD_FINDNEXT, etc. */
+    char_u	*find_text,
+    char_u	*repl_text,
+    int		down)		/* Search downwards. */
 {
     garray_T	ga;
     int		i;
@@ -5364,10 +5355,15 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     }
     else
     {
-	/* Search for the next match. */
+	int searchflags = SEARCH_MSG + SEARCH_MARK;
+
+	/* Search for the next match.
+	 * Don't skip text under cursor for single replace. */
+	if (type == FRD_REPLACE)
+	    searchflags += SEARCH_START;
 	i = msg_scroll;
 	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-					      SEARCH_MSG + SEARCH_MARK, NULL);
+						      searchflags, NULL, NULL);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 
@@ -5394,16 +5390,13 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 	|| defined(FEAT_GUI_MAC) \
 	|| defined(PROTO)
 
-#ifdef FEAT_WINDOWS
-static void gui_wingoto_xy __ARGS((int x, int y));
+static void gui_wingoto_xy(int x, int y);
 
 /*
  * Jump to the window at specified point (x, y).
  */
     static void
-gui_wingoto_xy(x, y)
-    int x;
-    int y;
+gui_wingoto_xy(int x, int y)
 {
     int		row = Y_2_ROW(y);
     int		col = X_2_COL(x);
@@ -5416,7 +5409,6 @@ gui_wingoto_xy(x, y)
 	    win_goto(wp);
     }
 }
-#endif
 
 /*
  * Process file drop.  Mouse cursor position, key modifiers, name of files
@@ -5425,12 +5417,12 @@ gui_wingoto_xy(x, y)
  * fnames after call this function.
  */
     void
-gui_handle_drop(x, y, modifiers, fnames, count)
-    int		x UNUSED;
-    int		y UNUSED;
-    int_u	modifiers;
-    char_u	**fnames;
-    int		count;
+gui_handle_drop(
+    int		x UNUSED,
+    int		y UNUSED,
+    int_u	modifiers,
+    char_u	**fnames,
+    int		count)
 {
     int		i;
     char_u	*p;
@@ -5479,9 +5471,7 @@ gui_handle_drop(x, y, modifiers, fnames, count)
     {
 	/* Go to the window under mouse cursor, then shorten given "fnames" by
 	 * current window, because a window can have local current dir. */
-# ifdef FEAT_WINDOWS
 	gui_wingoto_xy(x, y);
-# endif
 	shorten_filenames(fnames, count);
 
 	/* If Shift held down, remember the first item. */

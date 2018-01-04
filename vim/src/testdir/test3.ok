@@ -651,6 +651,13 @@ Constructor::Constructor(int a,
 {
 }
 
+A::A(int a, int b)
+	: aa(a),
+	bb(b),
+	cc(c)
+{
+}
+
 class CAbc :
 	public BaseClass1,
 	protected BaseClass2
@@ -1723,6 +1730,26 @@ namespace test
 {
 111111111111111111;
 }
+namespace test::cpp17
+{
+111111111111111111;
+}
+namespace ::incorrectcpp17
+{
+	111111111111111111;
+}
+namespace test::incorrectcpp17::
+{
+	111111111111111111;
+}
+namespace test:incorrectcpp17
+{
+	111111111111111111;
+}
+namespace test:::incorrectcpp17
+{
+	111111111111111111;
+}
 namespace{
 111111111111111111;
 }
@@ -2052,4 +2079,24 @@ var a,
 	h,
 	i;
 JSEND
+
+
+/* start of define */
+{
+}
+#define AAA \
+	BBB\
+	CCC
+
+#define CNT \
+	1 + \
+	2 + \
+	4
+/* end of define */
+
+
+{
+	a = second/*bug*/*line;
+	x
+}
 

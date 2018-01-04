@@ -3,9 +3,18 @@
 " Maintainer:          Christian Brabandt <cb@256bit.org>
 " Previous Maintainer: Peter Aronoff <telemachus@arpinum.org>
 " Original Author:     Nikolai Weibull <now@bitwi.se>
-" Latest Revision:     2015-07-28
+" Latest Revision:     2017-08-08
 " License:             Vim (see :h license)
 " Repository:          https://github.com/chrisbra/vim-sh-indent
+" Changelog:
+"          20170808: - better indent of line continuation
+"          20170502: - get rid of buffer-shiftwidth function
+"          20160912: - preserve indentation of here-doc blocks
+"          20160627: - detect heredocs correctly
+"          20160213: - detect function definition correctly
+"          20160202: - use shiftwidth() function
+"          20151215: - set b:undo_indent variable
+"          20150728: - add foreach detection for zsh
 
 if exists("b:did_indent")
   finish
@@ -18,6 +27,8 @@ setlocal indentkeys+=0=fin,0=fil,0=fip,0=fir,0=fix
 setlocal indentkeys-=:,0#
 setlocal nosmartindent
 
+let b:undo_indent = 'setlocal indentexpr< indentkeys< smartindent<'
+
 if exists("*GetShIndent")
   finish
 endif
@@ -25,15 +36,11 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-function s:buffer_shiftwidth()
-  return &shiftwidth
-endfunction
-
 let s:sh_indent_defaults = {
-      \ 'default': function('s:buffer_shiftwidth'),
-      \ 'continuation-line': function('s:buffer_shiftwidth'),
-      \ 'case-labels': function('s:buffer_shiftwidth'),
-      \ 'case-statements': function('s:buffer_shiftwidth'),
+      \ 'default': function('shiftwidth'),
+      \ 'continuation-line': function('shiftwidth'),
+      \ 'case-labels': function('shiftwidth'),
+      \ 'case-statements': function('shiftwidth'),
       \ 'case-breaks': 0 }
 
 function! s:indent_value(option)
@@ -65,7 +72,7 @@ function! GetShIndent()
     if !s:is_case_ended(line)
       let ind += s:indent_value('case-statements')
     endif
-  elseif line =~ '^\s*\<\k\+\>\s*()\s*{' || line =~ '^\s*{'
+  elseif line =~ '^\s*\<\k\+\>\s*()\s*{' || line =~ '^\s*{' || line =~ '^\s*function\s*\w\S\+\s*\%(()\)\?\s*{'
     if line !~ '}\s*\%(#.*\)\=$'
       let ind += s:indent_value('default')
     endif
@@ -100,13 +107,19 @@ function! GetShIndent()
     endif
   elseif s:is_case_break(line)
     let ind -= s:indent_value('case-breaks')
+  elseif s:is_here_doc(line)
+    let ind = 0
+  " statements, executed within a here document. Keep the current indent
+  elseif match(map(synstack(v:lnum, 1), 'synIDattr(v:val, "name")'), '\c\mheredoc') > -1
+    return indent(v:lnum)
   endif
 
   return ind
 endfunction
 
 function! s:is_continuation_line(line)
-  return a:line =~ '\%(\%(^\|[^\\]\)\\\|&&\|||\)$'
+  return a:line =~ '\%(\%(^\|[^\\]\)\\\|&&\|||\||\)' .
+                 \ '\s*\({\s*\)\=\(#.*\)\=$'
 endfunction
 
 function! s:find_continued_lnum(lnum)
@@ -158,6 +171,14 @@ function! s:is_case_break(line)
   return a:line =~ '^\s*;[;&]'
 endfunction
 
+function! s:is_here_doc(line)
+    if a:line =~ '^\w\+$'
+	let here_pat = '<<-\?'. s:escape(a:line). '\$'
+	return search(here_pat, 'bnW') > 0
+    endif
+    return 0
+endfunction
+
 function! s:is_case_ended(line)
   return s:is_case_break(a:line) || a:line =~ ';[;&]\s*\%(#.*\)\=$'
 endfunction
@@ -168,6 +189,10 @@ function! s:is_case_empty(line)
   else
     return a:line =~ '^\s*case\>'
   endif
+endfunction
+
+function! s:escape(pattern)
+    return '\V'. escape(a:pattern, '\\')
 endfunction
 
 let &cpo = s:cpo_save

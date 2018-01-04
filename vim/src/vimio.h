@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -15,5 +15,5 @@
 
 /* cproto fails on missing include files */
 #ifndef PROTO
-# include <dispatch/io.h> //TODO: STRANGE!!
+# include <io.h>
 #endif

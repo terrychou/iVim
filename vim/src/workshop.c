@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *			Visual Workshop integration by Gordon Prieur
@@ -33,7 +33,6 @@
 
 #include "vim.h"
 #include "version.h"
-#include "gui_beval.h"
 #include "workshop.h"
 
 void		 workshop_hotkeys(Boolean);
@@ -48,7 +47,7 @@ static char	*append_selection(int, char *, int *, int *);
 static void	 load_buffer_by_name(char *, int);
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 void		 workshop_beval_cb(BalloonEval *, int);
 static int	 computeIndex(int, char_u *, int);
 #endif
@@ -71,7 +70,7 @@ static Boolean	 workshopHotKeysEnabled = False;
 
 /*
  * The following enum is from <gp_dbx/gp_dbx_common.h>. We can't include it
- * here because its C++.
+ * here because it's C++.
  */
 enum
 {
@@ -98,7 +97,7 @@ static char	*initialFileCmd;	/* save command but defer doing it */
 
 
     void
-workshop_init()
+workshop_init(void)
 {
     char_u	 buf[64];
     int		 is_dirty = FALSE;
@@ -148,7 +147,7 @@ workshop_init()
 }
 
     void
-workshop_postinit()
+workshop_postinit(void)
 {
     do_cmdline_cmd((char_u *)initialFileCmd);
     ALT_INPUT_LOCK_OFF;
@@ -170,7 +169,7 @@ ex_wsverb(exarg_T *eap)
  * of NEdit, for example, when the connection is initiated from the editor.
  */
     char *
-workshop_get_editor_name()
+workshop_get_editor_name(void)
 {
     return "gvim";
 }
@@ -181,7 +180,7 @@ workshop_get_editor_name()
  * version to the application.
  */
     char *
-workshop_get_editor_version()
+workshop_get_editor_version(void)
 {
     return Version;
 }
@@ -208,7 +207,7 @@ workshop_load_file(
 	wstrace("workshop_load_file(%s, %d)\n", filename, line);
 #endif
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     bevalServers |= BEVAL_WORKSHOP;
 #endif
 
@@ -288,7 +287,7 @@ workshop_save_file(
 }
 
     void
-workshop_save_files()
+workshop_save_files(void)
 {
     /* Save the given file */
 #ifdef WSDEBUG_TRACE
@@ -300,7 +299,7 @@ workshop_save_files()
 }
 
     void
-workshop_quit()
+workshop_quit(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -311,7 +310,7 @@ workshop_quit()
 }
 
     void
-workshop_minimize()
+workshop_minimize(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -320,7 +319,7 @@ workshop_minimize()
     workshop_minimize_shell(vimShell);
 }
     void
-workshop_maximize()
+workshop_maximize(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -510,7 +509,7 @@ workshop_moved_marks(char *filename UNUSED)
 }
 
     int
-workshop_get_font_height()
+workshop_get_font_height(void)
 {
     XmFontList	 fontList;	/* fontList made from gui.norm_font */
     XmString	 str;
@@ -623,7 +622,7 @@ workshop_submenu_begin(
  */
 
     void
-workshop_submenu_end()
+workshop_submenu_end(void)
 {
     char		*p;
 
@@ -720,7 +719,7 @@ workshop_menu_item(
  */
 
     void
-workshop_menu_end()
+workshop_menu_end(void)
 {
     Boolean		 using_tearoff;	/* set per current option setting */
 
@@ -734,7 +733,7 @@ workshop_menu_end()
 }
 
     void
-workshop_toolbar_begin()
+workshop_toolbar_begin(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -746,7 +745,7 @@ workshop_toolbar_begin()
 }
 
     void
-workshop_toolbar_end()
+workshop_toolbar_end(void)
 {
     char_u	buf[64];
 
@@ -1087,7 +1086,7 @@ workshop_get_positions(
     *curCol = curwin->w_cursor.col;
 
     if (curbuf->b_visual.vi_mode == 'v' &&
-	    equalpos(curwin->w_cursor, curbuf->b_visual.vi_end))
+	    EQUAL_POS(curwin->w_cursor, curbuf->b_visual.vi_end))
     {
 	*selStartLine = curbuf->b_visual.vi_start.lnum;
 	*selStartCol = curbuf->b_visual.vi_start.col;
@@ -1265,7 +1264,6 @@ load_window(
     }
     else
     {
-#ifdef FEAT_WINDOWS
 	/* buf is in a window */
 	if (win != curwin)
 	{
@@ -1273,7 +1271,6 @@ load_window(
 	    /* wsdebug("load_window: window enter %s\n",
 		    win->w_buffer->b_sfname); */
 	}
-#endif
 	if (lnum > 0 && win->w_cursor.lnum != lnum)
 	{
 	    warp_to_pc(lnum);
@@ -1319,7 +1316,7 @@ get_window(
 {
     win_T	*wp = NULL;	/* window filename is in */
 
-    for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
+    FOR_ALL_WINDOWS(wp)
 	if (buf == wp->w_buffer)
 	    break;
     return wp;
@@ -1405,7 +1402,7 @@ fixup(
 /* For the NoHands test suite */
 
     char *
-workshop_test_getcurrentfile()
+workshop_test_getcurrentfile(void)
 {
     char	*filename, *selection;
     int		curLine, curCol, selStartLine, selStartCol, selEndLine;
@@ -1421,13 +1418,13 @@ workshop_test_getcurrentfile()
 }
 
     int
-workshop_test_getcursorrow()
+workshop_test_getcursorrow(void)
 {
     return 0;
 }
 
     int
-workshop_test_getcursorcol()
+workshop_test_getcursorcol(void)
 {
     char	*filename, *selection;
     int		curLine, curCol, selStartLine, selStartCol, selEndLine;
@@ -1443,13 +1440,13 @@ workshop_test_getcursorcol()
 }
 
     char *
-workshop_test_getcursorrowtext()
+workshop_test_getcursorrowtext(void)
 {
     return NULL;
 }
 
     char *
-workshop_test_getselectedtext()
+workshop_test_getselectedtext(void)
 {
     char	*filename, *selection;
     int		curLine, curCol, selStartLine, selStartCol, selEndLine;
@@ -1499,7 +1496,7 @@ fixAccelText(
 	return NULL;
 }
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     void
 workshop_beval_cb(
 	BalloonEval	*beval,
@@ -1752,7 +1749,7 @@ setDollarVim(
  *			directory. This is a Sun Visual WorkShop requirement!
  *
  * Note:		We override a user's $VIM because it won't have the
- *			WorkShop specific files. S/he may not like this but its
+ *			WorkShop specific files. S/he may not like this but it's
  *			better than getting the wrong files (especially as the
  *			user is likely to have $VIM set to 5.4 or later).
  */

@@ -80,14 +80,7 @@
 #else
 # include <fcntl.h>
 #endif
-#ifdef __TSC__
-# define MSDOS
-#endif
-#if !defined(OS2) && defined(__EMX__)
-# define OS2
-#endif
-#if defined(MSDOS) || defined(WIN32) || defined(OS2) || defined(__BORLANDC__) \
-  || defined(CYGWIN)
+#if defined(WIN32) || defined(__BORLANDC__) || defined(CYGWIN)
 # include <io.h>	/* for setmode() */
 #else
 # ifdef UNIX
@@ -149,18 +142,10 @@ char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
-# ifdef DJGPP
-char osver[] = " (dos 32 bit)";
-# else
-#  ifdef MSDOS
-char osver[] = " (dos 16 bit)";
-#  else
 char osver[] = "";
-#  endif
-# endif
 #endif
 
-#if defined(MSDOS) || defined(WIN32) || defined(OS2)
+#if defined(WIN32)
 # define BIN_READ(yes)  ((yes) ? "rb" : "rt")
 # define BIN_WRITE(yes) ((yes) ? "wb" : "wt")
 # define BIN_CREAT(yes) ((yes) ? (O_CREAT|O_BINARY) : O_CREAT)
@@ -203,8 +188,7 @@ char osver[] = "";
 #endif
 
 #ifndef __P
-# if defined(__STDC__) || defined(MSDOS) || defined(WIN32) || defined(OS2) \
-		|| defined(__BORLANDC__)
+# if defined(__STDC__) || defined(WIN32) || defined(__BORLANDC__)
 #  define __P(a) a
 # else
 #  define __P(a) ()
@@ -234,7 +218,7 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 static char *pname;
 
   static void
-exit_with_usage()
+exit_with_usage(void)
 {
   fprintf(stderr, "Usage:\n       %s [options] [infile [outfile]]\n", pname);
   fprintf(stderr, "    or\n       %s -r [-s [-]offset] [-c cols] [-ps] [infile [outfile]]\n", pname);
@@ -264,8 +248,7 @@ exit_with_usage()
 }
 
   static void
-die(ret)
-  int ret;
+die(int ret)
 {
   fprintf(stderr, "%s: ", pname);
   perror(NULL);
@@ -280,10 +263,13 @@ die(ret)
  * The name is historic and came from 'undo type opt h'.
  */
   static int
-huntype(fpi, fpo, fperr, cols, hextype, base_off)
-  FILE *fpi, *fpo, *fperr;
-  int cols, hextype;
-  long base_off;
+huntype(
+  FILE *fpi,
+  FILE *fpo,
+  FILE *fperr,
+  int cols,
+  int hextype,
+  long base_off)
 {
   int c, ign_garb = 1, n1 = -1, n2 = 0, n3, p = cols;
   long have_off = 0, want_off = 0;
@@ -409,10 +395,7 @@ huntype(fpi, fpo, fperr, cols, hextype, base_off)
  * If nz is always positive, lines are never suppressed.
  */
   static void
-xxdline(fp, l, nz)
-  FILE *fp;
-  char *l;
-  int nz;
+xxdline(FILE *fp, char *l, int nz)
 {
   static char z[LLEN+1];
   static int zero_seen = 0;
@@ -472,9 +455,7 @@ static unsigned char etoa64[] =
 };
 
   int
-main(argc, argv)
-  int argc;
-  char *argv[];
+main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
   int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;

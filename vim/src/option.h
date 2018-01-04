@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -18,23 +18,19 @@
 #ifdef AMIGA
 # define DFLT_EFM	"%f>%l:%c:%t:%n:%m,%f:%l: %t%*\\D%n: %m,%f %l %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f:%l:%m,%f|%l| %m"
 #else
-# if defined(MSDOS) || defined(WIN3264)
+# if defined(WIN3264)
 #  define DFLT_EFM	"%f(%l) : %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f(%l) : %m,%*[^ ] %f %l: %m,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,%f|%l| %m"
 # else
-#  if defined(__EMX__)	/* put most common here (i.e. gcc format) at front */
-#   define DFLT_EFM	"%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,%*[^\"]\"%f\"%*\\D%l: %m,\"%f\"%*\\D%l: %m,%f(%l:%c) : %m,%f|%l| %m"
+#  if defined(__QNX__)
+#   define DFLT_EFM	"%f(%l):%*[^WE]%t%*\\D%n:%m,%f|%l| %m"
 #  else
-#   if defined(__QNX__)
-#    define DFLT_EFM	"%f(%l):%*[^WE]%t%*\\D%n:%m,%f|%l| %m"
-#   else
-#    ifdef VMS
-#     define DFLT_EFM	"%A%p^,%C%%CC-%t-%m,%Cat line number %l in file %f,%f|%l| %m"
-#    else /* Unix, probably */
-#     ifdef EBCDIC
+#   ifdef VMS
+#    define DFLT_EFM	"%A%p^,%C%%CC-%t-%m,%Cat line number %l in file %f,%f|%l| %m"
+#   else /* Unix, probably */
+#    ifdef EBCDIC
 #define DFLT_EFM	"%*[^ ] %*[^ ] %f:%l%*[ ]%m,%*[^\"]\"%f\"%*\\D%l: %m,\"%f\"%*\\D%l: %m,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,\"%f\"\\, line %l%*\\D%c%*[^ ] %m,%D%*\\a[%*\\d]: Entering directory %*[`']%f',%X%*\\a[%*\\d]: Leaving directory %*[`']%f',%DMaking %*\\a in %f,%f|%l| %m"
 #     else
 #define DFLT_EFM	"%*[^\"]\"%f\"%*\\D%l: %m,\"%f\"%*\\D%l: %m,%-G%f:%l: (Each undeclared identifier is reported only once,%-G%f:%l: for each function it appears in.),%-GIn file included from %f:%l:%c:,%-GIn file included from %f:%l:%c\\,,%-GIn file included from %f:%l:%c,%-GIn file included from %f:%l,%-G%*[ ]from %f:%l:%c,%-G%*[ ]from %f:%l:,%-G%*[ ]from %f:%l\\,,%-G%*[ ]from %f:%l,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,\"%f\"\\, line %l%*\\D%c%*[^ ] %m,%D%*\\a[%*\\d]: Entering directory %*[`']%f',%X%*\\a[%*\\d]: Leaving directory %*[`']%f',%D%*\\a: Entering directory %*[`']%f',%X%*\\a: Leaving directory %*[`']%f',%DMaking %*\\a in %f,%f|%l| %m"
-#     endif
 #    endif
 #   endif
 #  endif
@@ -213,7 +209,9 @@
 #define SHM_ATTENTION	'A'		/* no ATTENTION messages */
 #define SHM_INTRO	'I'		/* intro messages */
 #define SHM_COMPLETIONMENU  'c'		/* completion menu messages */
-#define SHM_ALL		"rmfixlnwaWtToOsAIc" /* all possible flags for 'shm' */
+#define SHM_RECORDING	'q'		/* short recording message */
+#define SHM_FILEINFO	'F'		/* no file info messages */
+#define SHM_ALL		"rmfixlnwaWtToOsAIcqF" /* all possible flags for 'shm' */
 
 /* characters for p_go: */
 #define GO_ASEL		'a'		/* autoselect */
@@ -237,7 +235,8 @@
 #define GO_TOOLBAR	'T'		/* add toolbar */
 #define GO_FOOTER	'F'		/* add footer */
 #define GO_VERTICAL	'v'		/* arrange dialog buttons vertically */
-#define GO_ALL		"aAbcefFghilmMprtTv" /* all possible flags for 'go' */
+#define GO_KEEPWINSIZE	'k'		/* keep GUI window size */
+#define GO_ALL		"aAbcefFghilmMprtTvk" /* all possible flags for 'go' */
 
 /* flags for 'comments' option */
 #define COM_NEST	'n'		/* comments strings nest */
@@ -316,6 +315,7 @@ EXTERN int	p_acd;		/* 'autochdir' */
 #endif
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_ambw;	/* 'ambiwidth' */
+EXTERN char_u	*p_emoji;	/* 'emoji' */
 #endif
 #if defined(FEAT_GUI) && defined(MACOS_X)
 EXTERN int	*p_antialias;	/* 'antialias' */
@@ -344,7 +344,7 @@ EXTERN unsigned	bo_flags;
 static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 				 "copy", "ctrlg", "error", "esc", "ex",
 				 "hangul", "insertmode", "lang", "mess",
-				 "showmatch", "operator", "register", "shell", 
+				 "showmatch", "operator", "register", "shell",
 				 "spell", "wildmode", NULL};
 # endif
 
@@ -376,18 +376,19 @@ EXTERN char_u	*p_bsk;		/* 'backupskip' */
 EXTERN char_u	*p_cm;		/* 'cryptmethod' */
 #endif
 #ifdef FEAT_BEVAL
-EXTERN long	p_bdlay;	/* 'balloondelay' */
+# ifdef FEAT_BEVAL_GUI
 EXTERN int	p_beval;	/* 'ballooneval' */
+# endif
+EXTERN long	p_bdlay;	/* 'balloondelay' */
 # ifdef FEAT_EVAL
 EXTERN char_u	*p_bexpr;
+# endif
+# ifdef FEAT_BEVAL_TERM
+EXTERN int	p_bevalterm;	/* 'balloonevalterm' */
 # endif
 #endif
 #ifdef FEAT_BROWSE
 EXTERN char_u	*p_bsdir;	/* 'browsedir' */
-#endif
-#ifdef MSDOS
-EXTERN int	p_biosk;	/* 'bioskey' */
-EXTERN int	p_consk;	/* 'conskey' */
 #endif
 #ifdef FEAT_LINEBREAK
 EXTERN char_u	*p_breakat;	/* 'breakat' */
@@ -430,7 +431,7 @@ EXTERN char_u	*p_csprg;	/* 'cscopeprg' */
 EXTERN int	p_csre;		/* 'cscoperelative' */
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_csqf;	/* 'cscopequickfix' */
-#  define	CSQF_CMDS   "sgdctefi"
+#  define	CSQF_CMDS   "sgdctefia"
 #  define	CSQF_FLAGS  "+-0"
 # endif
 EXTERN int	p_cst;		/* 'cscopetag' */
@@ -459,14 +460,13 @@ EXTERN char_u	*p_dir;		/* 'directory' */
 EXTERN char_u	*p_dy;		/* 'display' */
 EXTERN unsigned	dy_flags;
 #ifdef IN_OPTION_C
-static char *(p_dy_values[]) = {"lastline", "uhex", NULL};
+static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};
 #endif
 #define DY_LASTLINE		0x001
-#define DY_UHEX			0x002
+#define DY_TRUNCATE		0x002
+#define DY_UHEX			0x004
 EXTERN int	p_ed;		/* 'edcompatible' */
-#ifdef FEAT_VERTSPLIT
 EXTERN char_u	*p_ead;		/* 'eadirection' */
-#endif
 EXTERN int	p_ea;		/* 'equalalways' */
 EXTERN char_u	*p_ep;		/* 'equalprg' */
 EXTERN int	p_eb;		/* 'errorbells' */
@@ -555,20 +555,11 @@ EXTERN char_u	*p_gtl;		/* 'guitablabel' */
 EXTERN char_u	*p_gtt;		/* 'guitabtooltip' */
 #endif
 EXTERN char_u	*p_hf;		/* 'helpfile' */
-#ifdef FEAT_WINDOWS
 EXTERN long	p_hh;		/* 'helpheight' */
-#endif
 #ifdef FEAT_MULTI_LANG
 EXTERN char_u	*p_hlg;		/* 'helplang' */
 #endif
 EXTERN int	p_hid;		/* 'hidden' */
-/* Use P_HID to check if a buffer is to be hidden when it is no longer
- * visible in a window. */
-#ifndef FEAT_QUICKFIX
-# define P_HID(dummy) (p_hid || cmdmod.hide)
-#else
-# define P_HID(buf) (buf_hide(buf))
-#endif
 EXTERN char_u	*p_hl;		/* 'highlight' */
 EXTERN int	p_hls;		/* 'hlsearch' */
 EXTERN long	p_hi;		/* 'history' */
@@ -590,10 +581,15 @@ EXTERN char_u	*p_iconstring;	/* 'iconstring' */
 EXTERN int	p_ic;		/* 'ignorecase' */
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
+#define IM_ON_THE_SPOT		0L
+#define IM_OVER_THE_SPOT	1L
+EXTERN long	p_imst;		/* 'imstyle' */
+#endif
+#if defined(FEAT_EVAL) && defined(FEAT_MBYTE)
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
 #endif
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
 #endif
@@ -608,6 +604,7 @@ EXTERN char_u	*p_km;		/* 'keymodel' */
 #ifdef FEAT_LANGMAP
 EXTERN char_u	*p_langmap;	/* 'langmap'*/
 EXTERN int	p_lnr;		/* 'langnoremap' */
+EXTERN int	p_lrm;		/* 'langremap' */
 #endif
 #if defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)
 EXTERN char_u	*p_lm;		/* 'langmenu' */
@@ -618,21 +615,28 @@ EXTERN long	p_linespace;	/* 'linespace' */
 #ifdef FEAT_LISP
 EXTERN char_u	*p_lispwords;	/* 'lispwords' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN long	p_ls;		/* 'laststatus' */
 EXTERN long	p_stal;		/* 'showtabline' */
-#endif
 EXTERN char_u	*p_lcs;		/* 'listchars' */
 
 EXTERN int	p_lz;		/* 'lazyredraw' */
 EXTERN int	p_lpl;		/* 'loadplugins' */
+#if defined(DYNAMIC_LUA)
+EXTERN char_u	*p_luadll;	/* 'luadll' */
+#endif
 #ifdef FEAT_GUI_MAC
 EXTERN int	p_macatsui;	/* 'macatsui' */
 #endif
 EXTERN int	p_magic;	/* 'magic' */
+#ifdef FEAT_MBYTE
+EXTERN char_u	*p_menc;	/* 'makeencoding' */
+#endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_mef;		/* 'makeef' */
 EXTERN char_u	*p_mp;		/* 'makeprg' */
+#endif
+#ifdef FEAT_SIGNS
+EXTERN char_u  *p_scl;		/* signcolumn */
 #endif
 #ifdef FEAT_SYN_HL
 EXTERN char_u   *p_cc;		/* 'colorcolumn' */
@@ -666,8 +670,12 @@ EXTERN long	p_mouset;	/* 'mousetime' */
 EXTERN int	p_more;		/* 'more' */
 #ifdef FEAT_MZSCHEME
 EXTERN long	p_mzq;		/* 'mzquantum */
+# if defined(DYNAMIC_MZSCHEME)
+EXTERN char_u	*p_mzschemedll;	/* 'mzschemedll' */
+EXTERN char_u	*p_mzschemegcdll; /* 'mzschemegcdll' */
+# endif
 #endif
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+#if defined(MSWIN)
 EXTERN int	p_odev;		/* 'opendevice' */
 #endif
 EXTERN char_u	*p_opfunc;	/* 'operatorfunc' */
@@ -682,6 +690,18 @@ EXTERN char_u	*p_path;	/* 'path' */
 #ifdef FEAT_SEARCHPATH
 EXTERN char_u	*p_cdpath;	/* 'cdpath' */
 #endif
+#if defined(DYNAMIC_PERL)
+EXTERN char_u	*p_perldll;	/* 'perldll' */
+#endif
+#if defined(DYNAMIC_PYTHON3)
+EXTERN char_u	*p_py3dll;	/* 'pythonthreedll' */
+#endif
+#if defined(DYNAMIC_PYTHON)
+EXTERN char_u	*p_pydll;	/* 'pythondll' */
+#endif
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+EXTERN long	p_pyx;		/* 'pyxversion' */
+#endif
 #ifdef FEAT_RELTIME
 EXTERN long	p_rdt;		/* 'redrawtime' */
 #endif
@@ -691,7 +711,7 @@ EXTERN long	p_re;		/* 'regexpengine' */
 EXTERN char_u	*p_rop;		/* 'renderoptions' */
 #endif
 EXTERN long	p_report;	/* 'report' */
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		/* 'previewheight' */
 #endif
 #ifdef WIN3264
@@ -701,12 +721,16 @@ EXTERN int	p_rs;		/* 'restorescreen' */
 EXTERN int	p_ari;		/* 'allowrevins' */
 EXTERN int	p_ri;		/* 'revins' */
 #endif
+#if defined(DYNAMIC_RUBY)
+EXTERN char_u	*p_rubydll;	/* 'rubydll' */
+#endif
 #ifdef FEAT_CMDL_INFO
 EXTERN int	p_ru;		/* 'ruler' */
 #endif
 #ifdef FEAT_STL_OPT
 EXTERN char_u	*p_ruf;		/* 'rulerformat' */
 #endif
+EXTERN char_u	*p_pp;		/* 'packpath' */
 EXTERN char_u	*p_rtp;		/* 'runtimepath' */
 EXTERN long	p_sj;		/* 'scrolljump' */
 EXTERN long	p_so;		/* 'scrolloff' */
@@ -777,19 +801,15 @@ EXTERN long	p_ss;		/* 'sidescroll' */
 EXTERN long	p_siso;		/* 'sidescrolloff' */
 EXTERN int	p_scs;		/* 'smartcase' */
 EXTERN int	p_sta;		/* 'smarttab' */
-#ifdef FEAT_WINDOWS
 EXTERN int	p_sb;		/* 'splitbelow' */
 EXTERN long	p_tpm;		/* 'tabpagemax' */
 # if defined(FEAT_STL_OPT)
 EXTERN char_u	*p_tal;		/* 'tabline' */
 # endif
-#endif
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_sps;		/* 'spellsuggest' */
 #endif
-#ifdef FEAT_VERTSPLIT
 EXTERN int	p_spr;		/* 'splitright' */
-#endif
 EXTERN int	p_sol;		/* 'startofline' */
 EXTERN char_u	*p_su;		/* 'suffixes' */
 EXTERN char_u	*p_sws;		/* 'swapsync' */
@@ -804,15 +824,31 @@ static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
 EXTERN int	p_tbs;		/* 'tagbsearch' */
+EXTERN char_u	*p_tc;		/* 'tagcase' */
+EXTERN unsigned tc_flags;       /* flags from 'tagcase' */
+#ifdef IN_OPTION_C
+static char *(p_tc_values[]) = {"followic", "ignore", "match", "followscs", "smart", NULL};
+#endif
+#define TC_FOLLOWIC		0x01
+#define TC_IGNORE		0x02
+#define TC_MATCH		0x04
+#define TC_FOLLOWSCS		0x08
+#define TC_SMART		0x10
 EXTERN long	p_tl;		/* 'taglength' */
 EXTERN int	p_tr;		/* 'tagrelative' */
 EXTERN char_u	*p_tags;	/* 'tags' */
 EXTERN int	p_tgst;		/* 'tagstack' */
+#if defined(DYNAMIC_TCL)
+EXTERN char_u	*p_tcldll;	/* 'tcldll' */
+#endif
 #ifdef FEAT_ARABIC
 EXTERN int	p_tbidi;	/* 'termbidi' */
 #endif
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_tenc;	/* 'termencoding' */
+#endif
+#ifdef FEAT_TERMGUICOLORS
+EXTERN int	p_tgc;		/* 'termguicolors' */
 #endif
 EXTERN int	p_terse;	/* 'terse' */
 EXTERN int	p_ta;		/* 'textauto' */
@@ -847,12 +883,14 @@ static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL}
 EXTERN char_u	*p_tbis;	/* 'toolbariconsize' */
 EXTERN unsigned tbis_flags;
 # ifdef IN_OPTION_C
-static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", NULL};
+static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "giant", NULL};
 # endif
 # define TBIS_TINY		0x01
 # define TBIS_SMALL		0x02
 # define TBIS_MEDIUM		0x04
 # define TBIS_LARGE		0x08
+# define TBIS_HUGE		0x10
+# define TBIS_GIANT		0x20
 #endif
 EXTERN long	p_ttyscroll;	/* 'ttyscroll' */
 #if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
@@ -875,11 +913,10 @@ EXTERN long	p_ul;		/* 'undolevels' */
 EXTERN long	p_ur;		/* 'undoreload' */
 EXTERN long	p_uc;		/* 'updatecount' */
 EXTERN long	p_ut;		/* 'updatetime' */
-#if defined(FEAT_WINDOWS) || defined(FEAT_FOLDING)
 EXTERN char_u	*p_fcs;		/* 'fillchar' */
-#endif
 #ifdef FEAT_VIMINFO
 EXTERN char_u	*p_viminfo;	/* 'viminfo' */
+EXTERN char_u	*p_viminfofile;	/* 'viminfofile' */
 #endif
 #ifdef FEAT_SESSION
 EXTERN char_u	*p_vdir;	/* 'viewdir' */
@@ -926,13 +963,12 @@ EXTERN char_u	*p_wim;		/* 'wildmode' */
 #ifdef FEAT_WILDMENU
 EXTERN int	p_wmnu;		/* 'wildmenu' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN long	p_wh;		/* 'winheight' */
 EXTERN long	p_wmh;		/* 'winminheight' */
-#endif
-#ifdef FEAT_VERTSPLIT
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
+EXTERN char_u	*p_winptydll;	/* 'winptydll' */
 #endif
 EXTERN int	p_ws;		/* 'wrapscan' */
 EXTERN int	p_write;	/* 'write' */
@@ -949,12 +985,10 @@ enum
 {
     BV_AI = 0
     , BV_AR
-#ifdef FEAT_QUICKFIX
     , BV_BH
-#endif
     , BV_BKC
-#ifdef FEAT_QUICKFIX
     , BV_BT
+#ifdef FEAT_QUICKFIX
     , BV_EFM
     , BV_GP
     , BV_MP
@@ -997,6 +1031,7 @@ enum
     , BV_EP
     , BV_ET
     , BV_FENC
+    , BV_FP
 #ifdef FEAT_EVAL
     , BV_BEXPR
     , BV_FEX
@@ -1029,6 +1064,9 @@ enum
     , BV_LISP
     , BV_LW
 #endif
+#ifdef FEAT_MBYTE
+    , BV_MENC
+#endif
     , BV_MA
     , BV_ML
     , BV_MOD
@@ -1046,9 +1084,7 @@ enum
 #ifdef FEAT_SMARTINDENT
     , BV_SI
 #endif
-#ifndef SHORT_FNAME
     , BV_SN
-#endif
 #ifdef FEAT_SYN_HL
     , BV_SMC
     , BV_SYN
@@ -1065,6 +1101,7 @@ enum
     , BV_SW
     , BV_SWF
     , BV_TAGS
+    , BV_TC
     , BV_TS
     , BV_TW
     , BV_TX
@@ -1088,6 +1125,10 @@ enum
 #ifdef FEAT_CONCEAL
     , WV_COCU
     , WV_COLE
+#endif
+#ifdef FEAT_TERMINAL
+    , WV_TK
+    , WV_TMS
 #endif
 #ifdef FEAT_CURSORBIND
     , WV_CRBIND
@@ -1121,7 +1162,7 @@ enum
 #ifdef FEAT_LINEBREAK
     , WV_NUW
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     , WV_PVW
 #endif
 #ifdef FEAT_RIGHTLEFT
@@ -1143,13 +1184,12 @@ enum
 #ifdef FEAT_STL_OPT
     , WV_STL
 #endif
-#ifdef FEAT_WINDOWS
     , WV_WFH
-#endif
-#ifdef FEAT_VERTSPLIT
     , WV_WFW
-#endif
     , WV_WRAP
+#ifdef FEAT_SIGNS
+    , WV_SCL
+#endif
     , WV_COUNT	    /* must be the last one */
 };
 

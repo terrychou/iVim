@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.4.  Last change: 2015 Sep 15
+*insert.txt*    For Vim version 8.0.  Last change: 2017 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -159,7 +159,8 @@ CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
 CTRL-R CTRL-O {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-O*
 		Insert the contents of a register literally and don't
 		auto-indent.  Does the same as pasting with the mouse
-		|<MiddleMouse>|.
+		|<MiddleMouse>|. When the register is linewise this will
+		insert the text above the current line, like with `P`.
 		Does not replace characters!
 		The '.' register (last inserted text) is still inserted as
 		typed.  {not in Vi}
@@ -633,13 +634,13 @@ Completion can be done for:
 10. User defined completion				|i_CTRL-X_CTRL-U|
 11. omni completion					|i_CTRL-X_CTRL-O|
 12. Spelling suggestions				|i_CTRL-X_s|
-13. keywords in 'complete'				|i_CTRL-N|
+13. keywords in 'complete'				|i_CTRL-N| |i_CTRL-P|
 
-All these (except 2) are done in CTRL-X mode.  This is a sub-mode of Insert
-and Replace modes.  You enter CTRL-X mode by typing CTRL-X and one of the
-CTRL-X commands.  You exit CTRL-X mode by typing a key that is not a valid
-CTRL-X mode command.  Valid keys are the CTRL-X command itself, CTRL-N (next),
-and CTRL-P (previous).
+All these, except CTRL-N and CTRL-P, are done in CTRL-X mode.  This is a
+sub-mode of Insert and Replace modes.  You enter CTRL-X mode by typing CTRL-X
+and one of the CTRL-X commands.  You exit CTRL-X mode by typing a key that is
+not a valid CTRL-X mode command.  Valid keys are the CTRL-X command itself,
+CTRL-N (next), and CTRL-P (previous).
 
 Also see the 'infercase' option if you want to adjust the case of the match.
 
@@ -1103,7 +1104,7 @@ items:
 	empty		when non-zero this match will be added even when it is
 			an empty string
 
-All of these except 'icase', 'dup' and 'empty' must be a string.  If an item
+All of these except "icase", "dup" and "empty" must be a string.  If an item
 does not meet these requirements then an error message is given and further
 items in the list are not used.  You can mix string and Dictionary items in
 the returned list.
@@ -1295,7 +1296,8 @@ it here: http://ctags.sourceforge.net/  Version 5.6 or later is recommended.
 For version 5.5.4 you should add a patch that adds the "typename:" field:
 	ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
 A compiled .exe for MS-Windows can be found at:
-	http://georgevreilly.com/vim/ctags.html
+	http://ctags.sourceforge.net/
+	https://github.com/universal-ctags/ctags-win32
 
 If you want to complete system functions you can do something like this.  Use
 ctags to generate a tags file for all the system header files: >
@@ -1872,8 +1874,6 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			or script is finished.
 			This command does not work from |:normal|.
 			{not in Vi}
-			{not available when compiled without the |+ex_extra|
-			feature}
 
 							*:stopi* *:stopinsert*
 :stopi[nsert]		Stop Insert mode as soon as possible.  Works like
@@ -1891,15 +1891,11 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			script that the replacement will only start after
 			the function or script is finished.
 			{not in Vi}
-			{not available when compiled without the |+ex_extra|
-			feature}
 
 							*:startgreplace*
 :startg[replace][!]	Just like |:startreplace|, but use Virtual Replace
 			mode, like with |gR|.
 			{not in Vi}
-			{not available when compiled without the |+ex_extra|
-			feature}
 
 ==============================================================================
 10. Inserting a file					*inserting-file*

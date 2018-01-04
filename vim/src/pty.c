@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -43,6 +43,8 @@
 
 #include "vim.h"
 
+#if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
+
 #include <signal.h>
 
 #ifdef __CYGWIN32__
@@ -62,7 +64,7 @@
 #ifdef sinix
 #undef buf_T
 #endif
-# ifdef sun
+# ifdef SUN_SYSTEM
 #  include <sys/conf.h>
 # endif
 #endif
@@ -87,11 +89,11 @@
 # include <sys/ptem.h>
 #endif
 
-#if !defined(sun) && !defined(VMS) && !defined(MACOS)
+#if !defined(SUN_SYSTEM) && !defined(VMS)
 # include <sys/ioctl.h>
 #endif
 
-#if defined(sun) && defined(LOCKPTY) && !defined(TIOCEXCL)
+#if defined(SUN_SYSTEM) && defined(LOCKPTY) && !defined(TIOCEXCL)
 # include <sys/ttold.h>
 #endif
 
@@ -124,7 +126,7 @@
 # undef HAVE_SVR4_PTYS
 #endif
 
-static void initmaster __ARGS((int));
+static void initmaster(int);
 
 /*
  *  Open all ptys with O_NOCTTY, just to be on the safe side.
@@ -134,8 +136,7 @@ static void initmaster __ARGS((int));
 #endif
 
     static void
-initmaster(f)
-    int f UNUSED;
+initmaster(int f UNUSED)
 {
 #ifndef VMS
 # ifdef POSIX
@@ -156,8 +157,7 @@ initmaster(f)
  * pty on others.  Needs to be tuned...
  */
     int
-SetupSlavePTY(fd)
-    int fd;
+SetupSlavePTY(int fd)
 {
     if (fd < 0)
 	return 0;
@@ -168,7 +168,7 @@ SetupSlavePTY(fd)
 # endif
     if (ioctl(fd, I_PUSH, "ldterm") != 0)
 	return -1;
-# ifdef sun
+# ifdef SUN_SYSTEM
     if (ioctl(fd, I_PUSH, "ttcompat") != 0)
 	return -1;
 # endif
@@ -180,8 +180,7 @@ SetupSlavePTY(fd)
 #if defined(OSX) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     static char TtyName[32];
@@ -198,8 +197,7 @@ OpenPTY(ttyn)
 	&& !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     char	*m, *s;
     int		f;
@@ -223,12 +221,11 @@ OpenPTY(ttyn)
 #if defined(__sgi) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int f;
     char *name;
-    RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
 
     /*
      * SIGCHLD set to SIG_DFL for _getpty() because it may fork() and
@@ -249,11 +246,10 @@ OpenPTY(ttyn)
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
-    struct stat buf;
+    stat_T	buf;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
 
@@ -271,21 +267,21 @@ OpenPTY(ttyn)
 }
 #endif
 
-#if defined(HAVE_SVR4_PTYS) && !defined(PTY_DONE) && !defined(hpux) && !defined(MACOS_X)
+#if defined(HAVE_SVR4_PTYS) && !defined(PTY_DONE) && !defined(hpux) \
+                    && !(defined(MACOS_X) && !defined(MAC_OS_X_VERSION_10_6))
 
 /* NOTE: Even though HPUX can have /dev/ptmx, the code below doesn't work!
- * Same for Mac OS X Leopard. */
+ * Same for Mac OS X Leopard (10.5). */
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     char	*m;
-    char	*(ptsname __ARGS((int)));
-    int		unlockpt __ARGS((int));
-    int		grantpt __ARGS((int));
-    RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
+    char	*(ptsname(int));
+    int		unlockpt(int);
+    int		grantpt(int);
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
 
@@ -319,8 +315,7 @@ int aixhack = -1;
 #endif
 
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     /* used for opening a new pty-pair: */
@@ -366,8 +361,7 @@ static char TtyProto[] = "/dev/ttyXY";
 # endif
 
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     char	*p, *q, *l, *d;
     int		f;
@@ -385,22 +379,16 @@ OpenPTY(ttyn)
     {
 	for (d = PTYRANGE1; (p[1] = *d) != '\0'; d++)
 	{
-#if !defined(MACOS) || defined(USE_CARBONIZED)
 	    if ((f = open(PtyName, O_RDWR | O_NOCTTY | O_EXTRA, 0)) == -1)
-#else
-	    if ((f = open(PtyName, O_RDWR | O_NOCTTY | O_EXTRA)) == -1)
-#endif
 		continue;
 	    q[0] = *l;
 	    q[1] = *d;
-#ifndef MACOS
 	    if (geteuid() != ROOT_UID && mch_access(TtyName, R_OK | W_OK))
 	    {
 		close(f);
 		continue;
 	    }
-#endif
-#if defined(sun) && defined(TIOCGPGRP) && !defined(SUNOS3)
+#if defined(SUN_SYSTEM) && defined(TIOCGPGRP) && !defined(SUNOS3)
 	    /* Hack to ensure that the slave side of the pty is
 	     * unused. May not work in anything other than SunOS4.1
 	     */
@@ -423,3 +411,5 @@ OpenPTY(ttyn)
     return -1;
 }
 #endif
+
+#endif /* FEAT_GUI || FEAT_TERMINAL */

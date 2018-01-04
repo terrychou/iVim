@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.4.  Last change: 2015 Jun 25
+*term.txt*      For Vim version 8.0.  Last change: 2017 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -88,6 +88,28 @@ into the mode it was before Vim started.  The strings defined with 't_te' and
 an external command (e.g., "!!"), the terminal will be put into Normal mode
 for a moment.  This means that you can stop the output to the screen by
 hitting a printing key.  Output resumes when you hit <BS>.
+
+						*xterm-bracketed-paste*
+When the 't_BE' option is set then 't_BE' will be sent to the
+terminal when entering "raw" mode and 't_BD' when leaving "raw" mode.  The
+terminal is then expected to put 't_PS' before pasted text and 't_PE' after
+pasted text.  This way Vim can separate text that is pasted from characters
+that are typed.  The pasted text is handled like when the middle mouse button
+is used, it is inserted literally and not interpreted as commands.
+
+When the cursor is in the first column, the pasted text will be inserted
+before it.  Otherwise the pasted text is appended after the cursor position.
+This means one cannot paste after the first column.  Unfortunately Vim does
+not have a way to tell where the mouse pointer was.
+
+Note that in some situations Vim will not recognize the bracketed paste and
+you will get the raw text.  In other situations Vim will only get the first
+pasted character and drop the rest, e.g. when using the "r" command.  If you
+have a problem with this, disable bracketed paste by putting this in your
+.vimrc: >
+	set t_BE=
+If this is done while Vim is running the 't_BD' will be sent to the terminal
+to disable bracketed paste.
 
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
@@ -230,7 +252,7 @@ But any non-empty string means that the flag is set.  An empty string means
 that the flag is not set.  't_CS' works like this too, but it isn't a termcap
 flag.
 
-OUTPUT CODES
+OUTPUT CODES						*terminal-output-codes*
 	option	meaning	~
 
 	t_AB	set background color (ANSI)			*t_AB* *'t_AB'*
@@ -273,13 +295,11 @@ OUTPUT CODES
 	t_ts	set window title start (to status line)		*t_ts* *'t_ts'*
 	t_ue	underline end					*t_ue* *'t_ue'*
 	t_us	underline mode					*t_us* *'t_us'*
-	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
-	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
 	t_ut	clearing uses the current background color	*t_ut* *'t_ut'*
 	t_vb	visual bell					*t_vb* *'t_vb'*
 	t_ve	cursor visible					*t_ve* *'t_ve'*
 	t_vi	cursor invisible				*t_vi* *'t_vi'*
-	t_vs	cursor very visible				*t_vs* *'t_vs'*
+	t_vs	cursor very visible (blink)			*t_vs* *'t_vs'*
 								*t_xs* *'t_xs'*
 	t_xs	if non-empty, standout not erased by overwriting (hpterm)
 								*t_xn* *'t_xn'*
@@ -289,10 +309,16 @@ OUTPUT CODES
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 
 Added by Vim (there are no standard codes for these):
+	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
+	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
+	t_Te	strikethrough end				*t_Te* *'t_Te'*
+	t_Ts	strikethrough mode				*t_Ts* *'t_Ts'*
 	t_IS	set icon text start				*t_IS* *'t_IS'*
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
-	t_WS	set window size (height, width) in characters	*t_WS* *'t_WS'*
+	t_GP	get window position (Y, X) in pixels		*t_GP* *'t_GP'*
+	t_WS	set window size (height, width in cells)	*t_WS* *'t_WS'*
+	t_VS	cursor normally visible (no blink)		*t_VS* *'t_VS'*
 	t_SI	start insert mode (bar cursor shape)		*t_SI* *'t_SI'*
 	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
@@ -301,10 +327,41 @@ Added by Vim (there are no standard codes for these):
 		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
+	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
-		see |'ambiwidth'|
+	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
+		|xterm-true-color|
+	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
+		|xterm-true-color|
+	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
+		|xterm-bracketed-paste|
+	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
+		|xterm-bracketed-paste|
+	t_SC	set cursor color start				*t_SC* *'t_SC'*
+	t_EC	set cursor color end				*t_EC* *'t_EC'*
+	t_SH	set cursor shape				*t_SH* *'t_SH'*
+	t_RC	request terminal cursor blinking		*t_RC* *'t_RC'*
+	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
 
-KEY CODES
+Some codes have a start, middle and end part.  The start and end are defined
+by the termcap option, the middle part is text.
+	set title text:     t_ts {title text} t_fs
+	set icon text:      t_IS {icon text} t_IE
+	set cursor color:   t_SC  {color name}  t_EC
+
+t_SH must take one argument:
+	0, 1 or none  	blinking block cursor
+	2	      	block cursor
+	3		blinking underline cursor
+	4		underline cursor
+	5		blinking vertical bar cursor
+	6		vertical bar cursor
+
+t_RS is sent only if the response to t_RV has been received.  It is not used
+on Mac OS when Terminal.app could be recognized from the termresponse.
+
+
+KEY CODES						*terminal-key-codes*
 Note: Use the <> form if possible
 
 	option	name		meaning	~
@@ -395,6 +452,9 @@ Note: Use the <> form if possible
 	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
 	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
 		<Mouse>		leader of mouse code		*<Mouse>*
+								*t_PS* *'t_PS'*
+	t_PS	start of bracketed paste |xterm-bracketed-paste|
+	t_PE	end of bracketed paste |xterm-bracketed-paste|  *t_PE* *'t_PE'*
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the
 entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".
@@ -418,6 +478,27 @@ produce different codes, depending on the mode it is in (8-bit, VT102,
 VT220, etc.).  The result is that codes like <xF1> are no longer needed.
 Note: This is only done on startup.  If the xterm options are changed after
 Vim has started, the escape sequences may not be recognized anymore.
+
+							*xterm-true-color*
+Vim supports using true colors in the terminal (taken from |highlight-guifg|
+and |highlight-guibg|), given that the terminal supports this. To make this 
+work the 'termguicolors' option needs to be set.
+See https://gist.github.com/XVilka/8346728 for a list of terminals that
+support true colors.
+
+Sometimes setting 'termguicolors' is not enough and one has to set the |t_8f|
+and |t_8b| options explicitly. Default values of these options are
+"^[[38;2;%lu;%lu;%lum" and "^[[48;2;%lu;%lu;%lum" respectively, but it is only
+set when `$TERM` is `xterm`. Some terminals accept the same sequences, but
+with all semicolons replaced by colons (this is actually more compatible, but
+less widely supported): >
+	 let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
+	 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+
+These options contain printf strings, with |printf()| (actually, its C
+equivalent hence `l` modifier) invoked with the t_ option value and three
+unsigned long integers that may have any value between 0 and 255 (inclusive)
+representing red, green and blue colors respectively.
 
 							*xterm-resize*
 Window resizing with xterm only works if the allowWindowOps resource is
@@ -542,7 +623,7 @@ correct values.
 
 One command can be used to set the screen size:
 
-						*:mod* *:mode* *E359* *E362*
+						*:mod* *:mode* *E359*
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
@@ -852,7 +933,7 @@ Mouse clicks can be mapped.  The codes for mouse clicks are:
 
 The X1 and X2 buttons refer to the extra buttons found on some mice.  The
 'Microsoft Explorer' mouse has these buttons available to the right thumb.
-Currently X1 and X2 only work on Win32 environments.
+Currently X1 and X2 only work on Win32 and X11 environments.
 
 Examples: >
 	:noremap <MiddleMouse> <LeftMouse><MiddleMouse>
