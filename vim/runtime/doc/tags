@@ -6708,6 +6708,7 @@ inverse	syntax.txt	/*inverse*
 invert()	eval.txt	/*invert()*
 ios	os_ios.txt	/*ios*
 ios-commands	ios_commands.txt	/*ios-commands*
+ios-dictation	os_ios.txt	/*ios-dictation*
 ios-extended-keyboard	os_ios.txt	/*ios-extended-keyboard*
 ios-external-keyboard	os_ios.txt	/*ios-external-keyboard*
 ios-exuberant-ctags	os_ios.txt	/*ios-exuberant-ctags*

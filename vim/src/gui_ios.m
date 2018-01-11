@@ -121,10 +121,10 @@ void input_special_name(const char * name) {
     add_to_input_buf(re, len);
 }
 
-NSString *lookupStringConstant(NSString *constantName) {
-    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetMainBundle(), (__bridge CFStringRef)constantName);
-    return (__bridge NSString *)(dataPtr ? *dataPtr : nil);
-}
+//NSString *lookupStringConstant(NSString *constantName) {
+//    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetMainBundle(), (__bridge CFStringRef)constantName);
+//    return (__bridge NSString *)(dataPtr ? *dataPtr : nil);
+//}
 
 
 #define RGB(r,g,b)	((r) << 16) + ((g) << 8) + (b)
@@ -168,6 +168,26 @@ static VimView * shellView(void) {
     return view;
 }
 
+static NSString * bundle_info_for_name(NSString * name) {
+    return [[NSBundle mainBundle] objectForInfoDictionaryKey:name];
+}
+
+/*
+ * gui version info line
+ */
+char_u * gui_version_info(void) {
+    static char_u * info;
+    if (info == NULL) {
+        NSString * name = bundle_info_for_name(@"CFBundleName");
+        NSString * version = bundle_info_for_name(@"CFBundleShortVersionString");
+        NSString * build = bundle_info_for_name((NSString *)kCFBundleVersionKey);
+        NSString * line = [NSString stringWithFormat:@"%@ version %@(%@)", name, version, build];
+        info = TOCHARS(line);
+    }
+    
+    return info;
+}
+
 CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     int red = (color & 0xFF0000) >> 16;
@@ -200,12 +220,12 @@ static void show_error_message(NSString * err_msg) {
 /* 
  * Declarations for ex command functions
  */
-void ex_ifont(exarg_T *);
-void ex_ideletefont(exarg_T *);
-void ex_idocuments(exarg_T *);
-void ex_ishare(exarg_T *);
-void ex_ictags(exarg_T *);
-//void ex_ifontsize(exarg_T * eap);
+static void ex_ifont(exarg_T *);
+static void ex_ideletefont(exarg_T *);
+static void ex_idocuments(exarg_T *);
+static void ex_ishare(exarg_T *);
+static void ex_ictags(exarg_T *);
+//static void ex_ifontsize(exarg_T * eap);
 
 /*
  * Extended ex commands dispatcher
@@ -236,7 +256,7 @@ void ex_ios_cmds(exarg_T * eap) {
  * Handling function for command *ifont*
  */
 
-void ex_ifont(exarg_T * eap) {
+static void ex_ifont(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0) {
         NSString * cmd = TONSSTRING(eap->cmd);
@@ -249,7 +269,7 @@ void ex_ifont(exarg_T * eap) {
 /*
  * Handling function for command *ideletefont*
  */
-void ex_ideletefont(exarg_T * eap) {
+static void ex_ideletefont(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0) {
         [[VimFontsManager shared] showAvailableFontsWithCommand:TONSSTRING(eap->cmd)];
@@ -261,7 +281,7 @@ void ex_ideletefont(exarg_T * eap) {
 /*
  * Handling function for command *idocuments*
  */
-void ex_idocuments(exarg_T * eap) {
+static void ex_idocuments(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0 || [arg isEqualToString:@"open"]) {
         [shellViewController() pickDocument];
@@ -275,7 +295,7 @@ void ex_idocuments(exarg_T * eap) {
  */
 static void execute_ctags(NSString *);
 static NSArray * ctags_args(NSString *);
-void ex_ictags(exarg_T * eap) {
+static void ex_ictags(exarg_T * eap) {
     execute_ctags(TONSSTRING(eap->cmd));
 }
 
@@ -370,7 +390,7 @@ NSString * get_text_between(linenr_T line1, linenr_T line2) {
 /*
  * Handling function for command *ishare*
  */
-void ex_ishare(exarg_T * eap) {
+static void ex_ishare(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if (eap->addr_count > 0) {
         NSString * text = get_text_between(eap->line1, eap->line2);
@@ -1461,22 +1481,23 @@ gui_mch_get_color(char_u *name)
         {"DarkBlue",    RGB(0x00, 0x00, 0x80)},
         {"Blue",        RGB(0x00, 0x00, 0xFF)},
         {"LightBlue",   RGB(0xAD, 0xD8, 0xE6)},
+        {"SlateBlue",   RGB(0x6A, 0x5A, 0xCD)},
         {"DarkGreen",   RGB(0x00, 0x80, 0x00)},
         {"Green",       RGB(0x00, 0xFF, 0x00)},
         {"LightGreen",  RGB(0x90, 0xEE, 0x90)},
+        {"SeaGreen",    RGB(0x2E, 0x8B, 0x57)},
         {"DarkCyan",    RGB(0x00, 0x80, 0x80)},
         {"Cyan",        RGB(0x00, 0xFF, 0xFF)},
         {"LightCyan",   RGB(0xE0, 0xFF, 0xFF)},
         {"DarkMagenta", RGB(0x80, 0x00, 0x80)},
-        {"Magenta",	    RGB(0xFF, 0x00, 0xFF)},
+        {"Magenta",	RGB(0xFF, 0x00, 0xFF)},
         {"LightMagenta",RGB(0xFF, 0xA0, 0xFF)},
         {"Brown",       RGB(0x80, 0x40, 0x40)},
+	{"DarkYellow",	RGB(0xBB, 0xBB, 0x00)},
         {"Yellow",      RGB(0xFF, 0xFF, 0x00)},
         {"LightYellow", RGB(0xFF, 0xFF, 0xE0)},
-        {"SeaGreen",    RGB(0x2E, 0x8B, 0x57)},
         {"Orange",      RGB(0xFF, 0xA5, 0x00)},
         {"Purple",      RGB(0xA0, 0x20, 0xF0)},
-        {"SlateBlue",   RGB(0x6A, 0x5A, 0xCD)},
         {"Violet",      RGB(0xEE, 0x82, 0xEE)},
     };
     

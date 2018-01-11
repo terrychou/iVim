@@ -10,7 +10,7 @@
 import UIKit
 import MobileCoreServices
 
-enum blink_state {
+private enum blink_state {
     case none     /* not blinking at all */
     case off     /* blinking, cursor is not shown */
     case on        /* blinking, cursor is shown */
@@ -23,7 +23,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     @objc var blink_wait: CLong = 1000
     @objc var blink_on: CLong = 1000
     @objc var blink_off: CLong = 1000
-    var state: blink_state = .none
+    private var state: blink_state = .none
     var blinkTimer: Timer?
     
     var documentController: UIDocumentInteractionController?
@@ -35,6 +35,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var textTokenizer: UITextInputStringTokenizer!
     var markedInfo: MarkedInfo?
+    var dictationHypothesis: String?
     var isNormalPending = false
     
     var shouldTuneFrame = true
@@ -174,11 +175,15 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         return true
     }
     
+    var allowsInsertingText: Bool {
+        return self.dictationHypothesis == nil
+    }
+    
     func handleModifiers(with text: String) -> Bool {
         if self.ctrlEnabled {
             self.ctrlButton!.tryRestore()
             let t = text == "\n" ? "CR" : text
-            input_special_name("<C-\(t)>")
+            self.insertSpecialName("<C-\(t)>")
             return true
         }
         
@@ -192,7 +197,13 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }
     }
     
+    func insertSpecialName(_ name: String) {
+        guard self.allowsInsertingText else { return }
+        input_special_name(name)
+    }
+    
     func insertText(_ text: String) {
+        guard self.allowsInsertingText else { return } //no input during dictation
         self.markedInfo?.deleteOldMarkedText() //handle the alt- input
         if self.handleModifiers(with: text) { return }
         self.addToInputBuffer(self.escapingText(text))

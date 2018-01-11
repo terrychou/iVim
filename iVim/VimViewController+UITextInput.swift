@@ -8,6 +8,8 @@
 
 import UIKit
 
+private let kUDDictationNormalModeTarget = "kUDDictationNormalModeTarget"
+
 extension VimViewController {
     private var currentText: String? {
         return self.markedInfo?.text
@@ -19,6 +21,7 @@ extension VimViewController {
     
     func text(in range: UITextRange) -> String? {
         //print(#function)
+        if self.isInDictation { return self.dictationHypothesis }
         guard let range = range as? VimTextRange else { return nil }
         
         return self.currentText?.nsstring.substring(with: range.nsrange)
@@ -26,6 +29,7 @@ extension VimViewController {
     
     func replace(_ range: UITextRange, withText text: String) {
         //print(#function)
+        self.updateDictationHypothesis(with: text)
     }
     
     var selectedTextRange: UITextRange? {
@@ -34,6 +38,7 @@ extension VimViewController {
             return VimTextRange(range: self.markedInfo?.selectedRange)
         }
         set {
+            //print(#function)
             guard let nv = newValue as? VimTextRange else { return }
             self.markedInfo?.selectedRange = nv.nsrange
         }
@@ -91,12 +96,16 @@ extension VimViewController {
     
     func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
         //print(#function)
-        return VimTextRange(start: fromPosition.position, end: toPosition.position)
+        guard let fp = fromPosition as? VimTextPosition,
+            let tp = toPosition as? VimTextPosition else { return nil }
+
+        return VimTextRange(start: fp, end: tp)
     }
     
     func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
         //print(#function)
-        let loc = position.position.location
+        guard let p = position as? VimTextPosition else { return nil }
+        let loc = p.location
         let new = loc + offset
         guard new >= 0 && new <= self.currentTextLength else { return nil }
         
@@ -126,11 +135,14 @@ extension VimViewController {
     
     func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
         //print(#function)
-        let lhp = position.position.location
-        let rhp = other.position.location
-        if lhp == rhp {
-            return .orderedSame
-        } else if lhp < rhp {
+        let lhp = (position as? VimTextPosition)?.location
+        let rhp = (other as? VimTextPosition)?.location
+        guard lhp != rhp else { return .orderedSame }
+        if lhp == nil {
+            return .orderedAscending
+        } else if rhp == nil {
+            return .orderedDescending
+        } else if lhp! < rhp! {
             return .orderedAscending
         } else {
             return .orderedDescending
@@ -139,12 +151,16 @@ extension VimViewController {
     
     func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
         //print(#function)
-        return toPosition.position.location - from.position.location
+        guard let fp = from as? VimTextPosition,
+            let tp = toPosition as? VimTextPosition else { return 0 }
+        
+        return tp.location - fp.location
     }
     
     func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
         //print(#function)
-        let r = (range as! VimTextRange).nsrange
+        guard let vtr = range as? VimTextRange else { return nil }
+        let r = vtr.nsrange
         let newLoc: Int
         switch direction {
         case .up, .left: newLoc = r.location
@@ -156,7 +172,8 @@ extension VimViewController {
     
     func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
         //print(#function)
-        let oldLoc = position.position.location
+        guard let p = position as? VimTextPosition else { return nil }
+        let oldLoc = p.location
         let newLoc: Int
         switch direction {
         case .up, .left: newLoc = oldLoc - 1
@@ -227,9 +244,93 @@ extension VimViewController {
     }
 }
 
-private extension UITextPosition {
-    var position: VimTextPosition {
-        return self as! VimTextPosition
+extension VimViewController {
+    private enum DictationNormalModeTarget: String {
+        case insert
+        case cmdline
+        case none
+    }
+    
+    private var normalModeTarget: DictationNormalModeTarget {
+        guard let v = UserDefaults.standard.string(
+            forKey: kUDDictationNormalModeTarget) else { return .insert }
+        
+        return DictationNormalModeTarget(rawValue: v)!
+    }
+    
+    private func shouldGoOnAfterHandlingDictationInNormalMode() -> Bool {
+        guard is_in_normal_mode() else { return true }
+        var jumpCmd: String?
+        switch self.normalModeTarget {
+        case .insert: jumpCmd = "i"
+        case .cmdline: jumpCmd = ":"
+        case .none: break
+        }
+        if let jc = jumpCmd {
+            gFeedKeys(jc, mode: "n")
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private var isInDictation: Bool {
+        return self.dictationHypothesis != nil ||
+            (self.textInputMode?.primaryLanguage?.hasPrefix("dictation") ?? false)
+    }
+    
+    private func inputTextWithoutMapping(_ text: String) {
+        let escaped = text.replacingOccurrences(of: "\"", with: "\\\"")
+        gFeedKeys(escaped, mode: "n")
+    }
+    
+    private func updateDictationHypothesis(with text: String) {
+        guard self.isInDictation else { return }
+        self.cleanupDictationHypothesis(andSet: text)
+        if self.shouldGoOnAfterHandlingDictationInNormalMode() {
+            self.inputTextWithoutMapping(text)
+        }
+    }
+    
+    func cleanupDictationHypothesis(andSet text: String? = nil) {
+        if let len = self.dictationHypothesis?.nsLength,
+            !is_in_normal_mode() {
+            gFeedKeys("\\<BS>", for: len, mode: "n")
+        }
+        self.dictationHypothesis = text
+    }
+    
+    func insertDictationResult(_ dictationResult: [UIDictationPhrase]) {
+        if self.dictationHypothesis == nil { return } //do nothing if cancelled
+        guard !dictationResult.isEmpty else { return }
+        let text = dictationResult.map { $0.text }.joined()
+        self.cleanupDictationHypothesis()
+        if !is_in_normal_mode() {
+            self.inputTextWithoutMapping(text)
+        } else {
+            gAddNonCSITextToInputBuffer(text.trimmingCharacters(in: .whitespaces))
+        }
+    }
+    
+    func dictationRecordingDidEnd() {
+//        NSLog("dictation END")
+    }
+    
+    func dictationRecognitionFailed() {
+//        NSLog("dictation FAILED")
+        self.cleanupDictationHypothesis()
+        DispatchQueue.main.async {
+            gSVO.showErrContent("dictation FAILED")
+        }
+    }
+    
+    var insertDictationResultPlaceholder: Any {
+        return 1
+    }
+    
+    func removeDictationResultPlaceholder(_ placeholder: Any, willInsertResult: Bool) {
+        //this method is needed for preventing unclear whitespaces from being inserted
+        return
     }
 }
 
@@ -295,10 +396,11 @@ extension MarkedInfo {
     }
     
     private func deleteBackward(for times: Int) {
+        gFeedKeys("\\<BS>", for: times, mode: "n")
 //        gAddTextToInputBuffer(keyBS.unicoded, for: times)
-        for _ in 0..<times {
-            input_special_key(keyBS)
-        }
+//        for _ in 0..<times {
+//            input_special_key(keyBS)
+//        }
     }
     
     func deleteOldMarkedText() {
