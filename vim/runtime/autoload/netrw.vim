@@ -9248,8 +9248,8 @@ fun! s:NetrwRemoteListing()
      NetrwKeepj call histdel("/",-1)
     endif
    endif
-   
-   else 
+
+   else
    " use ssh to get remote file listing {{{3
 "   call Decho("use ssh to get remote file listing: s:path<".s:path.">")
    let listcmd= s:MakeSshCmd(g:netrw_list_cmd)
