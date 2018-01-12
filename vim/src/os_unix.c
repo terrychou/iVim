@@ -57,6 +57,7 @@ static int selinux_enabled = -1;
 # if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
 extern int ios_system(char* cmd);
 extern int ios_executable(char* cmd);
+#define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS. 
 #endif
 
 
@@ -3101,7 +3102,8 @@ executable_file(name)
     }
     return vms_executable;
 #else
-    return S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0;
+    // access always returns -1 on iOS. 
+    return S_ISREG(st.st_mode) && S_ISXXX(st.st_mode) /* mch_access((char *)name, X_OK) == 0*/;
 #endif
 }
 
