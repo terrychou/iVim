@@ -246,7 +246,7 @@ if !exists("g:netrw_scp_cmd")
   else
    call s:NetrwInit("g:netrw_scp_cmd", 'pscp -q')
   endif
- else 
+ else
   call s:NetrwInit("g:netrw_scp_cmd" , "scp -q")
  endif
 endif
@@ -344,7 +344,7 @@ if !exists("g:netrw_list_cmd")
   else
    let g:netrw_list_cmd= g:netrw_ssh_cmd." USEPORT HOSTNAME ls -FLa"
   endif
- else 
+ else
 "  call Decho(g:netrw_ssh_cmd." is not executable")
   let g:netrw_list_cmd= ""
  endif
@@ -2096,7 +2096,7 @@ fun! netrw#NetRead(mode,...)
    elseif     b:netrw_method  == 4	" read with scp
 "    call Decho("read via scp (method #4)")
     if exists("g:netrw_port") && g:netrw_port != ""
-	let useport= " ".g:netrw_scpport." ".g:netrw_port
+     let useport= " ".g:netrw_scpport." ".g:netrw_port
     else
      let useport= ""
     endif
@@ -2226,9 +2226,9 @@ fun! netrw#NetRead(mode,...)
    ".........................................
    " NetRead: (sftp) NetRead Method #9 {{{3
    elseif     b:netrw_method  == 9
-       "    call Decho("read via sftp (method #9)")
-       call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1)." ".tmpfile)
-       let result		= s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
+"    call Decho("read via sftp (method #9)")
+    call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1)." ".tmpfile)
+    let result		= s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
     let b:netrw_lastfile = choice
 
    ".........................................
@@ -9248,6 +9248,7 @@ fun! s:NetrwRemoteListing()
      NetrwKeepj call histdel("/",-1)
     endif
    endif
+   
    else 
    " use ssh to get remote file listing {{{3
 "   call Decho("use ssh to get remote file listing: s:path<".s:path.">")
