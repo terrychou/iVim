@@ -5,7 +5,7 @@ HHROOT="https://github.com/holzschu"
 (cd "${BASH_SOURCE%/*}/Frameworks"
 # ios_system
 echo "Downloading frameworks"
-curl -OL $HHROOT/iVim/releases/download/v0.5/frameworks.tar.gz
+curl -OL $HHROOT/iVim/releases/download/v0.6/frameworks.tar.gz
 ( tar xvzf frameworks.tar.gz && rm frameworks.tar.gz ) || { echo "ios_system failed to download"; exit 1; }
 )
 
