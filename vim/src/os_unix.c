@@ -54,6 +54,13 @@ static int selinux_enabled = -1;
 # endif
 #endif
 
+# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+extern int ios_system(char* cmd);
+extern int ios_executable(char* cmd);
+#define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS. 
+#endif
+
+
 /*
  * Use this prototype for select, some include files have a wrong prototype
  */
@@ -3095,7 +3102,8 @@ executable_file(name)
     }
     return vms_executable;
 #else
-    return S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0;
+    // access always returns -1 on iOS. 
+    return S_ISREG(st.st_mode) && S_ISXXX(st.st_mode) /* mch_access((char *)name, X_OK) == 0*/;
 #endif
 }
 
@@ -3178,6 +3186,10 @@ mch_can_exe(name, path, use_path)
     }
 
     vim_free(buf);
+    // iOS: we've walked through the entire path, did not find an executable with that name
+    // is that one of the "internal commands" from ios_system?
+    if (!retval) retval = ios_executable(name);
+    
     return retval;
 }
 
@@ -4077,8 +4089,11 @@ mch_call_shell(cmd, options)
 	msg_putchar('\n');
     }
 # else /* not __EMX__ */
-    if (cmd == NULL)
-	x = system((char *)p_sh);
+    if (cmd == NULL) {
+        // NH: can't do anything here
+	   // x = system((char *)p_sh);
+        MSG_PUTS(_("\nCannot execute shell in iOS"));
+    }
     else
     {
 #  ifdef VMS
@@ -4109,7 +4124,9 @@ mch_call_shell(cmd, options)
 		    extra_shell_arg == NULL ? "" : (char *)extra_shell_arg,
 		    (char *)p_shcf,
 		    (char *)cmd);
-	    x = system((char *)newcmd);
+        // NH: iOS, just execute the command (without "/bin/sh -c" in front of it)
+        x = ios_system(cmd);
+	    // x = system((char *)newcmd);
 	    vim_free(newcmd);
 	}
 #  endif
