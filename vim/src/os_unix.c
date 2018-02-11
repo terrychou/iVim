@@ -3188,7 +3188,10 @@ mch_can_exe(name, path, use_path)
     vim_free(buf);
     // iOS: we've walked through the entire path, did not find an executable with that name
     // is that one of the "internal commands" from ios_system?
-    if (!retval) retval = ios_executable(name);
+    if (!retval) {
+        retval = ios_executable(name); 
+        if (retval && (path != NULL)) *path = vim_strsave(name);
+    }
     
     return retval;
 }
