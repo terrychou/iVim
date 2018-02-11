@@ -1,13 +1,13 @@
 #!/bin/bash
 
-IOS_SYSTEM_VER="1.0"
+IOS_SYSTEM_VER="1.1"
 HHROOT="https://github.com/holzschu"
 
 (cd "${PWD}/Frameworks"
 # ios_system
 echo "Downloading ios_system.framework and associated dylibs"
 curl -OL $HHROOT/ios_system/releases/download/v$IOS_SYSTEM_VER/release.tar.gz
-( tar -xzf ios_system.framework.tar.gz && rm ios_system.framework.tar.gz && mv release/* . ) || { echo "ios_system failed to download"; exit 1; }
+( tar -xzf ios_system.framework.tar.gz --strip 1 && rm ios_system.framework.tar.gz ) || { echo "ios_system failed to download"; exit 1; }
 )
 
 # We need the sources for Python and Lua, for the headers
