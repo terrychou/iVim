@@ -7006,7 +7006,7 @@
 				TargetAttributes = {
 					DE531AF11F20941100D71DB3 = {
 						CreatedOnToolsVersion = 8.3;
-						DevelopmentTeam = VG8Z23C8YL;
+						DevelopmentTeam = LGM6M9XA5D;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -7034,7 +7034,7 @@
 					};
 					DEEAD1791F23005500B4CAC9 = {
 						CreatedOnToolsVersion = 8.3;
-						DevelopmentTeam = VG8Z23C8YL;
+						DevelopmentTeam = LGM6M9XA5D;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
