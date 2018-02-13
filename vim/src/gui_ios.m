@@ -132,6 +132,35 @@ void input_special_name(const char * name) {
 #define TONSSTRING(chars) [[NSString alloc] initWithUTF8String:(const char *)chars]
 #define TOCHARS(str) (char_u *)[str UTF8String]
 
+/*
+ * to get the write event for files
+ */
+void mch_post_buffer_write(buf_T * buf) {
+    NSString * path = TONSSTRING(buf->b_ffname);
+    [[PickInfoManager shared] writeFor:path];
+}
+
+/*
+ * help function to judge whether *buf* belongs to mirror at *path*
+ */
+static BOOL buf_belongs_to_path(buf_T * buf, NSString * path) {
+    return buf->b_ffname != NULL &&
+        [TONSSTRING(buf->b_ffname) hasPrefix:path];
+}
+
+/*
+ * reload buffer representing file in mirror *path*
+ */
+void ivim_reload_buffer_for_mirror(NSString * path) {
+    buf_T * buf = nil;
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
+        if (buf_belongs_to_path(buf, path) &&
+            !mch_isdir(buf->b_ffname)) {
+            buf_reload(buf, buf->b_orig_mode);
+        }
+    }
+}
+
 static int hex_digit(int c) {
     if (VIM_ISDIGIT(c))
         return c - '0';
@@ -459,10 +488,34 @@ BOOL is_current_buf_new(void) {
 BOOL file_is_in_buffer_list(NSString * path) {
     buf_T * buf = nil;
     for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf->b_ffname != NULL && [TONSSTRING(buf->b_ffname) isEqualToString: path]) { return YES; }
+        if (buf->b_ffname != NULL &&
+            [TONSSTRING(buf->b_ffname) isEqualToString: path]) {
+            return YES;
+        }
     }
     
     return NO;
+}
+
+/*
+ * clean buffers for mirror at *path*
+ * return true if deletion succeeded
+ */
+BOOL clean_buffer_for_mirror_path(NSString * path) {
+    buf_T * buf = nil;
+    BOOL result = NO;
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
+        if (buf_belongs_to_path(buf, path)) {
+            close_buffer(NULL, buf, DOBUF_DEL, 0);
+            close_windows(buf, TRUE);
+            if (buf == curbuf) {
+                do_cmdline_cmd((char_u *)"enew");
+            }
+            result = YES;
+        }
+    }
+    
+    return result;
 }
 
 /*

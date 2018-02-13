@@ -1,6 +1,8 @@
 /* gui_ios.m */
 char_u * gui_version_info __ARGS((void));
 
+void mch_post_buffer_write __ARGS((buf_T * buf));
+
 char * istrcpy __ARGS((char * dst, char * src));
 void gui_mch_prepare __ARGS((int *argc, char **argv));
 int gui_mch_init_check __ARGS((void));
