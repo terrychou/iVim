@@ -25,6 +25,8 @@
 		22F0616320309E93000C33B3 /* libbibtex.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0615E20309E92000C33B3 /* libbibtex.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22F0616420309E93000C33B3 /* libkpathsea.6.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0615F20309E92000C33B3 /* libkpathsea.6.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22F0616520309E93000C33B3 /* libluatex.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0616020309E93000C33B3 /* libluatex.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		22F0616C2030AC7D000C33B3 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F061682030AB1F000C33B3 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		22F0616D2030ACDF000C33B3 /* libssh2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0616A2030AB30000C33B3 /* libssh2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22FE48C71FDC79C500899DA7 /* ios_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22FE48C61FDC79C500899DA7 /* ios_system.framework */; };
 		22FE48C81FDC79C500899DA7 /* ios_system.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22FE48C61FDC79C500899DA7 /* ios_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
@@ -200,6 +202,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				22F0616D2030ACDF000C33B3 /* libssh2.framework in Embed Frameworks */,
+				22F0616C2030AC7D000C33B3 /* openssl.framework in Embed Frameworks */,
 				22F0616120309E93000C33B3 /* libpdftex.dylib in Embed Frameworks */,
 				22F0616220309E93000C33B3 /* libtexlua52.5.dylib in Embed Frameworks */,
 				22F0616320309E93000C33B3 /* libbibtex.dylib in Embed Frameworks */,
@@ -253,6 +257,8 @@
 		22F0615E20309E92000C33B3 /* libbibtex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbibtex.dylib; path = Frameworks/libbibtex.dylib; sourceTree = "<group>"; };
 		22F0615F20309E92000C33B3 /* libkpathsea.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libkpathsea.6.dylib; path = Frameworks/libkpathsea.6.dylib; sourceTree = "<group>"; };
 		22F0616020309E93000C33B3 /* libluatex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libluatex.dylib; path = Frameworks/libluatex.dylib; sourceTree = "<group>"; };
+		22F061682030AB1F000C33B3 /* openssl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = openssl.framework; path = Frameworks/openssl.framework; sourceTree = "<group>"; };
+		22F0616A2030AB30000C33B3 /* libssh2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libssh2.framework; path = Frameworks/libssh2.framework; sourceTree = "<group>"; };
 		22FE48C61FDC79C500899DA7 /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
@@ -6649,6 +6655,8 @@
 		DE531AE91F20941100D71DB3 = {
 			isa = PBXGroup;
 			children = (
+				22F0616A2030AB30000C33B3 /* libssh2.framework */,
+				22F061682030AB1F000C33B3 /* openssl.framework */,
 				22F0615E20309E92000C33B3 /* libbibtex.dylib */,
 				22F0615F20309E92000C33B3 /* libkpathsea.6.dylib */,
 				22F0616020309E93000C33B3 /* libluatex.dylib */,
