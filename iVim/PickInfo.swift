@@ -31,67 +31,78 @@ typealias MirrorReadyTask = (URL) -> Void
 
 final class PickInfo {
     var origin: URL
-    var subpath: String!
+    var bookmark: Data?
+    let ticket: String
     var presenter: DocumentPresenter!
-    lazy var mirrorURL: URL = FileManager.default.mirrorDirectoryURL.appendingPathComponent(self.subpath)
-    var source: DispatchSourceFileSystemObject?
+    var mirrorURL: URL
+    var updatedDate: Date!
     var pendingTasks: [MirrorReadyTask]? = []
     
     init(origin: URL) {
         self.origin = origin
-        self.subpath = UUID().uuidString + "/" + self.origin.lastPathComponent
+        self.bookmark = origin.bookmark
+        self.ticket = UUID().uuidString
+        let subpath = self.ticket + "/" + self.origin.lastPathComponent
+        self.mirrorURL = FileManager.default.mirrorDirectoryURL.appendingPathComponent(subpath)
         self.presenter = DocumentPresenter(url: self.origin, mirrorURL: self.mirrorURL)
-        self.createMirrorFile()
+        self.createMirror()
+        self.updatedDate = Date()
     }
     
     deinit {
-        self.source?.cancel()
         self.deleteMirror()
     }
 }
 
 extension PickInfo {
-    private func startMonitoring() {
-        let fd = open(self.mirrorURL.path, O_EVTONLY)
-        guard fd != -1 else { return NSLog("Failed to open file \(self.mirrorURL)") }
-        let s = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fd, eventMask: .write)
-        s.setEventHandler { [weak self] in
-            NSLog("written")
-            self?.presenter?.write()
-        }
-        s.setCancelHandler {
-            NSLog("close")
-            close(fd)
-        }
-        self.source = s
-        s.resume()
-    }
-    
-    fileprivate func createMirrorFile() {
+    private func createMirror() {
         guard let p = self.presenter else { return }
-        let url = self.mirrorURL
-        self.origin.coordinatedRead(for: p) {
-            guard let src = $0 else {
-                if let e = $1 { NSLog("Failed to read file: \(e)") }
+        self.origin.coordinatedRead(for: p) { [unowned self] url, err in
+            guard let oURL = url else {
+                if let e = err { NSLog("Failed to read original file: \(e)") }
                 return
             }
+            let mURL = self.mirrorURL
+            let fm = FileManager.default
             do {
-                try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try FileManager.default.copyItem(at: src, to: url)
-                self.startMonitoring()
+                try fm.createDirectory(
+                    at: mURL.deletingLastPathComponent(),
+                    withIntermediateDirectories: true)
+                try fm.copyItem(at: oURL, to: mURL)
                 DispatchQueue.main.async {
-                    self.pendingTasks?.forEach { $0(url) }
+                    self.pendingTasks?.forEach { $0(mURL) }
                     self.pendingTasks = nil
                 }
             } catch {
-                NSLog("Failed to copy file: \(error)")
+                NSLog("Failed to create mirror: \(error)")
             }
         }
+    }
+    
+    func write(for filename: String) {
+        self.presenter?.write(for: filename)
+    }
+    
+    func updateMirror() -> Bool {
+//        NSLog("origin date: \(self.origin.contentModifiedDate(secured: true)!)")
+//        NSLog("updated date: \(self.updatedDate)")
+        guard let oCntDate = self.origin.contentModifiedDate(secured: true),
+            oCntDate > self.updatedDate else { return false } //original content has been modified
+        self.presenter?.read()
+        
+        return true
+    }
+    
+    func updateOrigin(to newURL: URL) {
+        self.origin = newURL
+        self.bookmark = newURL.bookmark
+        self.presenter?.url = newURL
     }
     
     func deleteMirror() {
         do {
-            try FileManager.default.removeItem(at: self.mirrorURL.deletingLastPathComponent())
+            try FileManager.default.removeItem(
+                at: self.mirrorURL.deletingLastPathComponent())
         } catch {
             NSLog("Failed to delete mirror file: \(error)")
         }

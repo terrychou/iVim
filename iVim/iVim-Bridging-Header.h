@@ -27,6 +27,8 @@ int const mouseRELEASE;
 void input_special_key(int key);
 void input_special_name(const char * name);
 
+void ivim_reload_buffer_for_mirror(NSString * path);
+
 int VimMain(int argc, char ** argv);
 void gui_resize_shell(int pixel_width, int pixel_height);
 void gui_update_cursor(int force, int clear_selection);
@@ -50,6 +52,7 @@ int cells_for_character(const unsigned char * c);
 
 BOOL is_current_buf_new(void);
 BOOL file_is_in_buffer_list(NSString * path);
+BOOL clean_buffer_for_mirror_path(NSString * path);
 BOOL is_in_normal_mode(void);
 
 void gui_ios_init_bg_color(void);

@@ -25,22 +25,46 @@ extension DocumentPresenter {
         guard let s = src, let d = dst else { return }
         do {
             try Data(contentsOf: s).write(to: d)
+            self.updateUpdatedDate()
         } catch {
-            NSLog("Failed to update file: \(error)")
+            NSLog("Failed to write file: \(error)")
         }
     }
     
+    private func updateUpdatedDate() {
+        gPIM.updateDate(for: self.url)
+    }
+    
     func read(_ completion: (() -> Void)? = nil) {
-        self.url.coordinatedRead(for: self) { url, err in
-            self.update(from: url, to: self.mirrorURL, err: err)
+        self.url.coordinatedRead(for: self) { [unowned self] url, err in
+            guard let oURL = url else {
+                if let e = err { NSLog("Failed to read original file: \(e)") }
+                return
+            }
+            let mURL = self.mirrorURL
+            let fm = FileManager.default
+            do {
+                if mURL.isDirectory {
+                    try fm.removeItem(at: mURL)
+                    try fm.copyItem(at: oURL, to: mURL)
+                    self.updateUpdatedDate()
+                } else {
+                    self.update(from: oURL, to: mURL, err: err)
+                }
+            } catch {
+                NSLog("Failed to read file: \(error)")
+            }
             completion?()
         }
     }
     
-    func write() {
-        NSLog("write")
-        self.url.coordinatedWrite(for: self) { url, err in
-            self.update(from: self.mirrorURL, to: url, err: err)
+    func write(for filename: String) {
+        self.url.coordinatedWrite(for: self) { [unowned self] url, err in
+            NSLog("write")
+            let subitem = String(filename.dropFirst(self.mirrorURL.path.count))
+            let src = self.mirrorURL.appendingPathComponent(subitem)
+            let dst = url?.appendingPathComponent(subitem)
+            self.update(from: src, to: dst, err: err)
         }
     }
 }
@@ -57,21 +81,19 @@ extension DocumentPresenter: NSFilePresenter {
     }
     
     func presentedItemDidMove(to newURL: URL) {
+        NSLog("moved to \(newURL)")
         gPIM.updateURL(self.url, for: newURL)
-        self.url = newURL
     }
     
     func presentedItemDidChange() {
-        self.read()
+        NSLog("presented did change")
+        self.read() //the content modification date of the origin never update here
+        gPIM.reloadBufferForMirror(at: self.mirrorURL)
     }
     
     func accommodatePresentedItemDeletion(completionHandler: @escaping (Error?) -> Void) {
         defer { completionHandler(nil) }
-        let path = self.mirrorURL.path.spaceEscaped
-        if file_is_in_buffer_list(path) {
-            do_cmdline_cmd("bdelete! \(path)")
-        }
-        gPIM.removePickInfo(for: self.url)
+        gPIM.removePickInfo(for: self.url, updateUI: true)
     }
 }
 
@@ -114,6 +136,52 @@ extension URL {
             NSLog("Failed to create bookmark for \(self): \(error)")
             return nil
         }
+    }
+    
+    private func resourceValue(for key: URLResourceKey, secured: Bool = false) -> URLResourceValues? {
+        do {
+            if secured && !self.startAccessingSecurityScopedResource() {
+                return nil
+            }
+            let result = try self.resourceValues(forKeys: [key])
+            if secured {
+                self.stopAccessingSecurityScopedResource()
+            }
+            return result
+        } catch {
+            NSLog("Failed to get resource value for key \(key): \(error)")
+            return nil
+        }
+    }
+    
+    var isDirectory: Bool {
+        return self.resourceValue(for: .isDirectoryKey)?.isDirectory ?? false
+    }
+    
+    func isReachable(secured: Bool = false) -> Bool {
+        do {
+            if secured && !self.startAccessingSecurityScopedResource() {
+                return false
+            }
+            let result = try self.checkResourceIsReachable()
+            if secured {
+                self.stopAccessingSecurityScopedResource()
+            }
+            return result
+        } catch {
+            NSLog("Failed to check reachability: \(error)")
+            return false
+        }
+    }
+    
+    func contentModifiedDate(secured: Bool = false) -> Date? {
+        return self.resourceValue(
+            for: .contentModificationDateKey,
+            secured: secured)?.contentModificationDate
+    }
+    
+    var isInTrash: Bool {
+        return self.deletingLastPathComponent().path.hasSuffix("/.Trash")
     }
 }
 

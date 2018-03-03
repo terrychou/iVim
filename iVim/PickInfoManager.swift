@@ -6,18 +6,22 @@
 //  Copyright © 2017 Boogaloo. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 let gPIM = PickInfoManager.shared
 
-final class PickInfoManager {
-    static let shared = PickInfoManager()
-    private init() { self.setup() }
+final class PickInfoManager: NSObject {
+    @objc static let shared = PickInfoManager()
+    private override init() {
+        super.init()
+        self.setup()
+    }
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
     
-    fileprivate var table = [URL: PickInfo]()
+    private var localTable = [String: PickInfo]()
+    private var table = [URL: PickInfo]()
 }
 
 extension PickInfoManager {
@@ -35,8 +39,9 @@ extension PickInfoManager {
 extension PickInfoManager {
     @objc func didBecomeActive() {
         NSLog("become active")
-        self.table.values.forEach { pi in
-            NSFileCoordinator.addFilePresenter(pi.presenter)
+        self.table.values.forEach {
+            NSFileCoordinator.addFilePresenter($0.presenter)
+            self.updateInfo($0)
         }
     }
     
@@ -55,22 +60,85 @@ extension PickInfoManager {
         } else {
             let pi = PickInfo(origin: url)
             pi.addTask(task)
+            self.localTable[pi.ticket] = pi
             self.table[url] = pi
             NSFileCoordinator.addFilePresenter(pi.presenter)
         }
     }
     
-    func removePickInfo(for url: URL) {
+    @objc func write(for filename: String) {
+        guard let ticket = self.ticket(for: filename),
+            let info = self.localTable[ticket] else { return }
+        info.write(for: filename)
+    }
+    
+    private func ticket(for filename: String) -> String? {
+        let mp = FileManager.default.mirrorDirectoryURL.path
+        guard filename.hasPrefix(mp) else { return nil }
+        var result = ""
+        for c in filename.dropFirst(mp.count + 1) {
+            if c == "/" { break }
+            result.append(c)
+        }
+        
+        return result
+    }
+    
+    func removePickInfo(for url: URL, updateUI: Bool = false) {
         guard let pi = self.table[url] else { return }
-        pi.deleteMirror()
+        self.localTable[pi.ticket] = nil
         NSFileCoordinator.removeFilePresenter(pi.presenter)
         self.table[url] = nil
+        if updateUI {
+            DispatchQueue.main.async {
+                let path = pi.mirrorURL.path
+                if clean_buffer_for_mirror_path(path) {
+                    do_cmdline_cmd("redraw!")
+                }
+            }
+        }
+    }
+    
+    func reloadBufferForMirror(at url: URL) {
+        DispatchQueue.main.async {
+            ivim_reload_buffer_for_mirror(url.path)
+            do_cmdline_cmd("redraw!")
+        }
     }
     
     func updateURL(_ url: URL, for newURL: URL) {
         guard url != newURL, let old = self.table[url] else { return }
-        old.origin = newURL
+        old.updateOrigin(to: newURL)
         self.table[newURL] = old
         self.table[url] = nil
+    }
+    
+    func updateDate(with newDate: Date? = nil, for url: URL) {
+        guard let info = self.table[url] else { return }
+        let date = newDate ?? Date()
+        info.updatedDate = date
+    }
+    
+    /*
+     * update after app becomes active again
+     * situations include:
+     *   1. origin changed: update the contents of the mirror
+     *   2. origin renamed: update the origin URL and bookmark data
+     *   3. origin deleted: delete the related entry and remove the associated mirror
+     */
+    func updateInfo(_ info: PickInfo) {
+        if info.origin.isReachable(secured: true) {
+            if info.updateMirror() {
+                NSLog("RELOAD: \(info.mirrorURL)")
+                self.reloadBufferForMirror(at: info.mirrorURL)
+            }
+        } else if let newURL = info.bookmark?.resolvedURL,
+            !(newURL.isInTrash || newURL.path == info.origin.path) {
+            NSLog("RENAME: \(info.origin) to \(newURL.path)")
+            self.updateURL(info.origin, for: newURL)
+        } else {
+            NSLog("DELETE: \(info.mirrorURL)")
+            self.removePickInfo(for: info.origin, updateUI: true)
+        }
     }
 }
