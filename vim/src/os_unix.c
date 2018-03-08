@@ -55,7 +55,10 @@ static int selinux_enabled = -1;
 #endif
 
 # if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+#include <dlfcn.h>  // for dlopen()/dlsym()/dlclose()
 #include "ios_error.h"
+#undef exit
+#undef _exit
 #define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS.
 #endif
 
@@ -4031,6 +4034,7 @@ wait4pid(child, status)
     return wait_pid;
 }
 
+
     int
 mch_call_shell(cmd, options)
     char_u	*cmd;
@@ -4194,6 +4198,7 @@ mch_call_shell(cmd, options)
     static char	envbuf_Columns[20];
 # endif
 
+    
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
     newcmd = vim_strsave(p_sh);
@@ -5077,7 +5082,7 @@ finished:
 	     */
 	    if (wait_pid != pid)
 		wait_pid = wait4pid(pid, &status);
-
+        
 # ifdef FEAT_GUI
 	    /* Close slave side of pty.  Only do this after the child has
 	     * exited, otherwise the child may hang when it tries to write on
@@ -5086,6 +5091,7 @@ finished:
 		close(pty_slave_fd);
 # endif
 
+#ifndef TARGET_OS_IPHONE
 	    /* Make sure the child that writes to the external program is
 	     * dead. */
 	    if (wpid > 0)
@@ -5093,6 +5099,7 @@ finished:
 		kill(wpid, SIGKILL);
 		wait4pid(wpid, NULL);
 	    }
+#endif
 
 	    /*
 	     * Set to raw mode right now, otherwise a CTRL-C after
