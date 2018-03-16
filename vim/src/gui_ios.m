@@ -254,6 +254,7 @@ static void ex_ideletefont(exarg_T *);
 static void ex_idocuments(exarg_T *);
 static void ex_ishare(exarg_T *);
 static void ex_ictags(exarg_T *);
+static void ex_iopenurl(exarg_T *);
 //static void ex_ifontsize(exarg_T * eap);
 
 /*
@@ -266,6 +267,9 @@ void ex_ios_cmds(exarg_T * eap) {
             break;
         case CMD_ideletefont:
             ex_ideletefont(eap);
+            break;
+        case CMD_iopenurl:
+            ex_iopenurl(eap);
             break;
         case CMD_ishare:
             ex_ishare(eap);
@@ -305,6 +309,37 @@ static void ex_ideletefont(exarg_T * eap) {
     } else {
         [[VimFontsManager shared] deleteFontWith:arg];
     }
+}
+
+/*
+ * get the string value of an expression *expr*
+ */
+NSString * string_value_of_expr(const char * expr) {
+    typval_T * ret = eval_expr((char_u *)expr, NULL);
+    if (ret == NULL) {
+        return @"";
+    }
+    switch (ret->v_type) {
+        case VAR_NUMBER:
+            return [NSString stringWithFormat:@"%d", ret->vval.v_number];
+            break;
+        case VAR_STRING:
+            return ret->vval.v_string != NULL ?
+                TONSSTRING(ret->vval.v_string) :
+                @"";
+            break;
+        default:
+            return @"";
+            break;
+    }
+}
+
+/*
+ * Handling function for command *iopenurl*
+ */
+static void ex_iopenurl(exarg_T * eap) {
+    NSString * arg = TONSSTRING(eap->arg);
+    [[[URLOpener alloc] initWithPath:arg] open];
 }
 
 /*

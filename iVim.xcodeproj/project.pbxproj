@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DE0D2EC8205A1797004C29F8 /* ArgumentToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */; };
+		DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */; };
+		DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3B043B205B7087009F81E8 /* URLOpener.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
 		DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D51F6E13CD00373B92 /* ctags_ios.m */; };
@@ -188,6 +191,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArgumentToken.swift; sourceTree = "<group>"; };
+		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLRealizer.swift; sourceTree = "<group>"; };
+		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLOpener.swift; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
 		DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UIDocumentPickerDelegate.swift"; sourceTree = "<group>"; };
@@ -3006,6 +3012,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DE0D2EC6205A15F4004C29F8 /* Open URL */ = {
+			isa = PBXGroup;
+			children = (
+				DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */,
+				DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */,
+				DE3B043B205B7087009F81E8 /* URLOpener.swift */,
+			);
+			name = "Open URL";
+			sourceTree = "<group>";
+		};
 		DE44D40A1F2095C2007AFD63 /* Multistage Input */ = {
 			isa = PBXGroup;
 			children = (
@@ -6591,6 +6607,7 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DE0D2EC6205A15F4004C29F8 /* Open URL */,
 				DE7234511F739BD20033F3E8 /* URL Handler */,
 				DE7364831F53A5D4006ACE4C /* External Keyboard Support */,
 				DEE31E921F4BF54E000CA9E8 /* Launch Arguments */,
@@ -7027,6 +7044,7 @@
 				DE5C51AB1F6E16A000373B92 /* perl.c in Sources */,
 				DE7BA7C11F21EED100705E67 /* buffer.c in Sources */,
 				DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */,
+				DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */,
 				DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */,
 				DE5C519B1F6E160700373B92 /* dosbatch.c in Sources */,
 				DE5C51B11F6E16CB00373B92 /* cobol.c in Sources */,
@@ -7075,12 +7093,14 @@
 				DE7BA7AF1F21E72800705E67 /* ex_docmd.c in Sources */,
 				DE5C51A71F6E167A00373B92 /* python.c in Sources */,
 				DE7BA7961F21A75400705E67 /* GlobalConfiguration.swift in Sources */,
+				DE0D2EC8205A1797004C29F8 /* ArgumentToken.swift in Sources */,
 				DE7BA7BC1F21EB9F00705E67 /* option.c in Sources */,
 				DE7BA7B51F21E8AA00705E67 /* menu.c in Sources */,
 				DE5C51AC1F6E16A500373B92 /* matlab.c in Sources */,
 				DE7BA7C51F21EF5900705E67 /* edit.c in Sources */,
 				DE5C51AD1F6E16AB00373B92 /* ruby.c in Sources */,
 				DE7BA7B81F21EB0400705E67 /* main.c in Sources */,
+				DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */,
 				DE5C51A81F6E168100373B92 /* strlist.c in Sources */,
 				DE7BA7D71F21F28900705E67 /* crypt.c in Sources */,
 				DE5C518F1F6E158400373B92 /* eiffel.c in Sources */,
