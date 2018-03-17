@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2017 Dec 21
+*os_ios.txt*	For Vim version 7.4.	Last change: 2018 Mar 17
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -27,11 +27,12 @@ the newer iOS systems. This project started from it.
 3.  Extended keyboard			|ios-extended-keyboard|
 4.  Multi-stage language support	|ios-multistage-language|
 5.  Dictation				|ios-dictation|
-6.  Share				|ios-share|
-7.  Settings				|ios-settings|
-8.  External keyboard			|ios-external-keyboard|
-9.  Integrated Exuberant Ctags		|ios-exuberant-ctags|
-10. Miscellaneous			|ios-miscellaneous|
+6.  Open URL				|ios-open-url|
+7.  Share				|ios-share|
+8.  Settings				|ios-settings|
+9.  External keyboard			|ios-external-keyboard|
+10. Integrated Exuberant Ctags		|ios-exuberant-ctags|
+11. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -230,7 +231,41 @@ And keyboard layout settings may not be respected during dictation.
 
 
 ==============================================================================
-6. Share				*ios-share*
+6. Open URL				*ios-open-url*
+
+Another way for sharing info among apps in iOS is via URL scheme. After one
+app registers a custom URL scheme, other apps can wrap info into an URL with
+this scheme and open it. Then the system will invoke the supporting app and
+let it handle this URL. With it, the other apps are able to send info to and 
+therefore control the supporting app.
+
+iVim adds support to open URLs to communicate with other apps in this way.
+
+Example ~
+
+URL scheme "https://" is handled by the browser Safari in iOS. When you open
+an URL "https://www.example.com/search?q={expand('<cword>')%[Q}", the browser
+will be launched, open the site example.com, and do some search with the word
+under the cursor as the query. All this workflow can be done with just one 
+opening of this URL.
+
+Tool ~
+
+In iVim, you open URLs through the command |:iopenurl|.
+
+Include information ~
+
+URL scheme would not have too much use if it just contained static text. iVim 
+introduces "variable token" as a way for you to include the needed info into 
+the URL. By utilizing vim's |expression|, you can get realtime info such as
+clipboard contents, current file name or results of functions. In the example 
+above, "{expand('<cword>')%[Q}" is one variable token which will be replaced 
+with the word under the cursor when the URL is opened. Refer to |:iopenurl| 
+for the details on its format and usage.
+
+
+==============================================================================
+7. Share				*ios-share*
 
 Sharing makes iVim's editing power available to more apps. 
 
@@ -286,7 +321,7 @@ Type ":help :ishare" or ":help :idocuments" for more detailed information.
 
 
 ==============================================================================
-7. Settings						*ios-settings*
+8. Settings						*ios-settings*
 
 Because there are scenarios where vim's options cannot cover, iVim also
 provides some setting options in the system's Settings app.
@@ -328,7 +363,7 @@ part of |ios-dictation| for details.
 
 
 ==============================================================================
-8. External keyboard				*ios-external-keyboard*
+9. External keyboard				*ios-external-keyboard*
 
 iVim supports the external hardware keyboard. You can connect the keyboard to
 your iOS device and start typing in iVim.
@@ -361,7 +396,7 @@ h. there are some caveats worth noting when it comes to |ios-dictation|.
 
 
 ==============================================================================
-9. Integrated Exuberant Ctags			*ios-exuberant-ctags*
+10. Integrated Exuberant Ctags			*ios-exuberant-ctags*
 
 Exuberant Ctags |Exuberant_ctags| is a great tool to generate tags for
 programming languages. Its resulting tags are directly supported by vim. 
@@ -378,7 +413,7 @@ Type ":help :ictags" for details about the command.
 
 
 ==============================================================================
-10. Miscellaneous			*ios-miscellaneous* *ios-misc*
+11. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 

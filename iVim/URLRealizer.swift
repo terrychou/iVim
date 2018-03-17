@@ -42,7 +42,7 @@ extension URLRealizer {
                     modes.push((.token, pos))
                     token = ""
                 case closeTokenChar:
-                    throw URLRealizingError.syntax("substitution open character { expected", pos)
+                    throw URLRealizingError.syntax("token open character { expected", pos)
                 case backslash:
                     modes.push((.backslash, pos))
                 default:
@@ -77,7 +77,7 @@ extension URLRealizer {
             let m = modes.top()!
             switch m.0 {
             case .token:
-                throw URLRealizingError.syntax("substitution close character expected", m.1)
+                throw URLRealizingError.syntax("token close character } expected", m.1)
             case .backslash:
                 throw URLRealizingError.syntax("unfinished character escaping", m.1)
             case .normal:

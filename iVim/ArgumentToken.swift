@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum ArgumentTokenEscape: String {
+enum ArgumentTokenEncode: String {
     case user = "U"
     case password = "PW"
     case host = "H"
@@ -32,27 +32,27 @@ enum ArgumentTokenEscape: String {
         }
     }
     
-    func escape(_ text: String) -> String {
+    func encode(_ text: String) -> String {
         return text.addingPercentEncoding(withAllowedCharacters: self.allowed) ?? text
     }
 }
 
-private let escapeSeparator = "^["
+private let encodeIndicator = "%["
 
 struct ArgumentToken {
     let text: String
-    let escape: ArgumentTokenEscape
+    let encode: ArgumentTokenEncode
     
     init(token: String) {
-        let components = token.components(separatedBy: escapeSeparator)
+        let components = token.components(separatedBy: encodeIndicator)
         let e = components.count > 1 ?
-            ArgumentTokenEscape(name: components.last!.trimmingCharacters(in: .whitespaces)) : nil
-        self.escape = e ?? .query
-        self.text = e != nil ? components.dropLast().joined(separator: escapeSeparator) : token
+            ArgumentTokenEncode(name: components.last!.trimmingCharacters(in: .whitespaces)) : nil
+        self.encode = e ?? .query
+        self.text = e != nil ? components.dropLast().joined(separator: encodeIndicator) : token
     }
     
     var value: String {
         let evaluated = string_value_of_expr(self.text)!
-        return self.escape.escape(evaluated)
+        return self.encode.encode(evaluated)
     }
 }

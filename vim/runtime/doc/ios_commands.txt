@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2017 Oct 03
+*ios_commands.txt*	For Vim version 7.4	Last change: 2018 Mar 17
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -10,6 +10,7 @@ its features.
 1. Font Management		|font-management-icommands|
 2. Share			|share-icommands|
 3. Exuberant Ctags		|ctags-icommand|
+4. Open URL			|open-url-icommand|
 
 ==============================================================================
 1. Font Management				*font-management-icommands*
@@ -136,5 +137,97 @@ iVim offers one command to use the integrated Exuberant Ctags
 		easily by |tags| navigation commands.
 
 		Note: big projects may take some time to finish.
+
+
+==============================================================================
+4. Open URL						*open-url-icommand*
+
+iVim adds one command to support the URL scheme opening |ios-open-url|.
+
+:io[penurl] {url}					*:io* *:iopenurl*
+		Open the {url} to invoke the iOS URL scheme workflow.
+
+		Example: >
+			:io https://www.example.com/search?q={@*%[Q}
+<
+		It will launch Safari and open the site "www.example.com" and
+		do a search with the contents in the clipboard as the query.
+		
+		Note that it opens only one URL at a time.
+
+Variable token ~
+
+You need to use variable tokens to include useful info into an URL. The format
+for a variable token is "{expr%[encode}". 
+
+a. the "{" and "}" are the opening and closing delimiter respectively. 
+
+As a result, they need to be backslash-escaped if you want to use them 
+literally in the URL. Note that nested token is not supported.
+
+b. the "expr" is a vim |expression| which will be replaced with its value when 
+the whole URL is opened.
+
+This expression will be evaluated by vim and errors will be feedback if it is
+invalid. Note a) only expressions with value type "string" and "number" are
+supported. b) tokens are evaluated one by one from left to right.
+
+c. the "%[" is the indicator for a following URL encoding type.
+
+d. the "encode" is the URL encoding type which is explained in details below.
+
+Backslash escape ~
+
+Sometimes you need to put certain characters literally into an URL. You can 
+put a backslash character before each to achieve this. For example, "\{expr\}"
+will be treated literally rather than a variable token.
+
+Because of its special meaning, a literal backslash always needs to be 
+backslash escaped, e.g. "\\".
+
+URL encoding ~
+
+Certain characters in an URL need to be percent encoded for a successful
+opening. Moreover, in different parts of an URL, the characters need encoding
+differ. Therefore, iVim provides an URL encoding type to help with this.
+
+A typical URL skeleton is 
+>
+	scheme://user:password@host:port/path?query#fragment
+<
+The following encoding types are available:
+
+	U:	indicates encoding for "user" part
+	PW:	"password" part
+	H:	"host" part
+	PT:	"path" part
+	Q:	"query" part, it is the default
+	F:	"fragment" part
+
+For example, if you will include a variable token into the "host" part, you
+need to indicate it as "{expr%[H}". Then iVim will encode its value for the
+specific part automatically. Omitting the encoding part, e.g. "{expr}", will 
+encode it for the default "query" part. Note that they are case insensitive.
+
+Debug errors ~
+
+iVim provides some debug errors if you try to open an URL with problems.
+
+"token open character { expected":
+	a closing delimiter is encountered before an opening one.
+"token close character } expected": 
+	one opening delimiter is expecting a closing one but none given.
+"nested token not allowed":
+	there is a variable token inside another one.
+"unfinished character escaping":
+	there is a backslash at the end of the URL.
+"invalid path: ...":
+       	the given string is invalid for an URL.
+"failed to open URL: ...":
+       	the system failed to open the given URL.
+	
+If the position of the problem can be located in the URL, it will be 
+highlighted as ">...<".
+
 
  vim:tw=78:ts=8:ft=help:norl:
