@@ -11,7 +11,7 @@
 		227A421720559E14002A8C57 /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421620559E13002A8C57 /* lua_ios.framework */; };
 		227A421820559E1B002A8C57 /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421620559E13002A8C57 /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		227A421A20559E62002A8C57 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421920559E62002A8C57 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		22C06C70204F28910008D0CE /* if_python.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC301F209A93007AFD63 /* if_python.c */; settings = {COMPILER_FLAGS = "-I ../python_ios/Python-2.7.13/Include"; }; };
+		22C06C70204F28910008D0CE /* if_python.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC301F209A93007AFD63 /* if_python.c */; settings = {COMPILER_FLAGS = "-I ../python_ios/Python-2.7.13/Include -I ../python_ios/"; }; };
 		22CA5930204EA28C00AB40D1 /* commandDictionary.plist in Resources */ = {isa = PBXBuildFile; fileRef = 22CA592E204EA28C00AB40D1 /* commandDictionary.plist */; };
 		22CA5931204EA28C00AB40D1 /* extraCommandsDictionary.plist in Resources */ = {isa = PBXBuildFile; fileRef = 22CA592F204EA28C00AB40D1 /* extraCommandsDictionary.plist */; };
 		22CB85FD20559FD4003D4614 /* libssh2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CB85FC20559FD4003D4614 /* libssh2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
