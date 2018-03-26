@@ -947,7 +947,7 @@ When expr8 is a |Funcref| type variable, invoke the function it refers to.
 							*expr9*
 number
 ------
-number			number constant			*expr-number*
+number			number constant			*expr-number* 
 						*hex-number* *octal-number*
 
 Decimal, Hexadecimal (starting with 0x or 0X), or Octal (starting with 0).
@@ -1463,7 +1463,7 @@ v:foldstart	Used for 'foldtext': first line of closed fold.
 		Read-only in the |sandbox|. |fold-foldtext|
 
 					*v:hlsearch* *hlsearch-variable*
-v:hlsearch	Variable that indicates whether search highlighting is on.
+v:hlsearch	Variable that indicates whether search highlighting is on. 
 		Setting it makes sense only if 'hlsearch' is enabled which
 		requires |+extra_search|. Setting this variable to zero acts
 		the like |:nohlsearch| command, setting it to one acts like >
@@ -1607,7 +1607,7 @@ v:scrollstart	String describing the script or function that caused the
 v:servername	The resulting registered |x11-clientserver| name if any.
 		Read-only.
 
-
+		
 v:searchforward			*v:searchforward* *searchforward-variable*
 		Search direction:  1 after a forward search, 0 after a
 		backward search.  It is reset to forward when directly setting
@@ -2575,7 +2575,7 @@ cosh({expr})						*cosh()*
 <			-1.127626
 		{only available when compiled with the |+float| feature}
 
-
+		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		Return the number of times an item with value {expr} appears
 		in |List| or |Dictionary| {comp}.
@@ -3110,7 +3110,7 @@ floor({expr})							*floor()*
 			echo floor(4.0)
 <			4.0
 		{only available when compiled with the |+float| feature}
-
+		
 
 fmod({expr1}, {expr2})					*fmod()*
 		Return the remainder of {expr1} / {expr2}, even if the
@@ -3616,7 +3616,7 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		getreg('=', 1) returns the expression itself, so that it can
 		be restored with |setreg()|.  For other registers the extra
 		argument is ignored, thus you can always give it.
-		If {list} is present and non-zero result type is changed to
+		If {list} is present and non-zero result type is changed to 
 		|List|. Each list item is one text line. Use it if you care
 		about zero bytes possibly present inside register: without
 		third argument both NLs and zero bytes are represented as NLs
@@ -4245,16 +4245,16 @@ log10({expr})						*log10()*
 			:echo log10(0.01)
 <			-2.0
 		{only available when compiled with the |+float| feature}
-
+		
 luaeval({expr}[, {expr}])					*luaeval()*
-		Evaluate Lua expression {expr} and return its result converted
-		to Vim data structures. Second {expr} may hold additional
+		Evaluate Lua expression {expr} and return its result converted 
+		to Vim data structures. Second {expr} may hold additional 
 		argument accessible as _A inside first {expr}.
 		Strings are returned as they are.
 		Boolean objects are converted to numbers.
-		Numbers are converted to |Float| values if vim was compiled
+		Numbers are converted to |Float| values if vim was compiled 
 		with |+float| and to numbers otherwise.
-		Dictionaries and lists obtained by vim.eval() are returned
+		Dictionaries and lists obtained by vim.eval() are returned 
 		as-is.
 		Other objects are returned as zero without any errors.
 		See |lua-luaeval| for more details.
@@ -4290,7 +4290,7 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		{name} in mode {mode}.  The returned String has special
 		characters translated like in the output of the ":map" command
 		listing.
-
+		
 		When there is no mapping for {name}, an empty String is
 		returned.
 
@@ -4499,7 +4499,7 @@ matchaddpos({group}, {pos}[, {priority}[, {id}[, {dict}]]])		*matchaddpos()*
 		  be highlighted.
 		- A list with three numbers, e.g., [23, 11, 3]. As above, but
 		  the third number gives the length of the highlight in bytes.
-
+		
 		The maximum number of positions is 8.
 
 		Example: >
@@ -4699,7 +4699,7 @@ pow({x}, {y})						*pow()*
 			:echo pow(32, 0.20)
 <			2.0
 		{only available when compiled with the |+float| feature}
-
+		
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
 		that is not blank.  Example: >
@@ -4840,7 +4840,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 			feature works just like 's'.
 
 							*printf-f* *E807*
-		f	The Float argument is converted into a string of the
+		f	The Float argument is converted into a string of the 
 			form 123.456.  The precision specifies the number of
 			digits after the decimal point.  When the precision is
 			zero the decimal point is omitted.  When the precision
@@ -4894,11 +4894,11 @@ pumvisible()						*pumvisible()*
 py3eval({expr})						*py3eval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
-		Numbers and strings are returned as they are (strings are
-		copied though, Unicode strings are additionally converted to
+		Numbers and strings are returned as they are (strings are 
+		copied though, Unicode strings are additionally converted to 
 		'encoding').
 		Lists are represented as Vim |List| type.
-		Dictionaries are represented as Vim |Dictionary| type with
+		Dictionaries are represented as Vim |Dictionary| type with 
 		keys converted to strings.
 		{only available when compiled with the |+python3| feature}
 
@@ -4906,10 +4906,10 @@ py3eval({expr})						*py3eval()*
 pyeval({expr})						*pyeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
-		Numbers and strings are returned as they are (strings are
+		Numbers and strings are returned as they are (strings are 
 		copied though).
 		Lists are represented as Vim |List| type.
-		Dictionaries are represented as Vim |Dictionary| type,
+		Dictionaries are represented as Vim |Dictionary| type, 
 		non-string keys result in error.
 		{only available when compiled with the |+python| feature}
 
@@ -5582,7 +5582,7 @@ setqflist({list} [, {action}])				*setqflist()*
 							*setreg()*
 setreg({regname}, {value} [,{options}])
 		Set the register {regname} to {value}.
-		{value} may be any value returned by |getreg()|, including
+		{value} may be any value returned by |getreg()|, including 
 		a |List|.
 		If {options} contains "a" or {regname} is upper case,
 		then the value is appended.
@@ -5596,14 +5596,14 @@ setreg({regname}, {value} [,{options}])
 		in the longest line (counting a <Tab> as 1 character).
 
 		If {options} contains no register settings, then the default
-		is to use character mode unless {value} ends in a <NL> for
-		string {value} and linewise mode for list {value}. Blockwise
+		is to use character mode unless {value} ends in a <NL> for 
+		string {value} and linewise mode for list {value}. Blockwise 
 		mode is never selected automatically.
 		Returns zero for success, non-zero for failure.
 
 							*E883*
-		Note: you may not use |List| containing more than one item to
-		      set search and expression registers. Lists containing no
+		Note: you may not use |List| containing more than one item to 
+		      set search and expression registers. Lists containing no 
 		      items act like empty strings.
 
 		Examples: >
@@ -5612,9 +5612,9 @@ setreg({regname}, {value} [,{options}])
 			:call setreg('a', "1\n2\n3", 'b5')
 
 <		This example shows using the functions to save and restore a
-		register (note: you may not reliably restore register value
-		without using the third argument to |getreg()| as without it
-		newlines are represented as newlines AND Nul bytes are
+		register (note: you may not reliably restore register value 
+		without using the third argument to |getreg()| as without it 
+		newlines are represented as newlines AND Nul bytes are 
 		represented as newlines as well, see |NL-used-for-Nul|). >
 			:let var_a = getreg('a', 1, 1)
 			:let var_amode = getregtype('a')
@@ -5727,7 +5727,7 @@ sin({expr})						*sin()*
 			:echo sin(-4.01)
 <			0.763301
 		{only available when compiled with the |+float| feature}
-
+		
 
 sinh({expr})						*sinh()*
 		Return the hyperbolic sine of {expr} as a |Float| in the range
@@ -5743,7 +5743,7 @@ sinh({expr})						*sinh()*
 
 sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 		Sort the items in {list} in-place.  Returns {list}.
-
+		
 		If you want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 
@@ -5754,7 +5754,7 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 
 		When {func} is given and it is '1' or 'i' then case is
 		ignored.
-
+		
 		When {func} is given and it is 'n' then all items will be
 		sorted numerical (Implementation detail: This uses the
 		strtod() function to parse numbers, Strings, Lists, Dicts and
@@ -5882,7 +5882,7 @@ sqrt({expr})						*sqrt()*
 <			nan
 		"nan" may be different, it depends on system libraries.
 		{only available when compiled with the |+float| feature}
-
+		
 
 str2float( {expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same
@@ -5918,7 +5918,7 @@ strchars({expr} [, {skipcc}])					*strchars()*
 		When {skipcc} set to 1, Composing characters are ignored.
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
 
-
+		
 		{skipcc} is only available after 7.4.755.  For backward
 		compatibility, you can define a wrapper function: >
 		    if has("patch-7.4.755")
@@ -6068,8 +6068,8 @@ submatch({nr}[, {list}])				*submatch()*
 		multi-line match or a NUL character in the text.
 		Also see |sub-replace-expression|.
 
-		If {list} is present and non-zero then submatch() returns
-		a list of strings, similar to |getline()| with two arguments.
+		If {list} is present and non-zero then submatch() returns 
+		a list of strings, similar to |getline()| with two arguments. 
 		NL characters in the text represent NUL characters in the
 		text.
 		Only returns more than one item for |:substitute|, inside
@@ -6086,7 +6086,7 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		the first match of {pat} is replaced with {sub}.
 		When {flags} is "g", all matches of {pat} in {expr} are
 		replaced.  Otherwise {flags} should be "".
-
+		
 		This works like the ":substitute" command (without any flags).
 		But the matching with {pat} is always done like the 'magic'
 		option is set and 'cpoptions' is empty (to make scripts
@@ -6214,14 +6214,14 @@ system({expr} [, {input}])				*system()* *E677*
 		Get the output of the shell command {expr} as a string.  See
 		|systemlist()| to get the output as a List.
 
-		When {input} is given and is a string this string is written
-		to a file and passed as stdin to the command.  The string is
-		written as-is, you need to take care of using the correct line
+		When {input} is given and is a string this string is written 
+		to a file and passed as stdin to the command.  The string is 
+		written as-is, you need to take care of using the correct line 
 		separators yourself.
 		If {input} is given and is a |List| it is written to the file
 		in a way |writefile()| does with {binary} set to "b" (i.e.
 		with a newline between each list item with newlines inside
-		list items converted to NULs).
+		list items converted to NULs).  
 		Pipes are not used.
 
 		When prepended by |:silent| the shell will not be set to
@@ -6230,10 +6230,10 @@ system({expr} [, {input}])				*system()* *E677*
 		up on the screen which require |CTRL-L| to remove. >
 			:silent let f = system('ls *.vim')
 <
-		Note: Use |shellescape()| or |::S| with |expand()| or
-		|fnamemodify()| to escape special characters in a command
-		argument.  Newlines in {expr} may cause the command to fail.
-		The characters in 'shellquote' and 'shellxquote' may also
+		Note: Use |shellescape()| or |::S| with |expand()| or 
+		|fnamemodify()| to escape special characters in a command 
+		argument.  Newlines in {expr} may cause the command to fail.  
+		The characters in 'shellquote' and 'shellxquote' may also 
 		cause trouble.
 		This is not to be used for interactive commands.
 
@@ -6267,12 +6267,12 @@ system({expr} [, {input}])				*system()* *E677*
 
 
 systemlist({expr} [, {input}])				*systemlist()*
-		Same as |system()|, but returns a |List| with lines (parts of
-		output separated by NL) with NULs transformed into NLs. Output
-		is the same as |readfile()| will output with {binary} argument
+		Same as |system()|, but returns a |List| with lines (parts of 
+		output separated by NL) with NULs transformed into NLs. Output 
+		is the same as |readfile()| will output with {binary} argument 
 		set to "b".
 
-		Returns an empty string on error, so be careful not to run
+		Returns an empty string on error, so be careful not to run 
 		into |E706|.
 
 
@@ -6425,7 +6425,7 @@ trunc({expr})							*trunc()*
 			echo trunc(4.0)
 <			4.0
 		{only available when compiled with the |+float| feature}
-
+		
 							*type()*
 type({expr})	The result is a Number, depending on the type of {expr}:
 			Number:	    0
@@ -6468,7 +6468,7 @@ undotree()						*undotree()*
 		  "save_last"	Number of the last file write.  Zero when no
 				write yet.
 		  "save_cur"	Number of the current position in the undo
-				tree.
+				tree.  
 		  "synced"	Non-zero when the last undo block was synced.
 				This happens when waiting from input from the
 				user.  See |undo-blocks|.
@@ -8941,7 +8941,7 @@ code can be used: >
     redir => scriptnames_output
     silent scriptnames
     redir END
-
+    
     " Split the output into lines and parse each line.	Add an entry to the
     " "scripts" dictionary.
     let scripts = {}
