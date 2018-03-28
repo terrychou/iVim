@@ -12,6 +12,8 @@ let gPIM = PickInfoManager.shared
 
 final class PickInfoManager: NSObject {
     @objc static let shared = PickInfoManager()
+    static let serialQ = DispatchQueue(label: "com.terrychou.ivim.pickinfomanager",
+                                       qos: .background)
     private override init() {
         super.init()
         self.setup()
@@ -53,6 +55,8 @@ extension PickInfoManager {
     }
 }
 
+private let mirrorDirectoryPath = FileManager.default.mirrorDirectoryURL.path
+
 extension PickInfoManager {
     func addPickInfo(for url: URL, task: MirrorReadyTask?) {
         if let existing = self.table[url] {
@@ -67,21 +71,62 @@ extension PickInfoManager {
     }
     
     @objc func write(for filename: String) {
-        guard let ticket = self.ticket(for: filename),
-            let info = self.localTable[ticket] else { return }
-        info.write(for: filename)
+        PickInfoManager.serialQ.async {
+            self.info(for: filename)?.write(for: filename)
+        }
     }
     
-    private func ticket(for filename: String) -> String? {
-        let mp = FileManager.default.mirrorDirectoryURL.path
-        guard filename.hasPrefix(mp) else { return nil }
+    @objc func remove(for filename: String) {
+        PickInfoManager.serialQ.async {
+            self.info(for: filename)?.removeItem(for: filename)
+        }
+    }
+    
+    @objc func rename(from old: String, to new: String) {
+        PickInfoManager.serialQ.async {
+            let oldTicket = self.ticket(for: old)
+            let newTicket = self.ticket(for: new)
+            if oldTicket == newTicket { //within the same mirror or none
+                guard let ot = oldTicket else { return }
+                self.localTable[ot]?.rename(from: old, to: new)
+            } else {
+                if let nt = newTicket { //move into new mirror
+                    self.localTable[nt]?.addItem(for: new)
+                }
+                if let ot = oldTicket { //move out of old mirror
+                    self.localTable[ot]?.removeItem(for: old)
+                }
+            }
+        }
+    }
+    
+    @objc func mkdir(for name: String) {
+        PickInfoManager.serialQ.async {
+            self.info(for: name)?.addItem(for: name)
+        }
+    }
+    
+    @objc func rmdir(for name: String) {
+        PickInfoManager.serialQ.async {
+            self.info(for: name)?.removeItem(for: name)
+        }
+    }
+    
+    private func ticket(for name: String) -> String? {
+        guard name.hasPrefix(mirrorDirectoryPath) else { return nil }
         var result = ""
-        for c in filename.dropFirst(mp.count + 1) {
+        for c in name.dropFirst(mirrorDirectoryPath.count + 1) {
             if c == "/" { break }
             result.append(c)
         }
         
         return result
+    }
+    
+    private func info(for name: String) -> PickInfo? {
+        guard let ticket = self.ticket(for: name) else { return nil }
+        
+        return self.localTable[ticket]
     }
     
     func removePickInfo(for url: URL, updateUI: Bool = false) {
