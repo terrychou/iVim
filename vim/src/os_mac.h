@@ -295,6 +295,7 @@
 #  define RETSIGTYPE void
 #  define SIGRETURN  return
 /*# define USE_SYSTEM */  /* Output ship do debugger :(, but ot compile */
+// #define USE_SYSTEM  // for iOS, less code changes than through fork()/exec()
 #  define HAVE_SYS_WAIT_H 1 /* Attempt */
 #  define HAVE_TERMIOS_H 1
 #  define SYS_SELECT_WITH_SYS_TIME 1

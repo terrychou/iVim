@@ -54,6 +54,15 @@ static int selinux_enabled = -1;
 # endif
 #endif
 
+# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+#include <dlfcn.h>  // for dlopen()/dlsym()/dlclose()
+#include "ios_error.h"
+#undef exit
+#undef _exit
+#define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS.
+#endif
+
+
 /*
  * Use this prototype for select, some include files have a wrong prototype
  */
@@ -3095,7 +3104,8 @@ executable_file(name)
     }
     return vms_executable;
 #else
-    return S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0;
+    // access always returns -1 on iOS. 
+    return S_ISREG(st.st_mode) && S_ISXXX(st.st_mode) /* mch_access((char *)name, X_OK) == 0*/;
 #endif
 }
 
@@ -3178,6 +3188,13 @@ mch_can_exe(name, path, use_path)
     }
 
     vim_free(buf);
+    // iOS: we've walked through the entire path, did not find an executable with that name
+    // is that one of the "internal commands" from ios_system?
+    if (!retval) {
+        retval = ios_executable(name); 
+        if (retval && (path != NULL)) *path = vim_strsave(name);
+    }
+    
     return retval;
 }
 
@@ -4017,6 +4034,7 @@ wait4pid(child, status)
     return wait_pid;
 }
 
+
     int
 mch_call_shell(cmd, options)
     char_u	*cmd;
@@ -4077,8 +4095,11 @@ mch_call_shell(cmd, options)
 	msg_putchar('\n');
     }
 # else /* not __EMX__ */
-    if (cmd == NULL)
-	x = system((char *)p_sh);
+    if (cmd == NULL) {
+        // NH: can't do anything here
+	   // x = system((char *)p_sh);
+        MSG_PUTS(_("\nCannot execute shell in iOS"));
+    }
     else
     {
 #  ifdef VMS
@@ -4109,7 +4130,9 @@ mch_call_shell(cmd, options)
 		    extra_shell_arg == NULL ? "" : (char *)extra_shell_arg,
 		    (char *)p_shcf,
 		    (char *)cmd);
-	    x = system((char *)newcmd);
+        // NH: iOS, just execute the command (without "/bin/sh -c" in front of it)
+        x = ios_system(cmd);
+	    // x = system((char *)newcmd);
 	    vim_free(newcmd);
 	}
 #  endif
@@ -4174,6 +4197,8 @@ mch_call_shell(cmd, options)
     static char	envbuf_Rows[20];
     static char	envbuf_Columns[20];
 # endif
+
+    
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
     newcmd = vim_strsave(p_sh);
@@ -4325,7 +4350,8 @@ mch_call_shell(cmd, options)
 	beos_cleanup_read_thread();
 # endif
 
-	if ((pid = fork()) == -1)	/* maybe we should use vfork() */
+        // iOS: fake fork effects
+    if ((pid = 1 /* fork() */ ) == -1)	/* maybe we should use vfork() */
 	{
 	    MSG_PUTS(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
@@ -4350,7 +4376,7 @@ mch_call_shell(cmd, options)
 		}
 	    }
 	}
-	else if (pid == 0)	/* child */
+	else if (pid == 1)	/* child */
 	{
 	    reset_signals();		/* handle signals normally */
 
@@ -4476,25 +4502,38 @@ mch_call_shell(cmd, options)
 		else
 # endif
 		{
+# ifndef TARGET_OS_IPHONE
 		    /* set up stdin for the child */
 		    close(fd_toshell[1]);
 		    close(0);
 		    ignored = dup(fd_toshell[0]);
 		    close(fd_toshell[0]);
-
+# else
+            // iOS:
+            ios_dup2(fd_toshell[0], 0);
+# endif
+# ifndef TARGET_OS_IPHONE
 		    /* set up stdout for the child */
 		    close(fd_fromshell[0]);
 		    close(1);
 		    ignored = dup(fd_fromshell[1]);
 		    close(fd_fromshell[1]);
+# else
+            ios_dup2(fd_fromshell[1], 1);
+# endif
+
 
 # ifdef FEAT_GUI
 		    if (gui.in_use)
 		    {
+#  ifndef TARGET_OS_IPHONE
 			/* set up stderr for the child */
 			close(2);
 			ignored = dup(1);
+#  else
+            ios_dup2(fd_fromshell[1], 2);
 		    }
+#  endif
 # endif
 		}
 	    }
@@ -4506,10 +4545,13 @@ mch_call_shell(cmd, options)
 	     * Call _exit() instead of exit() to avoid closing the connection
 	     * to the X server (esp. with GTK, which uses atexit()).
 	     */
-	    execvp(argv[0], argv);
-	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
+        // iOS: this starts the actual command (without "sh -c" in front):
+	    retval = ios_execv(argv[argc-1], argv+(argc-1)); // was execvp(argv[0], argv)
+        // iOS: we're not supposed to come back from exec, except on iOS we do
+	    // _exit(EXEC_FAILED);	    /* exec failed, return failure code */
 	}
-	else			/* parent */
+        // iOS: no fork, so execute child, then parent:
+	// else			/* parent */
 	{
 	    /*
 	     * While child is running, ignore terminating signals.
@@ -4557,10 +4599,13 @@ mch_call_shell(cmd, options)
 		else
 # endif
 		{
+# ifndef TARGET_OS_IPHONE
 		    close(fd_toshell[0]);
 		    close(fd_fromshell[1]);
+# endif
 		    toshell_fd = fd_toshell[1];
 		    fromshell_fd = fd_fromshell[0];
+            
 		}
 
 		/*
@@ -5037,7 +5082,7 @@ finished:
 	     */
 	    if (wait_pid != pid)
 		wait_pid = wait4pid(pid, &status);
-
+        
 # ifdef FEAT_GUI
 	    /* Close slave side of pty.  Only do this after the child has
 	     * exited, otherwise the child may hang when it tries to write on
@@ -5046,6 +5091,7 @@ finished:
 		close(pty_slave_fd);
 # endif
 
+#ifndef TARGET_OS_IPHONE
 	    /* Make sure the child that writes to the external program is
 	     * dead. */
 	    if (wpid > 0)
@@ -5053,6 +5099,7 @@ finished:
 		kill(wpid, SIGKILL);
 		wait4pid(wpid, NULL);
 	    }
+#endif
 
 	    /*
 	     * Set to raw mode right now, otherwise a CTRL-C after
@@ -5063,10 +5110,12 @@ finished:
 	    did_settmode = TRUE;
 	    set_signals();
 
+#ifndef TARGET_OS_IPHONE
 	    if (WIFEXITED(status))
 	    {
 		/* LINTED avoid "bitwise operation on signed value" */
 		retval = WEXITSTATUS(status);
+#endif
 		if (retval != 0 && !emsg_silent)
 		{
 		    if (retval == EXEC_FAILED)
@@ -5082,9 +5131,11 @@ finished:
 			msg_putchar('\n');
 		    }
 		}
+#ifndef TARGET_OS_IPHONE
 	    }
 	    else
 		MSG_PUTS(_("\nCommand terminated\n"));
+#endif
 	}
     }
     vim_free(argv);

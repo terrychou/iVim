@@ -1997,7 +1997,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
-# define mch_msg(str)		printf("%s", (str))
+# define mch_msg(str)		fprintf(stdout, "%s", (str))
 #else
 # define USE_MCH_ERRMSG
 #endif

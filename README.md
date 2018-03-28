@@ -32,19 +32,50 @@ Via the document picker, users can also import or edit text files in iCloud Driv
 iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=8)
 
 ### Source code
+To download iVim and the associated frameworks, after you've cloned it, type:
+```bash
+ ./get_frameworks.sh
+``` 
+This will download precompiled frameworks for `ios_system` (including Python and Lua) and TeX, plus the headers required to compile iVim with Python or Lua support. Then, compile: 
+
 1. Open iVim.xcodeproj in Xcode
+2. If you do not need Python or Lua support, edit the `CFLAGS` accordingly. 
 2. In General > Identity of target iVim and iVimShare, change their bundle identities to your own unique ones, and select your Apple ID to sign them. As to the App Group, it requires a paid Apple ID. If yours is, change the App Group identifier for these two targets to your own; if not, just turn them off (the only difference is that you cannot share text to iVim when it is off)
 3. Connect your device via USB to your computer, and select it as the Destination of iVim
 4. Run iVim, Xcode will install it onto your device
 5. A free Apple ID may need to do this every 7 days
 
-## Caveats
+### Modifications
 
-Normally, you can use iVim as vim on other platforms.
-However, there are some points worth mentioning due to iOS system's personality:
-1. there is no shell. You cannot call external shell commands.
-2. iVim is sandboxed. It means you don't have direct access to files of other apps if not via the sharing feature.
-3. iVim don't do autosave. Because the system could terminate apps without notifying at any time, iVim won't save its opened files automatically for the users.
+This is a fork of https://github.com/terrychou/iVim
+The modification is that you *can* call shell commands (a first for iOS). 
+
+There are many limitations, obviously. The main one is that shell commands can only act (read files, create files, etc) inside iVim sandbox. The other is that you need to redirect the output: "!ls" produces nothing, "!ls > result" does. Commands sent by iVim plugins do this naturally, but it also applies to commands you write yourself.
+
+There is only a small number of shell commands available. They come from the [ios_system](https://github.com/holzschu/ios_system) package. If you want to edit commands (add new commands, remove some...) you can download the source and compile it. 
+
+The most useful commands are: 
+- rmdir (not available otherwise), 
+- grep (to operate on log files), 
+- gzip/gunzip, which lets you edit gzipped files directly. 
+- curl, for editing remote files (try `:e sftp://name@host/~/config` )
+
+Additional commands are available from my ports of [python](https://github.com/holzschu/python_ios), [lua](https://github.com/holzschu/lua_ios) and [TeX](https://github.com/holzschu/lib-tex). These only provide the commands. You will need to download the auxiliary files (python modules, TeX formats and style files) yourself, inside iVim file system.
+
+### Environment variables
+
+In iOS, you cannot write in the `~` directory, only in `~/Documents/`, `~/Library/` and `~/tmp`. Most Unix programs assume the configuration files are in `$HOME`. To solve this, iVim redefined `$HOME` to `~/Documents/`. You might still need to redefine environment variables (in your .vimrc) for several programs:
+
+Here's what I have in my .vimrc:
+```vimscript
+let $PATH .= ':'.$HOME.'/../Library/bin:'.$HOME.'/bin'
+let $PYTHONHOME = $HOME.'/../Library/'
+let $SSH_HOME = $HOME
+let $CURL_HOME = $HOME
+les $SSL_CERT_FILE = $HOME.'/cacert.pem'
+let $HGRCPATH = $HOME.'/.hgrc'
+map <D-o> :idocuments <CR>
+```
 
 ## Giants' shoulders
 
