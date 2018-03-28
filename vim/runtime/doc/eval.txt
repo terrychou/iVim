@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2015 Sep 19
+*eval.txt*	For Vim version 7.4.  Last change: 2018 Mar 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6805,6 +6805,7 @@ gui_athena		Compiled with Athena GUI.
 gui_gnome		Compiled with Gnome support (gui_gtk is also defined).
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
+gui_ios			Compiled with IOS GUI.
 gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.
 gui_photon		Compiled with Photon GUI.
@@ -6815,6 +6816,8 @@ hangul_input		Compiled with Hangul input support. |hangul|
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode.
+ios			Compiled with IOS.
+ivim			Compiled with extra iVim features.
 jumplist		Compiled with |jumplist| support.
 keymap			Compiled with 'keymap' support.
 langmap			Compiled with 'langmap' support.
