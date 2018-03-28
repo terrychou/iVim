@@ -16,7 +16,6 @@ extension VimViewController: UIDocumentPickerDelegate {
             picker.allowsMultipleSelection = true
         }
         picker.delegate = self
-        picker.allowsMultipleSelection = true
         self.switchExtendedBarTemporarily(hide: true)
         self.present(picker, animated: true, completion: nil)
     }
