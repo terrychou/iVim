@@ -91,6 +91,8 @@ extension DocumentPresenter {
             guard let u = url else { return }
             let ou = u.appendingPathComponent(self.subitem(for: old))
             let nu = u.appendingPathComponent(self.subitem(for: new))
+            //it is possible that ou == nu, when the root item is renamed
+            //but this operation is not permitted
             do {
                 try FileManager.default.moveItem(at: ou, to: nu)
                 self.updateUpdatedDate()
@@ -108,7 +110,7 @@ extension DocumentPresenter {
             let dst = u.appendingPathComponent(si)
             do {
                 let fm = FileManager.default
-                if dst.isReachable() {
+                if dst.isReachable() { //will overwrite the item if it already exists
                     try fm.removeItem(at: dst)
                 }
                 try fm.copyItem(at: src, to: dst)

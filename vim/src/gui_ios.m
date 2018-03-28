@@ -141,37 +141,50 @@ void mch_post_buffer_write(buf_T * buf) {
 }
 
 /*
+ * get the absolute path of *path*
+ */
+static NSString * absolute_path_of_path(const char * path) {
+    if (path == NULL) { return nil; }
+    NSString * p = TONSSTRING(path);
+    return [p isAbsolutePath] ?
+        p : [[[NSFileManager defaultManager] currentDirectoryPath] stringByAppendingPathComponent:p];
+}
+
+/*
  * to get the file remove event
  */
 void mch_ios_post_file_remove(const char * file) {
-//    NSLog(@"deleted: %@", TONSSTRING(file));
-    if (file == NULL) { return; }
-    [[PickInfoManager shared] removeFor:TONSSTRING(file)];
+    NSString * p = absolute_path_of_path(file);
+    if (p == NULL) { return; }
+    [[PickInfoManager shared] removeFor:p];
 }
 
 /*
  * to get the file rename event
  */
 void mch_ios_post_file_rename(const char * old, const char * new) {
-    if (old == NULL || new == NULL) { return; }
-    [[PickInfoManager shared] renameFrom:TONSSTRING(old)
-                                      to:TONSSTRING(new)];
+    NSString * op = absolute_path_of_path(old);
+    NSString * np = absolute_path_of_path(new);
+    if (op == NULL || np == NULL) { return; }
+    [[PickInfoManager shared] renameFrom:op to:np];
 }
 
 /*
  * to get the make directory event
  */
 void mch_ios_post_dir_make(const char * path) {
-    if (path == NULL) { return; }
-    [[PickInfoManager shared] mkdirFor:TONSSTRING(path)];
+    NSString * p = absolute_path_of_path(path);
+    if (p == NULL) { return; }
+    [[PickInfoManager shared] mkdirFor:p];
 }
 
 /*
  * to get the remove directory event
  */
 void mch_ios_post_dir_remove(const char * path) {
-    if (path == NULL) { return; }
-    [[PickInfoManager shared] rmdirFor:TONSSTRING(path)];
+    NSString * p = absolute_path_of_path(path);
+    if (p == NULL) { return; }
+    [[PickInfoManager shared] rmdirFor:p];
 }
 
 /*
