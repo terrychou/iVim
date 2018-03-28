@@ -141,6 +141,101 @@ void mch_post_buffer_write(buf_T * buf) {
 }
 
 /*
+ * get the absolute path of *path*
+ */
+static NSString * absolute_path_of_path(const char * path) {
+    if (path == NULL) { return nil; }
+    NSString * p = TONSSTRING(path);
+    return [p isAbsolutePath] ?
+        p : [[[NSFileManager defaultManager] currentDirectoryPath] stringByAppendingPathComponent:p];
+}
+
+/*
+ * to get the file remove event
+ */
+void mch_ios_post_file_remove(const char * file) {
+    NSString * p = absolute_path_of_path(file);
+    if (p == NULL) { return; }
+    [[PickInfoManager shared] removeFor:p];
+}
+
+/*
+ * to get the file rename event
+ */
+void mch_ios_post_file_rename(const char * old, const char * new) {
+    NSString * op = absolute_path_of_path(old);
+    NSString * np = absolute_path_of_path(new);
+    if (op == NULL || np == NULL) { return; }
+    [[PickInfoManager shared] renameFrom:op to:np];
+}
+
+/*
+ * to get the make directory event
+ */
+void mch_ios_post_dir_make(const char * path) {
+    NSString * p = absolute_path_of_path(path);
+    if (p == NULL) { return; }
+    [[PickInfoManager shared] mkdirFor:p];
+}
+
+/*
+ * to get the remove directory event
+ */
+void mch_ios_post_dir_remove(const char * path) {
+    NSString * p = absolute_path_of_path(path);
+    if (p == NULL) { return; }
+    [[PickInfoManager shared] rmdirFor:p];
+}
+
+/*
+ * implementation for mch_rename
+ */
+int mch_ios_rename(const char * old, const char * new) {
+    int ret = rename(old, new);
+    if (ret == 0) {
+        mch_ios_post_file_rename(old, new);
+    }
+    
+    return ret;
+}
+
+/*
+ * implementation for mch_remove
+ */
+int mch_ios_remove(const char * file) {
+    int ret = unlink(file);
+    if (ret == 0) {
+        mch_ios_post_file_remove(file);
+    }
+    
+    return ret;
+}
+
+/*
+ * implementation for vim_mkdir
+ */
+int mch_ios_mkdir(const char * path, mode_t mode) {
+    int ret = mkdir(path, mode);
+    if (ret == 0) {
+        mch_ios_post_dir_make(path);
+    }
+    
+    return ret;
+}
+
+/*
+ * implementation for mch_rmdir
+ */
+int mch_ios_rmdir(const char * path) {
+    int ret = rmdir(path);
+    if (ret == 0) {
+        mch_ios_post_dir_remove(path);
+    }
+    
+    return ret;
+}
+
+/*
  * help function to judge whether *buf* belongs to mirror at *path*
  */
 static BOOL buf_belongs_to_path(buf_T * buf, NSString * path) {

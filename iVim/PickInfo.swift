@@ -83,6 +83,18 @@ extension PickInfo {
         self.presenter?.write(for: filename)
     }
     
+    func removeItem(for name: String) {
+        self.presenter?.removeItem(for: name)
+    }
+    
+    func rename(from old: String, to new: String) {
+        self.presenter?.rename(from: old, to: new)
+    }
+    
+    func addItem(for name: String) {
+        self.presenter?.addItem(for: name)
+    }
+    
     func updateMirror() -> Bool {
 //        NSLog("origin date: \(self.origin.contentModifiedDate(secured: true)!)")
 //        NSLog("updated date: \(self.updatedDate)")
