@@ -2325,6 +2325,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :inoremenu	gui.txt	/*:inoremenu*
 :insert	insert.txt	/*:insert*
 :intro	starting.txt	/*:intro*
+:io	ios_commands.txt	/*:io*
+:iopenurl	ios_commands.txt	/*:iopenurl*
 :is	tagsrch.txt	/*:is*
 :isearch	tagsrch.txt	/*:isearch*
 :ish	ios_commands.txt	/*:ish*
@@ -6717,6 +6719,7 @@ ios-font-management	os_ios.txt	/*ios-font-management*
 ios-misc	os_ios.txt	/*ios-misc*
 ios-miscellaneous	os_ios.txt	/*ios-miscellaneous*
 ios-multistage-language	os_ios.txt	/*ios-multistage-language*
+ios-open-url	os_ios.txt	/*ios-open-url*
 ios-settings	os_ios.txt	/*ios-settings*
 ios-share	os_ios.txt	/*ios-share*
 ios_commands.txt	ios_commands.txt	/*ios_commands.txt*
@@ -7402,6 +7405,7 @@ omap-info	map.txt	/*omap-info*
 omni-sql-completion	ft_sql.txt	/*omni-sql-completion*
 online-help	helphelp.txt	/*online-help*
 open-in-ivim	os_ios.txt	/*open-in-ivim*
+open-url-icommand	ios_commands.txt	/*open-url-icommand*
 opening-window	windows.txt	/*opening-window*
 operator	motion.txt	/*operator*
 operator-variable	eval.txt	/*operator-variable*

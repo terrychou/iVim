@@ -673,6 +673,11 @@ EX(CMD_inoremenu,	"inoremenu",	ex_menu,
 EX(CMD_intro,		"intro",	ex_intro,
 			TRLBAR|CMDWIN,
 			ADDR_LINES),
+#ifdef FEAT_GUI_IOS
+EX(CMD_iopenurl,	"iopenurl",	ex_ios_cmds,
+			EXTRA|CMDWIN,
+			ADDR_LINES),
+#endif
 EX(CMD_isearch,		"isearch",	ex_findpat,
 			BANG|RANGE|DFLALL|WHOLEFOLD|EXTRA|CMDWIN,
 			ADDR_LINES),

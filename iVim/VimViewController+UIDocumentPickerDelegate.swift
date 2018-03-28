@@ -13,6 +13,7 @@ extension VimViewController: UIDocumentPickerDelegate {
         let types = ["public.item", "public.folder"]
         let picker = UIDocumentPickerViewController(documentTypes: types, in: mode)
         picker.delegate = self
+        picker.allowsMultipleSelection = true
         self.switchExtendedBarTemporarily(hide: true)
         self.present(picker, animated: true, completion: nil)
     }

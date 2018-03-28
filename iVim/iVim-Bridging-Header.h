@@ -29,6 +29,8 @@ void input_special_name(const char * name);
 
 void ivim_reload_buffer_for_mirror(NSString * path);
 
+NSString * string_value_of_expr(const char * expr);
+
 int VimMain(int argc, char ** argv);
 void gui_resize_shell(int pixel_width, int pixel_height);
 void gui_update_cursor(int force, int clear_selection);
