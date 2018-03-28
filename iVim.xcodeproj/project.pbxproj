@@ -3100,6 +3100,7 @@
 				DE3B043B205B7087009F81E8 /* URLOpener.swift */,
 			);
 			name = "Open URL";
+			};
 		22A08074205599CC00AC3B4D /* Resources */ = {
 			isa = PBXGroup;
 			children = (
