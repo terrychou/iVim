@@ -58,66 +58,92 @@ extension DocumentPresenter {
         }
     }
     
-    private func subitem(for filename: String) -> String {
-        return String(filename.dropFirst(self.mirrorURL.path.count))
+    private func subitem(for filename: String) -> String? {
+        let base = self.mirrorURL.appendingPathComponent("/").path
+        guard filename.hasPrefix(base) else { return nil }
+        
+        return String(filename.dropFirst(base.count))
     }
     
     func write(for filename: String) {
         self.url.coordinatedWrite(for: self) { [unowned self] url, err in
             NSLog("write")
             let subitem = self.subitem(for: filename)
-            let src = self.mirrorURL.appendingPathComponent(subitem)
-            let dst = url?.appendingPathComponent(subitem)
+            guard subitem != nil || filename == self.mirrorURL.path else { return }
+            let si = subitem ?? ""
+            let src = self.mirrorURL.appendingPathComponent(si)
+            let dst = url?.appendingPathComponent(si)
             self.update(from: src, to: dst, err: err)
+        }
+    }
+    
+    private func removeSubitem(in url: URL, for name: String) {
+        let t = url.appendingPathComponent(name)
+        do {
+            try FileManager.default.removeItem(at: t)
+            self.updateUpdatedDate()
+        } catch {
+            NSLog("Failed to remove item: \(error)")
         }
     }
     
     func removeItem(for name: String) {
         self.url.coordinatedWrite(for: self) { [unowned self] url, err in
-            guard let bu = url else { return }
-            let si = self.subitem(for: name)
-            let t = bu.appendingPathComponent(si)
-            do {
-                try FileManager.default.removeItem(at: t)
-                self.updateUpdatedDate()
-            } catch {
-                NSLog("Failed to remove item: \(error)")
-            }
+            guard let bu = url,
+                let si = self.subitem(for: name) else { return }
+            self.removeSubitem(in: bu, for: si)
+        }
+    }
+    
+    private func renameSubitem(in url: URL, from old: String, to new: String) {
+        let ou = url.appendingPathComponent(old)
+        let nu = url.appendingPathComponent(new)
+        do {
+            try FileManager.default.moveItem(at: ou, to: nu)
+            self.updateUpdatedDate()
+        } catch {
+            NSLog("Failed to rename item: \(error)")
         }
     }
     
     func rename(from old: String, to new: String) {
         self.url.coordinatedWrite(for: self) { [unowned self] url, err in
             guard let u = url else { return }
-            let ou = u.appendingPathComponent(self.subitem(for: old))
-            let nu = u.appendingPathComponent(self.subitem(for: new))
-            //it is possible that ou == nu, when the root item is renamed
-            //but this operation is not permitted
-            do {
-                try FileManager.default.moveItem(at: ou, to: nu)
-                self.updateUpdatedDate()
-            } catch {
-                NSLog("Failed to rename item: \(error)")
+            let osi = self.subitem(for: old)
+            let nsi = self.subitem(for: new)
+            if let o = osi, let n = nsi { //both are subitems
+                self.renameSubitem(in: u, from: o, to: n)
+            } else {
+                if let n = nsi { //old is not a subitem
+                    self.addSubitem(in: u, for: n)
+                }
+                if let o = osi { //new is not a subitem
+                    self.removeSubitem(in: u, for: o)
+                }
             }
+        }
+    }
+    
+    private func addSubitem(in url: URL, for name: String) {
+        let src = self.mirrorURL.appendingPathComponent(name)
+        let dst = url.appendingPathComponent(name)
+        do {
+            let fm = FileManager.default
+            if dst.isReachable() { //will overwrite the item if it already exists
+                try fm.removeItem(at: dst)
+            }
+            try fm.copyItem(at: src, to: dst)
+            self.updateUpdatedDate()
+        } catch {
+            NSLog("Failed to add item: \(error)")
         }
     }
     
     func addItem(for name: String) {
         self.url.coordinatedWrite(for: self) { [unowned self] url, err in
-            guard let u = url else { return }
-            let si = self.subitem(for: name)
-            let src = self.mirrorURL.appendingPathComponent(si)
-            let dst = u.appendingPathComponent(si)
-            do {
-                let fm = FileManager.default
-                if dst.isReachable() { //will overwrite the item if it already exists
-                    try fm.removeItem(at: dst)
-                }
-                try fm.copyItem(at: src, to: dst)
-                self.updateUpdatedDate()
-            } catch {
-                NSLog("Failed to add item: \(error)")
-            }
+            guard let u = url,
+                let si = self.subitem(for: name) else { return }
+            self.addSubitem(in: u, for: si)
         }
     }
 }

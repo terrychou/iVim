@@ -131,30 +131,33 @@ void input_special_name(const char * name) {
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
 #define TONSSTRING(chars) [[NSString alloc] initWithUTF8String:(const char *)chars]
 #define TOCHARS(str) (char_u *)[str UTF8String]
+/*
+ * get the absolute path of *path*
+ */
+static NSString * full_path_of_path(const char * path) {
+    if (path == NULL) { return nil; }
+    char_u buf[MAXPATHL];
+    if (vim_FullName((char_u *)path, buf, MAXPATHL, FALSE) == FAIL) {
+        return nil;
+    }
+    
+    return TONSSTRING(buf);
+}
 
 /*
  * to get the write event for files
  */
-void mch_post_buffer_write(buf_T * buf) {
-    NSString * path = TONSSTRING(buf->b_ffname);
+void mch_ios_post_buffer_write(buf_T * buf, char_u * fname) {
+    NSString * path = full_path_of_path((char *)fname);
+    if (path == NULL) { return; }
     [[PickInfoManager shared] writeFor:path];
-}
-
-/*
- * get the absolute path of *path*
- */
-static NSString * absolute_path_of_path(const char * path) {
-    if (path == NULL) { return nil; }
-    NSString * p = TONSSTRING(path);
-    return [p isAbsolutePath] ?
-        p : [[[NSFileManager defaultManager] currentDirectoryPath] stringByAppendingPathComponent:p];
 }
 
 /*
  * to get the file remove event
  */
 void mch_ios_post_file_remove(const char * file) {
-    NSString * p = absolute_path_of_path(file);
+    NSString * p = full_path_of_path(file);
     if (p == NULL) { return; }
     [[PickInfoManager shared] removeFor:p];
 }
@@ -162,9 +165,9 @@ void mch_ios_post_file_remove(const char * file) {
 /*
  * to get the file rename event
  */
-void mch_ios_post_file_rename(const char * old, const char * new) {
-    NSString * op = absolute_path_of_path(old);
-    NSString * np = absolute_path_of_path(new);
+void mch_ios_post_item_rename(const char * old, const char * new) {
+    NSString * op = full_path_of_path(old);
+    NSString * np = full_path_of_path(new);
     if (op == NULL || np == NULL) { return; }
     [[PickInfoManager shared] renameFrom:op to:np];
 }
@@ -173,7 +176,7 @@ void mch_ios_post_file_rename(const char * old, const char * new) {
  * to get the make directory event
  */
 void mch_ios_post_dir_make(const char * path) {
-    NSString * p = absolute_path_of_path(path);
+    NSString * p = full_path_of_path(path);
     if (p == NULL) { return; }
     [[PickInfoManager shared] mkdirFor:p];
 }
@@ -182,57 +185,9 @@ void mch_ios_post_dir_make(const char * path) {
  * to get the remove directory event
  */
 void mch_ios_post_dir_remove(const char * path) {
-    NSString * p = absolute_path_of_path(path);
+    NSString * p = full_path_of_path(path);
     if (p == NULL) { return; }
     [[PickInfoManager shared] rmdirFor:p];
-}
-
-/*
- * implementation for mch_rename
- */
-int mch_ios_rename(const char * old, const char * new) {
-    int ret = rename(old, new);
-    if (ret == 0) {
-        mch_ios_post_file_rename(old, new);
-    }
-    
-    return ret;
-}
-
-/*
- * implementation for mch_remove
- */
-int mch_ios_remove(const char * file) {
-    int ret = unlink(file);
-    if (ret == 0) {
-        mch_ios_post_file_remove(file);
-    }
-    
-    return ret;
-}
-
-/*
- * implementation for vim_mkdir
- */
-int mch_ios_mkdir(const char * path, mode_t mode) {
-    int ret = mkdir(path, mode);
-    if (ret == 0) {
-        mch_ios_post_dir_make(path);
-    }
-    
-    return ret;
-}
-
-/*
- * implementation for mch_rmdir
- */
-int mch_ios_rmdir(const char * path) {
-    int ret = rmdir(path);
-    if (ret == 0) {
-        mch_ios_post_dir_remove(path);
-    }
-    
-    return ret;
 }
 
 /*

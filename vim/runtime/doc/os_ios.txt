@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2018 Mar 17
+*os_ios.txt*	For Vim version 7.4.	Last change: 2018 Apr 01
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -236,7 +236,7 @@ And keyboard layout settings may not be respected during dictation.
 Another way for sharing info among apps in iOS is via URL scheme. After one
 app registers a custom URL scheme, other apps can wrap info into an URL with
 this scheme and open it. Then the system will invoke the supporting app and
-let it handle this URL. With it, the other apps are able to send info to and 
+let it handle this URL. With it, other apps are able to send info to and 
 therefore control the supporting app.
 
 iVim adds support to open URLs to communicate with other apps in this way.
@@ -255,9 +255,8 @@ In iVim, you open URLs through the command |:iopenurl|.
 
 Include information ~
 
-URL scheme would not have too much use if it just contained static text. iVim 
-introduces "variable token" as a way for you to include the needed info into 
-the URL. By utilizing vim's |expression|, you can get realtime info such as
+iVim introduces "variable token" as a way for you to include dynamic info into 
+an URL. By utilizing vim's |expression|, you can get realtime info such as
 clipboard contents, current file name or results of functions. In the example 
 above, "{expand('<cword>')%[Q}" is one variable token which will be replaced 
 with the word under the cursor when the URL is opened. Refer to |:iopenurl| 
@@ -291,6 +290,13 @@ The document picker |:idocuments| also allows you to edit files directly in
 iCloud Drive or other document provider apps. All the modifications will be 
 saved into the original files even though this is normally not allowed because 
 they are in different sandbox environments.
+
+iVim also supports opening directories. After you select and open a directory 
+from the document picker, besides file editing, you can do all the supported 
+filesystem operations within it. Such as create or rename subdirectories or 
+files, delete files, etc. All the changes will be synced back to the original 
+directory. Note that the operations need to go in the vim way (e.g. via vim 
+functions, commands, etc.) for the synchronization to work.
 
 Also see |open-in-ivim|.
 

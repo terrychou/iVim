@@ -10119,7 +10119,18 @@ f_delete(argvars, rettv)
     if (check_restricted() || check_secure())
 	rettv->vval.v_number = -1;
     else
+#ifdef FEAT_GUI_IOS
+    {
+        char_u * fname = get_tv_string(&argvars[0]);
+        int ret = mch_remove(fname);
+        if (ret == 0) {
+            mch_ios_post_file_remove(fname);
+        }
+        rettv->vval.v_number = ret;
+    }
+#else
 	rettv->vval.v_number = mch_remove(get_tv_string(&argvars[0]));
+#endif
 }
 
 /*
@@ -14989,6 +15000,11 @@ f_mkdir(argvars, rettv)
 	}
 	rettv->vval.v_number = prot == -1 ? FAIL : vim_mkdir_emsg(dir, prot);
     }
+#ifdef FEAT_GUI_IOS
+    if (rettv->vval.v_number != FAIL) {
+        mch_ios_post_dir_make(dir);
+    }
+#endif
 }
 #endif
 
@@ -16032,8 +16048,20 @@ f_rename(argvars, rettv)
     if (check_restricted() || check_secure())
 	rettv->vval.v_number = -1;
     else
+#ifdef FEAT_GUI_IOS
+    {
+        char_u * ffrom = get_tv_string(&argvars[0]);
+        char_u * fto = get_tv_string_buf(&argvars[1], buf);
+        int res = vim_rename(ffrom, fto);
+        if (res == 0) {
+            mch_ios_post_item_rename(ffrom, fto);
+        }
+        rettv->vval.v_number = res;
+    }
+#else
 	rettv->vval.v_number = vim_rename(get_tv_string(&argvars[0]),
 				      get_tv_string_buf(&argvars[1], buf));
+#endif
 }
 
 /*

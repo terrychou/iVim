@@ -94,16 +94,9 @@
 #   define mch_rmdir(x) rmdir((char *)(x))
 #  endif
 # else
-#  ifdef FEAT_GUI_IOS
-#   define mch_rename(src, dst) mch_ios_rename(src, dst)
-#   define mch_remove(x) mch_ios_remove((char *)(x))
-#   define vim_mkdir(x, y) mch_ios_mkdir((char *)(x), y)
-#   define mch_rmdir(x) mch_ios_rmdir((char *)(x))
-#  else
-#   define vim_mkdir(x, y) mkdir((char *)(x), y)
-#   define mch_rmdir(x) rmdir((char *)(x))
-#   define mch_remove(x) unlink((char *)(x))
-#  endif
+#  define vim_mkdir(x, y) mkdir((char *)(x), y)
+#  define mch_rmdir(x) rmdir((char *)(x))
+#  define mch_remove(x) unlink((char *)(x))
 # endif
 #endif
 

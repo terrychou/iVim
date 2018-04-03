@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2018 Mar 17
+*ios_commands.txt*	For Vim version 7.4	Last change: 2018 Apr 01
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -168,7 +168,7 @@ literally in the URL. Note that nested token is not supported.
 b. the "expr" is a vim |expression| which will be replaced with its value when 
 the whole URL is opened.
 
-This expression will be evaluated by vim and errors will be feedback if it is
+This expression will be evaluated by vim and errors will be given if it is
 invalid. Note a) only expressions with value type "string" and "number" are
 supported. b) tokens are evaluated one by one from left to right.
 
@@ -180,7 +180,7 @@ Backslash escape ~
 
 Sometimes you need to put certain characters literally into an URL. You can 
 put a backslash character before each to achieve this. For example, "\{expr\}"
-will be treated literally rather than a variable token.
+will be treated literally instead of a variable token.
 
 Because of its special meaning, a literal backslash always needs to be 
 backslash escaped, e.g. "\\".
@@ -188,8 +188,8 @@ backslash escaped, e.g. "\\".
 URL encoding ~
 
 Certain characters in an URL need to be percent encoded for a successful
-opening. Moreover, in different parts of an URL, the characters need encoding
-differ. Therefore, iVim provides an URL encoding type to help with this.
+opening. Moreover, in different parts of an URL, the characters that need 
+encoding differ. iVim provides an URL encoding type to help with this.
 
 A typical URL skeleton is 
 >
@@ -208,21 +208,23 @@ For example, if you will include a variable token into the "host" part, you
 need to indicate it as "{expr%[H}". Then iVim will encode its value for the
 specific part automatically. Omitting the encoding part, e.g. "{expr}", will 
 encode it for the default "query" part. Note that they are case insensitive.
+e.g. "%[Q" and "%[q" mean the same encoding.
 
 Debug errors ~
 
-iVim provides some debug errors if you try to open an URL with problems.
+iVim provides some debug errors when you try to open an URL but it has some
+problems.
 
 "token open character { expected":
 	a closing delimiter is encountered before an opening one.
 "token close character } expected": 
 	one opening delimiter is expecting a closing one but none given.
 "nested token not allowed":
-	there is a variable token inside another one.
+	you are trying to put a variable token inside another one.
 "unfinished character escaping":
 	there is a backslash at the end of the URL.
 "invalid path: ...":
-       	the given string is invalid for an URL.
+	the URL is invalid
 "failed to open URL: ...":
        	the system failed to open the given URL.
 	

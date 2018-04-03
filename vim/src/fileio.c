@@ -5111,9 +5111,12 @@ nofail:
 
     got_int |= prev_got_int;
 
-#if defined(MACOS_CLASSIC) || defined(FEAT_GUI_IOS) /* TODO: Is it need for MACOS_X? (Dany) */
+#if defined(MACOS_CLASSIC) /* TODO: Is it need for MACOS_X? (Dany) */
     /* Update machine specific information. */
     mch_post_buffer_write(buf);
+#endif
+#ifdef FEAT_GUI_IOS
+    mch_ios_post_buffer_write(buf, fname);
 #endif
     return retval;
 }

@@ -1,12 +1,10 @@
 /* gui_ios.m */
 char_u * gui_version_info __ARGS((void));
 
-void mch_post_buffer_write __ARGS((buf_T * buf));
-
-int mch_ios_rename __ARGS((const char * old, const char * new));
-int mch_ios_remove __ARGS((const char * file));
-int mch_ios_mkdir __ARGS((const char * path, mode_t mode));
-int mch_ios_rmdir __ARGS((const char * path));
+void mch_ios_post_buffer_write __ARGS((buf_T * buf, char_u * fname));
+void mch_ios_post_file_remove __ARGS((const char * file));
+void mch_ios_post_item_rename __ARGS((const char * old, const char * new));
+void mch_ios_post_dir_make __ARGS((const char * path));
 
 char * istrcpy __ARGS((char * dst, char * src));
 void gui_mch_prepare __ARGS((int *argc, char **argv));
