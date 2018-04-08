@@ -42,7 +42,7 @@ extension PickInfoManager {
     @objc func didBecomeActive() {
         NSLog("become active")
         self.table.values.forEach {
-            NSFileCoordinator.addFilePresenter($0.presenter)
+            NSFileCoordinator.addFilePresenter($0)
             self.updateInfo($0)
         }
     }
@@ -50,7 +50,7 @@ extension PickInfoManager {
     @objc func willResignActive() {
         NSLog("resign active")
         self.table.values.forEach {
-            NSFileCoordinator.removeFilePresenter($0.presenter)
+            NSFileCoordinator.removeFilePresenter($0)
         }
     }
 }
@@ -66,73 +66,14 @@ extension PickInfoManager {
             pi.addTask(task)
             self.localTable[pi.ticket] = pi
             self.table[url] = pi
-            NSFileCoordinator.addFilePresenter(pi.presenter)
+            NSFileCoordinator.addFilePresenter(pi)
         }
-    }
-    
-    @objc func write(for filename: String) {
-        PickInfoManager.serialQ.async {
-            self.info(for: filename)?.write(for: filename)
-        }
-    }
-    
-    @objc func remove(for filename: String) {
-        PickInfoManager.serialQ.async {
-            self.info(for: filename)?.removeItem(for: filename)
-        }
-    }
-    
-    @objc func rename(from old: String, to new: String) {
-        PickInfoManager.serialQ.async {
-            let oldTicket = self.ticket(for: old)
-            let newTicket = self.ticket(for: new)
-            if oldTicket == newTicket { //within the same mirror or none
-                guard let ot = oldTicket else { return }
-                self.localTable[ot]?.rename(from: old, to: new)
-            } else {
-                if let nt = newTicket { //move into new mirror
-                    self.localTable[nt]?.addItem(for: new)
-                }
-                if let ot = oldTicket { //move out of old mirror
-                    self.localTable[ot]?.removeItem(for: old)
-                }
-            }
-        }
-    }
-    
-    @objc func mkdir(for name: String) {
-        PickInfoManager.serialQ.async {
-            self.info(for: name)?.addItem(for: name)
-        }
-    }
-    
-    @objc func rmdir(for name: String) {
-        PickInfoManager.serialQ.async {
-            self.info(for: name)?.removeItem(for: name)
-        }
-    }
-    
-    private func ticket(for name: String) -> String? {
-        guard name.hasPrefix(mirrorDirectoryPath) else { return nil }
-        var result = ""
-        for c in name.dropFirst(mirrorDirectoryPath.count + 1) {
-            if c == "/" { break }
-            result.append(c)
-        }
-        
-        return result
-    }
-    
-    private func info(for name: String) -> PickInfo? {
-        guard let ticket = self.ticket(for: name) else { return nil }
-        
-        return self.localTable[ticket]
     }
     
     func removePickInfo(for url: URL, updateUI: Bool = false) {
         guard let pi = self.table[url] else { return }
         self.localTable[pi.ticket] = nil
-        NSFileCoordinator.removeFilePresenter(pi.presenter)
+        NSFileCoordinator.removeFilePresenter(pi)
         self.table[url] = nil
         if updateUI {
             DispatchQueue.main.async {
@@ -158,11 +99,11 @@ extension PickInfoManager {
         self.table[url] = nil
     }
     
-    func updateDate(with newDate: Date? = nil, for url: URL) {
-        guard let info = self.table[url] else { return }
-        let date = newDate ?? Date()
-        info.updatedDate = date
-    }
+//    func updateDate(with newDate: Date? = nil, for url: URL) {
+//        guard let info = self.table[url] else { return }
+//        let date = newDate ?? Date()
+//        info.updatedDate = date
+//    }
     
     /*
      * update after app becomes active again
@@ -185,5 +126,72 @@ extension PickInfoManager {
             NSLog("DELETE: \(info.mirrorURL)")
             self.removePickInfo(for: info.origin, updateUI: true)
         }
+    }
+}
+
+extension PickInfoManager {
+    @objc func write(for path: String) {
+        PickInfoManager.serialQ.async {
+            guard let i = self.info(
+                for: path,
+                isRootEditable: true) else { return }
+            i.info.write(for: i.subpath)
+        }
+    }
+    
+    @objc func remove(for path: String) {
+        PickInfoManager.serialQ.async {
+            guard let i = self.info(for: path) else { return }
+            i.info.removeItem(for: i.subpath)
+        }
+    }
+    
+    @objc func rename(from old: String, to new: String) {
+        PickInfoManager.serialQ.async {
+            let oi = self.info(for: old)
+            let ni = self.info(for: new)
+            if oi?.info === ni?.info { //within the same mirror or none
+                oi?.info.rename(from: oi!.subpath, to: ni!.subpath)
+            } else {
+                ni?.info.addItem(for: ni!.subpath) //move into new mirror
+                oi?.info.removeItem(for: oi!.subpath) //move out of old mirror
+            }
+        }
+    }
+    
+    @objc func mkdir(for path: String) {
+        PickInfoManager.serialQ.async {
+            guard let i = self.info(for: path) else { return }
+            i.info.addItem(for: i.subpath)
+        }
+    }
+    
+    @objc func rmdir(for path: String) {
+        PickInfoManager.serialQ.async {
+            guard let i = self.info(for: path) else { return }
+            i.info.removeItem(for: i.subpath)
+        }
+    }
+    
+    private func ticket(for subpath: String) -> String? {
+        var result = ""
+        for c in subpath {
+            if c == "/" { break }
+            result.append(c)
+        }
+        
+        return result
+    }
+    
+    private func info(for path: String, isRootEditable: Bool = false) -> (info: PickInfo, subpath: String)? {
+        guard let subpath = FileManager.default.mirrorSubpath(for: path),
+            let ticket = self.ticket(for: subpath),
+            let info = self.localTable[ticket] else { return nil }
+        let srp = info.subRootPath
+        if isRootEditable && subpath == srp {
+            return (info, subpath)
+        }
+        
+        return subpath.hasPrefix(srp + "/") ? (info, subpath) : nil
     }
 }

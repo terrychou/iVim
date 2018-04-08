@@ -14,13 +14,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        FileManager.default.cleanMirrorFiles()
 //        self.logToFile()
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),
             with: nil,
             waitUntilDone: false)
+        self.cleanMirrors()
 
         return true
     }
@@ -34,6 +34,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        let file = path + "/NSLog.log"
 //        freopen(file, "a+", stderr)
 //    }
+    
+    private func cleanMirrors() {
+        DispatchQueue.main.async {
+            FileManager.default.cleanMirrorFiles()
+        }
+    }
     
     @objc func VimStarter() {
         guard let vimPath = Bundle.main.resourcePath else { return }

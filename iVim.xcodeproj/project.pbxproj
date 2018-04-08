@@ -77,7 +77,6 @@
 		DE7BA7991F21A76800705E67 /* VimViewController+ExtendedKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41B1F209627007AFD63 /* VimViewController+ExtendedKeyboard.swift */; };
 		DE7BA79A1F21A77500705E67 /* PickInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D40E1F209600007AFD63 /* PickInfoManager.swift */; };
 		DE7BA79B1F21A77500705E67 /* VimViewController+UIDocumentPickerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */; };
-		DE7BA79C1F21A77500705E67 /* DocumentPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4101F209600007AFD63 /* DocumentPresenter.swift */; };
 		DE7BA79D1F21A77500705E67 /* PickInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4111F209600007AFD63 /* PickInfo.swift */; };
 		DE7BA79E1F21A77500705E67 /* SafeFileMoving.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4121F209600007AFD63 /* SafeFileMoving.swift */; };
 		DE7BA79F1F21A77C00705E67 /* VimViewController+UITextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */; };
@@ -197,7 +196,6 @@
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
 		DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UIDocumentPickerDelegate.swift"; sourceTree = "<group>"; };
-		DE44D4101F209600007AFD63 /* DocumentPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentPresenter.swift; sourceTree = "<group>"; };
 		DE44D4111F209600007AFD63 /* PickInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfo.swift; sourceTree = "<group>"; };
 		DE44D4121F209600007AFD63 /* SafeFileMoving.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SafeFileMoving.swift; sourceTree = "<group>"; };
 		DE44D4191F209627007AFD63 /* OptionalButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionalButton.swift; sourceTree = "<group>"; };
@@ -3035,7 +3033,6 @@
 			children = (
 				DE44D40E1F209600007AFD63 /* PickInfoManager.swift */,
 				DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */,
-				DE44D4101F209600007AFD63 /* DocumentPresenter.swift */,
 				DE44D4111F209600007AFD63 /* PickInfo.swift */,
 				DE44D4121F209600007AFD63 /* SafeFileMoving.swift */,
 			);
@@ -7125,7 +7122,6 @@
 				DE7234531F739C640033F3E8 /* VimURLHandler.swift in Sources */,
 				DE7BA7B71F21E91000705E67 /* ui.c in Sources */,
 				DE7BA7B11F21E7B000705E67 /* eval.c in Sources */,
-				DE7BA79C1F21A77500705E67 /* DocumentPresenter.swift in Sources */,
 				DE7BA79D1F21A77500705E67 /* PickInfo.swift in Sources */,
 				DE7BA79E1F21A77500705E67 /* SafeFileMoving.swift in Sources */,
 				DE7BA7C31F21EF1F00705E67 /* move.c in Sources */,

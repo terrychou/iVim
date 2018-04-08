@@ -136,12 +136,25 @@ void input_special_name(const char * name) {
  */
 static NSString * full_path_of_path(const char * path) {
     if (path == NULL) { return nil; }
-    char_u buf[MAXPATHL];
-    if (vim_FullName((char_u *)path, buf, MAXPATHL, FALSE) == FAIL) {
-        return nil;
+    NSString * p = TONSSTRING(path);
+    NSString * res = nil;
+    if ([p isAbsolutePath]) {
+        res = p;
+    } else {
+        NSString * cwd = [[NSFileManager defaultManager] currentDirectoryPath];
+        NSURL * cwdURL = [NSURL fileURLWithPath:cwd];
+        NSURL * resURL = [NSURL fileURLWithPath:p relativeToURL:cwdURL];
+        res = [resURL path];
     }
+    res = [res stringByStandardizingPath];
     
-    return TONSSTRING(buf);
+    return res;
+//    char_u buf[MAXPATHL];
+//    if (vim_FullName((char_u *)path, buf, MAXPATHL, TRUE) == FAIL) {
+//        return nil;
+//    }
+//
+//    return TONSSTRING(buf);
 }
 
 /*
