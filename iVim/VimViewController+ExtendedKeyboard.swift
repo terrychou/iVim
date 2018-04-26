@@ -130,8 +130,15 @@ extension VimViewController {
         let bar = OptionalButtonsBar(frame: CGRect(x: 0, y: 0, width: bounds.width, height: height))
         bar.autoresizingMask = [.flexibleWidth]
         bar.setButtons(with: self.buttons)
-        bar.backgroundColor = UIColor(white: 0.860, alpha: 1)
-        
+
+        // these magic numbers come from clicking "debug view hierarchy" and digging
+        // through the view hierarchy of the keyboard to find the background color
+        if UIDevice.current.systemVersion.compare("11.0", options: .numeric) == .orderedAscending {
+            bar.backgroundColor = UIColor(white: 0.83, alpha: 0.96)
+        } else {
+            bar.backgroundColor = UIColor(red: 0.827, green:0.845, blue:0.87, alpha: 1)
+        }
+
         return bar
     }
 }
