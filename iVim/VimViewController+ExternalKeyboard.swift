@@ -149,22 +149,22 @@ extension VimViewController {
         } else if flags.contains(.alphaShift) {
             self.handleCapsLock(with: command)
         } else {
-            var keys = ""
+            var modifiers = [String]()
             if flags.contains(.command) {
-                keys.append("D-")
+                modifiers.append("D")
             }
-            if self.ctrlEnabled || flags.contains(.control) {
-                self.ctrlButton?.tryRestore()
-                keys.append("C-")
+            if flags.contains(.control) {
+                modifiers.append("C")
             }
             var hasOption = false
             if flags.contains(.alternate) {
                 hasOption = true
-                keys.append("A-")
+                modifiers.append("A")
             }
             if flags.contains(.shift) {
-                keys.append("S-")
+                modifiers.append("S")
             }
+            var keys = gEKM.modifiersString(byCombining: modifiers)
             switch command.input {
             case UIKeyInputEscape?: keys.append("Esc")
             case UIKeyInputUpArrow?: keys.append("Up")

@@ -9,7 +9,7 @@
 import UIKit
 
 final class OptionalButtonsBar: UIView {
-    var buttons = [[ButtonOption]]()
+    var buttons = [[EKKeyOption]]()
     var style: ButtonsBarStyle?
     var horizontalMargin = CGFloat(8)
     var verticalMargin = CGFloat(8)
@@ -24,7 +24,7 @@ extension OptionalButtonsBar {
         return self.bounds.height - self.verticalMargin * 2
     }
     
-    private func addButtons() {
+    func updateButtons() {
         guard self.buttons.count > 0 else { return }
         self.subviews.forEach { $0.removeFromSuperview() }
         let m = self.measure
@@ -71,7 +71,7 @@ extension OptionalButtonsBar {
         guard style != self.style else { return }
         style.setMeasures(for: self)
         self.style = style
-        self.addButtons()
+        self.updateButtons()
     }
     
     override func layoutSubviews() {
@@ -80,9 +80,9 @@ extension OptionalButtonsBar {
         self.layoutButtons()
     }
     
-    func setButtons(with info: [[ButtonOption]]) {
+    func setButtons(with info: [[EKKeyOption]]) {
         self.buttons = info
-        self.addButtons()
+        self.updateButtons()
         self.setNeedsLayout()
     }
 }

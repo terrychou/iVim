@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		DE0D2EC8205A1797004C29F8 /* ArgumentToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */; };
 		DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */; };
+		DE1ADB792099549200B21E9E /* ExtendedKeyboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */; };
 		DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3B043B205B7087009F81E8 /* URLOpener.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
@@ -192,6 +193,7 @@
 /* Begin PBXFileReference section */
 		DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArgumentToken.swift; sourceTree = "<group>"; };
 		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLRealizer.swift; sourceTree = "<group>"; };
+		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
 		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLOpener.swift; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
@@ -3045,6 +3047,7 @@
 				DE44D4191F209627007AFD63 /* OptionalButton.swift */,
 				DE44D41A1F209627007AFD63 /* OptionalButtonsBar.swift */,
 				DE44D41B1F209627007AFD63 /* VimViewController+ExtendedKeyboard.swift */,
+				DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */,
 			);
 			name = "Extended Keyboard";
 			sourceTree = "<group>";
@@ -7048,6 +7051,7 @@
 				DE5C51B01F6E16C500373B92 /* verilog.c in Sources */,
 				DE7BA7B61F21E8D800705E67 /* getchar.c in Sources */,
 				DE5C51891F6E153A00373B92 /* routines.c in Sources */,
+				DE1ADB792099549200B21E9E /* ExtendedKeyboardManager.swift in Sources */,
 				DE5C51A61F6E166C00373B92 /* lregex.c in Sources */,
 				DE5C518B1F6E155400373B92 /* lisp.c in Sources */,
 				DE5C51B91F6E172000373B92 /* asp.c in Sources */,

@@ -17,9 +17,9 @@ extension UIDevice {
 private let margin = CGFloat(3)
 
 class OptionalButton: UIView {
-    var info = [Int: OptionInfo]()
+    var info = [Int: KeyInfo]()
     var isSwitch = false
-    var effectiveInfo: OptionInfo?
+    var effectiveInfo: KeyInfo?
     var initTranslation: CGPoint?
     var startLocation: CGPoint!
     fileprivate(set) var isOn = false
@@ -50,7 +50,7 @@ extension OptionalButton {
 }
 
 extension OptionalButton {
-    func setOptions(_ options: [ButtonOption]) {
+    func setOptions(_ options: [EKKeyOption]) {
         let count = options.count
         guard count > 0 else { return }
         switch count {
@@ -99,7 +99,7 @@ extension OptionalButton {
         layer.fontSize = size
     }
     
-    private func addLayer(option: ButtonOption, color: UIColor, fontSize: CGFloat, anchorPoint: CGPoint) {
+    private func addLayer(option: EKKeyOption, color: UIColor, fontSize: CGFloat, anchorPoint: CGPoint) {
         let l = CATextLayer()
         l.contentsScale = UIScreen.main.scale
         l.string = option.title
@@ -109,11 +109,11 @@ extension OptionalButton {
         l.alignmentMode = kCAAlignmentCenter
         self.setFontSize(fontSize, of: l)
         self.layer.addSublayer(l)
-        let oi = OptionInfo(layer: l, action: option.action, isSticky: option.isSticky)
+        let oi = KeyInfo(layer: l, action: option.action, isSticky: option.isSticky)
         self.info[anchorPoint.key] = oi
     }
     
-    private func setKey(for option: ButtonOption, at anchorPoint: CGPoint) {
+    private func setKey(for option: EKKeyOption, at anchorPoint: CGPoint) {
         self.addLayer(
             option: option,
             color: .gray,
@@ -121,7 +121,7 @@ extension OptionalButton {
             anchorPoint: anchorPoint)
     }
     
-    private func setPrimaryKey(for option: ButtonOption) {
+    private func setPrimaryKey(for option: EKKeyOption) {
         self.addLayer(
             option: option,
             color: .black,
@@ -188,7 +188,7 @@ extension OptionalButton {
         self.isOn = !self.isOn
     }
     
-    fileprivate var primaryInfo: OptionInfo? {
+    fileprivate var primaryInfo: KeyInfo? {
         return self.info[CGPoint(0.5, 0.5).key]
     }
     
@@ -217,7 +217,7 @@ extension OptionalButton {
         CATransaction.commit()
     }
     
-    private func initInfo(for translation: CGPoint) -> OptionInfo? {
+    private func initInfo(for translation: CGPoint) -> KeyInfo? {
         guard let k = self.key(for: translation) else { return nil }
         let i = self.info[k]
         self.effectiveInfo = i
@@ -250,11 +250,11 @@ extension OptionalButton {
         self.restore()
     }
     
-    private func info(for translation: CGPoint) -> OptionInfo? {
+    private func info(for translation: CGPoint) -> KeyInfo? {
         guard let t = self.initTranslation else {
             return self.initInfo(for: translation)
         }
-        let i: OptionInfo?
+        let i: KeyInfo?
         if t.isInSamePhase(of: translation) {
             i = self.effectiveInfo
         } else {
@@ -309,7 +309,7 @@ private extension CGPoint {
 }
 
 typealias Action = (OptionalButton) -> Void
-struct ButtonOption {
+struct EKKeyOption {
     let title: String
     let action: Action?
     let isSticky: Bool
@@ -321,7 +321,7 @@ struct ButtonOption {
     }
 }
 
-struct OptionInfo {
+struct KeyInfo {
     let layer: CATextLayer
     let action: Action?
     let isSticky: Bool

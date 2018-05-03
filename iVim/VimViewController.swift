@@ -28,10 +28,10 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var documentController: UIDocumentInteractionController?
     
-    weak var ctrlButton: OptionalButton?
-    var ctrlEnabled: Bool {
-        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
-    }
+//    weak var ctrlButton: OptionalButton?
+//    var ctrlEnabled: Bool {
+//        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
+//    }
     
     var textTokenizer: UITextInputStringTokenizer!
     var markedInfo: MarkedInfo?
@@ -39,7 +39,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var isNormalPending = false
     
     var shouldTuneFrame = true
-    lazy var extendedBar: OptionalButtonsBar = self.newExtendedBar()
+//    lazy var extendedBar: OptionalButtonsBar = self.newExtendedBar()
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
@@ -80,6 +80,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.inputAssistantItem.leadingBarButtonGroups = []
         self.inputAssistantItem.trailingBarButtonGroups = []
         
+        gEKM.registerController(self)
         self.toggleExtendedBar()
     }
     
@@ -180,14 +181,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func handleModifiers(with text: String) -> Bool {
-        if self.ctrlEnabled {
-            self.ctrlButton!.tryRestore()
-            let t = text == "\n" ? "CR" : text
-            self.insertSpecialName("<C-\(t)>")
-            return true
-        }
-        
-        return false
+        return ExtendedKeyboardManager.shared.handleModifiers(with:text)
     }
     
     func escapingText(_ text: String) -> String {
@@ -384,7 +378,11 @@ extension String {
     }
     
     var spaceEscaped: String {
-        return self.replacingOccurrences(of: " ", with: "\\ ")
+        return self.escaping(" ")
+    }
+    
+    func escaping(_ target: String) -> String {
+        return self.replacingOccurrences(of: target, with: "\\" + target)
     }
 }
 

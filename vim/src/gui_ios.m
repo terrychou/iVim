@@ -318,6 +318,7 @@ static void ex_idocuments(exarg_T *);
 static void ex_ishare(exarg_T *);
 static void ex_ictags(exarg_T *);
 static void ex_iopenurl(exarg_T *);
+static void ex_isetekbd(exarg_T *);
 //static void ex_ifontsize(exarg_T * eap);
 
 /*
@@ -342,6 +343,9 @@ void ex_ios_cmds(exarg_T * eap) {
             break;
         case CMD_ictags:
             ex_ictags(eap);
+            break;
+        case CMD_isetekbd:
+            ex_isetekbd(eap);
             break;
         default:
             break;
@@ -377,24 +381,131 @@ static void ex_ideletefont(exarg_T * eap) {
 /*
  * get the string value of an expression *expr*
  */
-NSString * string_value_of_expr(const char * expr) {
-    typval_T * ret = eval_expr((char_u *)expr, NULL);
-    if (ret == NULL) {
+static NSString * string_value_of_tv(typval_T *);
+
+static NSString * string_value_of_tv(typval_T * tv) {
+    char_u * s = tv->vval.v_string;
+    if (s == NULL) {
         return @"";
     }
-    switch (ret->v_type) {
+    
+    return TONSSTRING(s);
+}
+
+static NSString * force_string_value_of_tv(typval_T * tv) {
+    switch (tv->v_type) {
         case VAR_NUMBER:
-            return [NSString stringWithFormat:@"%d", ret->vval.v_number];
+            return [NSString stringWithFormat:@"%d", tv->vval.v_number];
+            break;
+        case VAR_FLOAT:
+            return [NSString stringWithFormat:@"%f", tv->vval.v_float];
             break;
         case VAR_STRING:
-            return ret->vval.v_string != NULL ?
-                TONSSTRING(ret->vval.v_string) :
-                @"";
+            return string_value_of_tv(tv);
             break;
         default:
             return @"";
             break;
     }
+}
+
+NSString * string_value_of_expr(const char * expr) {
+    typval_T * ret = eval_expr((char_u *)expr, NULL);
+    if (ret == NULL) {
+        return @"";
+    }
+    
+    return force_string_value_of_tv(ret);
+}
+
+/*
+ * translate the tv value to Cocoa compatible
+ */
+static id value_of_tv(typval_T *);
+static NSDictionary * dict_value_of_tv(typval_T *);
+static NSArray * list_value_of_tv(typval_T *);
+
+static id value_of_tv(typval_T * tv) {
+    switch (tv->v_type) {
+        case VAR_STRING:
+            return string_value_of_tv(tv);
+            break;
+        case VAR_NUMBER:
+            return [NSNumber numberWithInt:tv->vval.v_number];
+            break;
+        case VAR_FLOAT:
+            return [NSNumber numberWithDouble:tv->vval.v_float];
+            break;
+        case VAR_LIST:
+            return list_value_of_tv(tv);
+            break;
+        case VAR_DICT:
+            return dict_value_of_tv(tv);
+            break;
+        default:
+            return NULL;
+            break;
+    }
+}
+
+/*
+ * translate vim dict to NSDictionary
+ */
+static dictitem_T * dict_item_from_hash_item(hashitem_T * hi) {
+    static dictitem_T dumdi;
+    return (dictitem_T *)(hi->hi_key - (dumdi.di_key - (char_u *)&dumdi));
+}
+
+static NSDictionary * dict_value_of_tv(typval_T * tv) {
+    dict_T * dict = tv->vval.v_dict;
+    if (dict == NULL) {
+        return NULL;
+    }
+    int todo = (int)dict->dv_hashtab.ht_used;
+    hashitem_T * hi;
+    dictitem_T * di;
+    NSString * key;
+    id value;
+    NSMutableDictionary * ret = [NSMutableDictionary dictionary];
+    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi) {
+        if (HASHITEM_EMPTY(hi)) {
+            continue;
+        }
+        --todo;
+        di = dict_item_from_hash_item(hi);
+        key = TONSSTRING(&di->di_key);
+        value = value_of_tv(&di->di_tv);
+        [ret setValue:value forKey:key];
+    }
+    
+    return ret;
+}
+
+/*
+ * translate vim list to NSArray
+ */
+static NSArray * list_value_of_tv(typval_T * tv) {
+    list_T * list = tv->vval.v_list;
+    if (list == NULL) {
+        return NULL;
+    }
+    NSMutableArray * ret = [NSMutableArray array];
+    listitem_T * li;
+    for (li = list->lv_first; li != NULL; li = li->li_next) {
+        id value = value_of_tv(&li->li_tv);
+        [ret addObject:value];
+    }
+    
+    return ret;
+}
+
+/*
+ * get Cocoa object of expression *expr*
+ */
+id object_of_expr(const char * expr) {
+    typval_T * tv = eval_expr((char_u *)expr, NULL);
+    
+    return tv != NULL ? value_of_tv(tv) : NULL;
 }
 
 /*
@@ -475,6 +586,16 @@ static void execute_ctags(NSString * cmdline) {
     NSString * escapedInfo = [info stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
     NSString * cmd = [NSString stringWithFormat:cmdfmt, escapedInfo];
     do_cmdline_cmd(TOCHARS(cmd));
+}
+
+/*
+ * Handling function for command *isetekbd*
+ */
+static void ex_isetekbd(exarg_T * eap) {
+    NSString * arg = TONSSTRING(eap->arg);
+    BOOL confirmed = eap->forceit == TRUE;
+    [[ExtendedKeyboardManager shared] setKeyboardWith:arg
+                                            confirmed:confirmed];
 }
 
 /*

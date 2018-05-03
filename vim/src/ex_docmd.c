@@ -4295,6 +4295,7 @@ set_one_cmd_context(xp, buff)
         case CMD_idocuments:
         case CMD_ifont:
 	case CMD_iopenurl:
+	case CMD_isetekbd:
         case CMD_ishare:
             break;
 #endif
