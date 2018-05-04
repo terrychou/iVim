@@ -187,26 +187,208 @@ extension ExtendedKeyboardManager {
     
     private func edit(with operation: EKOperationInfo) throws {
         switch operation.op {
+        case .append: try self.append(for: operation)
+        case .insert: try self.insert(for: operation)
         case .remove: try self.remove(for: operation)
+        case .replace: try self.replace(for: operation)
         default: NSLog("Not implemented yet.")
         }
     }
     
     private func remove(for op: EKOperationInfo) throws {
-        guard let locations = op.locations?.locations else {
-            throw EKEditingError.info("no locations available for removing buttons")
+        guard let bLocs = op.locations else {
+            throw EKEditingError.info("[remove] no target locations")
         }
-        for loc in locations.sorted(by: >) {
-            if let keys = op.buttons?.dict?[loc] {
-                NSLog("remove keys \(keys) of button \(loc)")
-            } else {
-                let bc = self.sandbox.count
-                if loc < 0 || loc >= bc {
-                    throw EKEditingError.info("failed to remove button at \(loc)")
+        let bCnt = self.sandbox.count
+        for bl in bLocs.locations.sorted(by: >) {
+            if bl < 0 || bl >= bCnt {
+                throw EKEditingError.info("[remove] invalid button location \(bl)")
+            }
+            if let b = op.buttons?.dict?[bl], let kLocs = b.locations {
+                var keys = self.sandbox[bl]
+                let kCnt = keys.count
+                for kl in kLocs.locations.sorted(by: >) {
+                    if kl < 0 || kl >= kCnt {
+                        throw EKEditingError.info("[remove] invalid key location \(kl) on button \(bl) ")
+                    }
+                    keys.remove(at: kl)
                 }
-                self.sandbox.remove(at: loc)
+                self.sandbox[bl] = keys
+            } else {
+                self.sandbox.remove(at: bl)
             }
         }
+    }
+    
+    private func insert(for op: EKOperationInfo) throws {
+        guard let bLocs = op.locations else {
+            throw EKEditingError.info("[insert] no target locations")
+        }
+        guard let newBtns = op.buttons?.array else {
+            throw EKEditingError.info("[insert] no new buttons")
+        }
+        if bLocs.locations.count != newBtns.count {
+            throw EKEditingError.info("[insert] new buttons size not match")
+        }
+        let bCnt = self.sandbox.count
+        for (i, bl) in bLocs.locations.enumerated() {
+            if bl < 0 || bl > bCnt {
+                throw EKEditingError.info("[insert] invalid button location \(bl)")
+            }
+            let btn = newBtns[i]
+            if let kLocs = btn.locations { //insert keys
+                guard let newKeys = btn.keys?.array else {
+                    throw EKEditingError.info("[insert] no new keys")
+                }
+                if kLocs.locations.count != newKeys.count {
+                    throw EKEditingError.info("[insert] new keys size not match")
+                }
+                var keys = self.sandbox[bl]
+                let kCnt = keys.count
+                for (i, kl) in kLocs.locations.enumerated() {
+                    if kl < 0 || kl > kCnt {
+                        throw EKEditingError.info("[insert] invalid key location \(kl) on button \(bl)")
+                    }
+                    keys.insert(self.newKey(for: newKeys[i]), at: kl)
+                }
+                self.sandbox[bl] = keys
+            } else { //insert button
+                self.sandbox.insert(self.newButton(for: btn), at: bl)
+            }
+        }
+    }
+    
+    private func append(for op: EKOperationInfo) throws {
+        // *append* can append buttons or keys to specific buttons
+        //
+        // 1. when the operation node doesn't have the *locations*
+        // property, it means appending buttons only. All the buttons
+        // in the *buttons* array will be appended to the end of
+        // existing bar orderly;
+        //
+        // 2. when the *locations* property presents, it contains the
+        // indexes of buttons to which the new keys will be appended.
+        // The new keys for each key-appending button are available
+        // in the *buttons* array: the first button node's *keys*
+        // will be appended to the button located by the first location
+        // in *location*, the second button node the second location,
+        // and go on... The extra button nodes, if there is any, will
+        // be treated as buttons appended to the bar. It will be an
+        // error if the size of *locations* is bigger than that of the
+        // buttons in *buttons*
+        
+        guard let btns = op.buttons?.array, !btns.isEmpty else {
+            throw EKEditingError.info("[append] no buttons")
+        }
+        if let bLocs = op.locations?.locations { // append keys for some buttons
+            guard btns.count >= bLocs.count else {
+                throw EKEditingError.info("[append] not enough button infos for keys-appending")
+            }
+            for (i, bl) in bLocs.enumerated() {
+                guard let newKeys = btns[i].keys?.array else {
+                    continue
+                }
+                if bl < 0 || bl >= self.sandbox.count {
+                    throw EKEditingError.info("[append] invalid button location \(bl)")
+                }
+                var keys = self.sandbox[bl]
+                for nk in newKeys {
+                    keys.append(self.newKey(for: nk))
+                }
+                self.sandbox[bl] = keys
+            }
+            let extraBtns = Array(btns[bLocs.count...])
+            self.appendButtons(for: extraBtns)
+        } else { // append only buttons
+            self.appendButtons(for: btns)
+        }
+    }
+    
+    private func appendButtons(for buttons: [EKButtonInfo]) {
+        guard buttons.count > 0 else { return }
+        for b in buttons {
+            let nb = self.newButton(for: b)
+            self.sandbox.append(nb)
+        }
+    }
+    
+    private func replace(for op: EKOperationInfo) throws {
+        // *replace* can replace buttons or keys of specific buttons
+        //
+        // 1. *locations* of each node indicates the item to be replaced.
+        // This property must present in an operation node, or there is no
+        // targets for this operation.
+        //
+        // 2. when there is no *locations* property in a button node, it
+        // means this button is one of the replacing targets of this
+        // operation.
+        //
+        // 3. when the *locations* property appears in a button node, it
+        // means that the keys at those locations in this button will be
+        // replaced with keys in the *keys* property.
+        //
+        // 4. an error will emerge if the substitution items (items in
+        // *buttons* or *keys*) size is less than that of *locations*.
+        
+        guard let bLocs = op.locations?.locations else {
+            throw EKEditingError.info("[replace] no target button locations")
+        }
+        guard let subBtns = op.buttons?.array, subBtns.count >= bLocs.count else {
+            throw EKEditingError.info("[replace] not enough substitution buttons")
+        }
+        for (i, bl) in bLocs.enumerated() {
+            if bl < 0 || bl >= self.sandbox.count {
+                throw EKEditingError.info("[replace] invalid button location \(bl)")
+            }
+            let subBtn = subBtns[i]
+            if let kLocs = subBtn.locations?.locations, kLocs.count > 0 { // replace keys on the button
+                guard let subKeys = subBtn.keys?.array, subKeys.count >= kLocs.count else {
+                    throw EKEditingError.info("[replace] not enough substitution keys on button \(bl)")
+                }
+                var keys = self.sandbox[bl]
+                let kCnt = keys.count
+                for (i, kl) in kLocs.enumerated() {
+                    if kl < 0 || kl >= kCnt {
+                        throw EKEditingError.info("[replace] invalid key location \(kl) on button \(bl)")
+                    }
+                    let subKey = self.newKey(for: subKeys[i])
+                    keys.replaceSubrange(kl..<kl + 1, with: [subKey])
+                }
+                self.sandbox[bl] = keys
+            } else { // replace the button
+                let newBtn = self.newButton(for: subBtn)
+                self.sandbox.replaceSubrange(bl..<bl + 1, with: [newBtn])
+            }
+        }
+    }
+    
+    private func newButton(for bi: EKButtonInfo) -> [EKKeyOption] {
+        guard let newKeys = bi.keys?.array else { return [] }
+        
+        return newKeys.map { self.newKey(for: $0) }
+    }
+    
+    private func newKey(for ki: EKKeyInfo) -> EKKeyOption {
+        var action: Action?
+        var isSticky = false
+        switch ki.type {
+        case .insert:
+            action = { _ in self.insertText(ki.contents) }
+        case .normal:
+            break //TODO
+        case .modifier:
+            isSticky = true //TODO implement enum Modifier
+        case .special:
+            //TODO implement enum special
+            break
+        case .command:
+            action = { _ in
+                let cmd = ki.contents.hasPrefix(":") ? ki.contents : ":" + ki.contents
+                do_cmdline_cmd("normal " + cmd) //TODO not working as expected
+            }
+        }
+        
+        return EKKeyOption(title: ki.title, action: action, isSticky: isSticky) //TODO implement
     }
     
     func edit(with operations: [EKOperationInfo]) {
@@ -250,6 +432,7 @@ enum EKEditingError: Error {
 
 enum EKKeyType: String {
     case command
+    case insert
     case modifier
     case normal
     case special
@@ -310,6 +493,7 @@ enum EKOperation: String {
     case append
     case insert
     case remove
+    case replace
     
     init?(name: String?) {
         guard let n = name else { return nil }
