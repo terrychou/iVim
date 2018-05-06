@@ -24,10 +24,13 @@ final class ExtendedKeyboardManager: NSObject {
     }()
     private var sandbox: EKButtons! //operate on it before confirmation
     
-    private weak var ctrlButton: OptionalButton?
-    private var ctrlEnabled: Bool {
-        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
-    }
+//    private weak var ctrlButton: OptionalButton?
+//    private var ctrlEnabled: Bool {
+//        return false
+////        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
+//    }
+    
+    private lazy var modifiers = EKModifiersArranger()
 }
 
 extension ExtendedKeyboardManager {
@@ -53,6 +56,7 @@ extension ExtendedKeyboardManager {
     private func confirmChanges() {
         self.extendedBar.buttons = self.sandbox
         self.extendedBar.updateButtons()
+        self.modifiers.clear()
     }
     
     private func undoChanges() {
@@ -62,24 +66,41 @@ extension ExtendedKeyboardManager {
 
 extension ExtendedKeyboardManager {
     func handleModifiers(with text: String) -> Bool {
-        if self.ctrlEnabled {
-            self.ctrlButton!.tryRestore()
-            let t = text == "\n" ? "CR" : text
-            self.controller.insertSpecialName("<C-\(t)>")
-            return true
-        }
+        let ms = self.modifiersString()
+        guard !ms.isEmpty else { return false }
+        let t = text == "\n" ? "CR" : text
+        self.controller.insertSpecialName("<\(ms)\(t)>")
+//        if self.ctrlEnabled {
+//            self.ctrlButton!.tryRestore()
+//            let t = text == "\n" ? "CR" : text
+//            self.controller.insertSpecialName("<C-\(t)>")
+//            return true
+//        }
         
-        return false
+        return true
     }
     
-    func modifiersString(byCombining list: [String]) -> String {
-        var s = Set(list)
-        if self.ctrlEnabled {
-            self.ctrlButton?.tryRestore()
-            s.insert("C")
+    func modifiersString(byCombining list: [String] = []) -> String {
+        let s = Set(list)
+//        if self.ctrlEnabled {
+//            self.ctrlButton?.tryRestore()
+//            s.insert("C")
+//        }
+        let modifiers = self.modifiers.activeKeyStringSet { mi in
+            DispatchQueue.main.async {
+                mi.button?.tryRestore()
+            }
         }
         
-        return s.reduce("") { $0 + $1 + "-" }
+        return s.union(modifiers).reduce("") { $0 + $1 + "-" }
+    }
+    
+    private func modifierKey(title: String, key: EKModifierKey) -> EKKeyOption {
+        let action: Action = { [unowned self] b in
+            self.modifiers.update(for: b, with: key.keyString)
+        }
+        
+        return EKKeyOption(title: title, action: action, isSticky: true)
     }
 }
 
@@ -92,8 +113,8 @@ extension ExtendedKeyboardManager {
         self.controller.pressArrow(key)
     }
     
-    private func inputOption(for key: String) -> EKKeyOption {
-        return EKKeyOption(title: key, action: { _ in self.insertText(key) })
+    private func inputOption(for key: String, title: String? = nil) -> EKKeyOption {
+        return EKKeyOption(title: title ?? key, action: { [unowned self] _ in self.insertText(key) })
     }
     
     private func press(modified: String, action: () -> Void) {
@@ -104,19 +125,18 @@ extension ExtendedKeyboardManager {
     private var defaultButtons: EKButtons {
         return [
             [
-                EKKeyOption(title: "esc", action: { _ in
+                EKKeyOption(title: "esc", action: { [unowned self] _ in
                     self.press(modified: "Esc", action: self.controller.pressESC)
                 }),
-                EKKeyOption(title: "ctrl", action: { b in
-                    guard self.ctrlButton != b else { return }
-                    self.ctrlButton = b
-                }, isSticky: true)],
+                self.modifierKey(title: "ctrl", key: .control),
+                self.modifierKey(title: "alt", key: .alt)],
+            
             [
-                EKKeyOption(title: "tab", action: { _ in self.press(modified: "Tab") { self.insertText(keyTAB.unicoded) } }),
-                EKKeyOption(title: "↓", action: { _ in self.press(modified: "Down") { self.pressArrow(keyDOWN) } }),
-                EKKeyOption(title: "←", action: { _ in self.press(modified: "Left") { self.pressArrow(keyLEFT) } }),
-                EKKeyOption(title: "→", action: { _ in self.press(modified: "Right") { self.pressArrow(keyRIGHT) } }),
-                EKKeyOption(title: "↑", action: { _ in self.press(modified: "Up") { self.pressArrow(keyUP) } }) ],
+                EKKeyOption(title: "tab", action: { [unowned self] _ in self.press(modified: "Tab") { self.insertText(keyTAB.unicoded) } }),
+                EKKeyOption(title: "↓", action: { [unowned self] _ in self.press(modified: "Down") { self.pressArrow(keyDOWN) } }),
+                EKKeyOption(title: "←", action: { [unowned self] _ in self.press(modified: "Left") { self.pressArrow(keyLEFT) } }),
+                EKKeyOption(title: "→", action: { [unowned self] _ in self.press(modified: "Right") { self.pressArrow(keyRIGHT) } }),
+                EKKeyOption(title: "↑", action: { [unowned self] _ in self.press(modified: "Up") { self.pressArrow(keyUP) } }) ],
             [
                 self.inputOption(for: "0"),
                 self.inputOption(for: "1"),
@@ -191,7 +211,7 @@ extension ExtendedKeyboardManager {
         case .insert: try self.insert(for: operation)
         case .remove: try self.remove(for: operation)
         case .replace: try self.replace(for: operation)
-        default: NSLog("Not implemented yet.")
+//        default: NSLog("Not implemented yet.")
         }
     }
     
@@ -249,11 +269,11 @@ extension ExtendedKeyboardManager {
                     if kl < 0 || kl > kCnt {
                         throw EKEditingError.info("[insert] invalid key location \(kl) on button \(bl)")
                     }
-                    keys.insert(self.newKey(for: newKeys[i]), at: kl)
+                    keys.insert(try self.newKey(for: newKeys[i]), at: kl)
                 }
                 self.sandbox[bl] = keys
             } else { //insert button
-                self.sandbox.insert(self.newButton(for: btn), at: bl)
+                self.sandbox.insert(try self.newButton(for: btn), at: bl)
             }
         }
     }
@@ -293,21 +313,21 @@ extension ExtendedKeyboardManager {
                 }
                 var keys = self.sandbox[bl]
                 for nk in newKeys {
-                    keys.append(self.newKey(for: nk))
+                    keys.append(try self.newKey(for: nk))
                 }
                 self.sandbox[bl] = keys
             }
             let extraBtns = Array(btns[bLocs.count...])
-            self.appendButtons(for: extraBtns)
+            try self.appendButtons(for: extraBtns)
         } else { // append only buttons
-            self.appendButtons(for: btns)
+            try self.appendButtons(for: btns)
         }
     }
     
-    private func appendButtons(for buttons: [EKButtonInfo]) {
+    private func appendButtons(for buttons: [EKButtonInfo]) throws {
         guard buttons.count > 0 else { return }
         for b in buttons {
-            let nb = self.newButton(for: b)
+            let nb = try self.newButton(for: b)
             self.sandbox.append(nb)
         }
     }
@@ -351,44 +371,44 @@ extension ExtendedKeyboardManager {
                     if kl < 0 || kl >= kCnt {
                         throw EKEditingError.info("[replace] invalid key location \(kl) on button \(bl)")
                     }
-                    let subKey = self.newKey(for: subKeys[i])
+                    let subKey = try self.newKey(for: subKeys[i])
                     keys.replaceSubrange(kl..<kl + 1, with: [subKey])
                 }
                 self.sandbox[bl] = keys
             } else { // replace the button
-                let newBtn = self.newButton(for: subBtn)
+                let newBtn = try self.newButton(for: subBtn)
                 self.sandbox.replaceSubrange(bl..<bl + 1, with: [newBtn])
             }
         }
     }
     
-    private func newButton(for bi: EKButtonInfo) -> [EKKeyOption] {
+    private func newButton(for bi: EKButtonInfo) throws -> [EKKeyOption] {
         guard let newKeys = bi.keys?.array else { return [] }
         
-        return newKeys.map { self.newKey(for: $0) }
+        return try newKeys.map { try self.newKey(for: $0) }
     }
     
-    private func newKey(for ki: EKKeyInfo) -> EKKeyOption {
-        var action: Action?
-        var isSticky = false
+    private func newKey(for ki: EKKeyInfo) throws -> EKKeyOption {
         switch ki.type {
         case .insert:
-            action = { _ in self.insertText(ki.contents) }
+            return self.inputOption(for: ki.contents, title: ki.title)
         case .normal:
-            break //TODO
+            throw EKEditingError.info("[imp] not implemented yet")
         case .modifier:
-            isSticky = true //TODO implement enum Modifier
+            guard let mk = EKModifierKey(name: ki.contents) else {
+                throw EKEditingError.info("[key] invalid key \(ki.contents)")
+            }
+            return self.modifierKey(title: ki.title, key: mk)
         case .special:
             //TODO implement enum special
-            break
+            throw EKEditingError.info("[imp] not implemented yet")
         case .command:
-            action = { _ in
-                let cmd = ki.contents.hasPrefix(":") ? ki.contents : ":" + ki.contents
-                do_cmdline_cmd("normal " + cmd) //TODO not working as expected
-            }
+            throw EKEditingError.info("[imp] not implemented yet")
+//            action = { /* [unowned self] */ _ in
+//                let cmd = ki.contents.hasPrefix(":") ? ki.contents : ":" + ki.contents
+//                do_cmdline_cmd("normal " + cmd) //TODO not working as expected
+//            }
         }
-        
-        return EKKeyOption(title: ki.title, action: action, isSticky: isSticky) //TODO implement
     }
     
     func edit(with operations: [EKOperationInfo]) {
@@ -428,6 +448,29 @@ typealias NodeDict = [String: Any]
 
 enum EKEditingError: Error {
     case info(String)
+}
+
+enum EKModifierKey: String {
+    case alt
+    case command
+    case control
+    case meta
+    case shift
+    
+    init?(name: String?) {
+        guard let n = name else { return nil }
+        self.init(rawValue: n)
+    }
+    
+    var keyString: String {
+        switch self {
+        case .alt: return "A"
+        case .command: return "D"
+        case .control: return "C"
+        case .meta: return "M"
+        case .shift: return "S"
+        }
+    }
 }
 
 enum EKKeyType: String {

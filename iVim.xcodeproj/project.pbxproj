@@ -142,6 +142,7 @@
 		DE7BA7E41F21F74000705E67 /* vimrc in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E31F21F74000705E67 /* vimrc */; };
 		DE7BA7E61F22037C00705E67 /* beep-07.wav in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E51F22037C00705E67 /* beep-07.wav */; };
 		DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41F1F209661007AFD63 /* VimFunctions.swift */; };
+		DED04866209EA7B900D744EE /* ModifiersArranger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED04865209EA7B900D744EE /* ModifiersArranger.swift */; };
 		DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */; };
 		DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */; };
 		DEE31E961F4BF712000CA9E8 /* Stack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E941F4BF712000CA9E8 /* Stack.swift */; };
@@ -2968,6 +2969,7 @@
 		DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.ttf"; sourceTree = "<group>"; };
 		DE7BA7E31F21F74000705E67 /* vimrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vimrc; sourceTree = "<group>"; };
 		DE7BA7E51F22037C00705E67 /* beep-07.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "beep-07.wav"; sourceTree = "<group>"; };
+		DED04865209EA7B900D744EE /* ModifiersArranger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModifiersArranger.swift; sourceTree = "<group>"; };
 		DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandTokenizer.swift; sourceTree = "<group>"; };
 		DEE31E941F4BF712000CA9E8 /* Stack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stack.swift; sourceTree = "<group>"; };
@@ -3048,6 +3050,7 @@
 				DE44D41A1F209627007AFD63 /* OptionalButtonsBar.swift */,
 				DE44D41B1F209627007AFD63 /* VimViewController+ExtendedKeyboard.swift */,
 				DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */,
+				DED04865209EA7B900D744EE /* ModifiersArranger.swift */,
 			);
 			name = "Extended Keyboard";
 			sourceTree = "<group>";
@@ -7133,6 +7136,7 @@
 				DE5C51901F6E159100373B92 /* sort.c in Sources */,
 				DE7BA7CB1F21F01900705E67 /* tag.c in Sources */,
 				DE7BA7C01F21EEB300705E67 /* misc2.c in Sources */,
+				DED04866209EA7B900D744EE /* ModifiersArranger.swift in Sources */,
 				DE5C51AE1F6E16B900373B92 /* yacc.c in Sources */,
 				DE7BA79F1F21A77C00705E67 /* VimViewController+UITextInput.swift in Sources */,
 				DE7BA7D81F21F2B800705E67 /* crypt_zip.c in Sources */,

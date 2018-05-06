@@ -19,13 +19,17 @@ private let margin = CGFloat(3)
 class OptionalButton: UIView {
     var info = [Int: KeyInfo]()
     var isSwitch = false
-    var effectiveInfo: KeyInfo?
+    var transformingInfo: KeyInfo?
     var initTranslation: CGPoint?
     var startLocation: CGPoint!
-    fileprivate(set) var isOn = false
-    fileprivate var isHeld = false
+    private(set) var isOn = false
+    private(set) var isHeld = false
     var primaryFontSize: CGFloat!
     var optionalFontSize: CGFloat!
+    private var primaryInfo: KeyInfo?
+    var effectiveInfo: KeyInfo? {
+        return self.transformingInfo ?? self.primaryInfo
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -122,11 +126,13 @@ extension OptionalButton {
     }
     
     private func setPrimaryKey(for option: EKKeyOption) {
+        let primaryPoint = CGPoint(0.5, 0.5)
         self.addLayer(
             option: option,
             color: .black,
             fontSize: primaryFontSize,
-            anchorPoint: CGPoint(0.5, 0.5))
+            anchorPoint: primaryPoint)
+        self.primaryInfo = self.info[primaryPoint.key]
     }
 }
 
@@ -145,11 +151,12 @@ extension OptionalButton {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.doAction()
+//        self.doAction()
         if self.effectiveInfo?.isSticky ?? false {
             self.toggleHeld(with: touches.first!)
             self.toggleSticky()
         }
+        self.doAction() // put it here for the ability of querying *on* state in the action
         if !self.isOn { self.restore() }
     }
     
@@ -172,24 +179,30 @@ extension OptionalButton {
             self.isHeld = false
             return
         }
-        guard self.isOn,
-            let key = self.key(for: self.translation(for: touch)),
-            self.info[key]?.layer == self.effectiveInfo?.layer else { return }
+        guard self.isOn else { return }
+        var targetLayer: CATextLayer?
+        if let ti = self.transformingInfo { // transforming info
+            let tl = ti.layer
+            let translation = self.translation(for: touch)
+            if let key = self.key(for: translation),
+                self.info[key]?.layer == tl {
+                targetLayer = tl
+            }
+        } else { // primary info
+            targetLayer = self.primaryInfo?.layer
+        }
+        guard let l = targetLayer else { return }
         self.isHeld = true
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         self.layer.backgroundColor = UIColor.darkGray.cgColor
-        self.effectiveInfo?.layer.foregroundColor = UIColor.white.cgColor
+        l.foregroundColor = UIColor.white.cgColor
         CATransaction.commit()
     }
     
     private func toggleSticky() {
         guard !self.isHeld else { return }
         self.isOn = !self.isOn
-    }
-    
-    fileprivate var primaryInfo: KeyInfo? {
-        return self.info[CGPoint(0.5, 0.5).key]
     }
     
     private func key(for translation: CGPoint) -> Int? {
@@ -220,18 +233,28 @@ extension OptionalButton {
     private func initInfo(for translation: CGPoint) -> KeyInfo? {
         guard let k = self.key(for: translation) else { return nil }
         let i = self.info[k]
-        self.effectiveInfo = i
+        self.transformingInfo = i
         self.initTranslation = translation
-        self.updateLayers(reset: false)
+        self.updateLayers(reset: false,
+                          target: i,
+                          color: .black)
         
         return i
     }
     
     private func reset() {
-        guard let i = self.effectiveInfo else { return }
-        self.transform(layer: i.layer, scale: 1)
-        self.updateLayers(reset: true)
-        self.effectiveInfo = nil
+        let target: KeyInfo?
+        let color: UIColor
+        if let i = self.transformingInfo {
+            self.transform(layer: i.layer, scale: 1)
+            target = i
+            color = .gray
+            self.transformingInfo = nil
+        } else {
+            target = self.primaryInfo
+            color = .black
+        }
+        self.updateLayers(reset: true, target: target, color: color)
         self.initTranslation = nil
     }
     
@@ -240,9 +263,9 @@ extension OptionalButton {
         self.reset()
     }
     
-    func isOn(withTitle title: String) -> Bool {
-        return self.isOn && (self.effectiveInfo?.layer.string as? String) == title
-    }
+//    func isOn(withTitle title: String) -> Bool {
+//        return self.isOn && (self.effectiveInfo?.layer.string as? String) == title
+//    }
     
     func tryRestore() {
         guard !self.isHeld else { return }
@@ -256,7 +279,7 @@ extension OptionalButton {
         }
         let i: KeyInfo?
         if t.isInSamePhase(of: translation) {
-            i = self.effectiveInfo
+            i = self.transformingInfo
         } else {
             self.reset()
             i = self.initInfo(for: translation)
@@ -265,13 +288,12 @@ extension OptionalButton {
         return i
     }
     
-    private func updateLayers(reset: Bool) {
-        guard let ei = self.effectiveInfo else { return }
+    private func updateLayers(reset: Bool, target: KeyInfo?, color: UIColor) {
+        guard let i = target else { return }
         CATransaction.begin()
         CATransaction.setAnimationDuration(0.18)
-        let color: UIColor = reset ? .gray : .black
-        ei.layer.foregroundColor = color.cgColor
-        for l in self.info.values where l.layer !== ei.layer {
+        i.layer.foregroundColor = color.cgColor
+        for l in self.info.values where l.layer !== i.layer {
             l.layer.opacity = reset ? 1 : 0
         }
         CATransaction.commit()
@@ -285,8 +307,7 @@ extension OptionalButton {
     }
     
     private func doAction() {
-        let i = self.effectiveInfo ?? self.primaryInfo
-        i?.action?(self)
+        self.effectiveInfo?.action?(self)
     }
 }
 
@@ -325,4 +346,12 @@ struct KeyInfo {
     let layer: CATextLayer
     let action: Action?
     let isSticky: Bool
+}
+
+typealias KeyInfoID = CATextLayer
+
+extension KeyInfo {
+    var identifier: KeyInfoID {
+        return self.layer
+    }
 }
