@@ -157,7 +157,9 @@ extension OptionalButton {
             self.toggleSticky()
         }
         self.doAction() // put it here for the ability of querying *on* state in the action
-        if !self.isOn { self.restore() }
+        if !self.isOn {
+            self.restore()
+        }
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -259,8 +261,10 @@ extension OptionalButton {
     }
     
     private func restore() {
-        self.layer.backgroundColor = UIColor.white.cgColor
-        self.reset()
+        DispatchQueue.main.async {
+            self.layer.backgroundColor = UIColor.white.cgColor
+            self.reset()
+        }
     }
     
 //    func isOn(withTitle title: String) -> Bool {
