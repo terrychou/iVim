@@ -25,7 +25,7 @@ extension OptionalButtonsBar {
     }
     
     func updateButtons() {
-        guard self.buttons.count > 0 else { return }
+//        guard self.buttons.count > 0 else { return }
         self.subviews.forEach { $0.removeFromSuperview() }
         let m = self.measure
         let width = self.buttonWidth ?? m

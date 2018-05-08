@@ -141,6 +141,8 @@
 		DE7BA7E21F21F57E00705E67 /* SourceCodePro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */; };
 		DE7BA7E41F21F74000705E67 /* vimrc in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E31F21F74000705E67 /* vimrc */; };
 		DE7BA7E61F22037C00705E67 /* beep-07.wav in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E51F22037C00705E67 /* beep-07.wav */; };
+		DE863ACF20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */; };
+		DE863AD120A18297000FC5F8 /* FileLineReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863AD020A18297000FC5F8 /* FileLineReader.swift */; };
 		DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41F1F209661007AFD63 /* VimFunctions.swift */; };
 		DED04866209EA7B900D744EE /* ModifiersArranger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED04865209EA7B900D744EE /* ModifiersArranger.swift */; };
 		DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */; };
@@ -2969,6 +2971,8 @@
 		DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.ttf"; sourceTree = "<group>"; };
 		DE7BA7E31F21F74000705E67 /* vimrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vimrc; sourceTree = "<group>"; };
 		DE7BA7E51F22037C00705E67 /* beep-07.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "beep-07.wav"; sourceTree = "<group>"; };
+		DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardConfigNodes.swift; sourceTree = "<group>"; };
+		DE863AD020A18297000FC5F8 /* FileLineReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileLineReader.swift; sourceTree = "<group>"; };
 		DED04865209EA7B900D744EE /* ModifiersArranger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModifiersArranger.swift; sourceTree = "<group>"; };
 		DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandTokenizer.swift; sourceTree = "<group>"; };
@@ -3050,6 +3054,8 @@
 				DE44D41A1F209627007AFD63 /* OptionalButtonsBar.swift */,
 				DE44D41B1F209627007AFD63 /* VimViewController+ExtendedKeyboard.swift */,
 				DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */,
+				DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */,
+				DE863AD020A18297000FC5F8 /* FileLineReader.swift */,
 				DED04865209EA7B900D744EE /* ModifiersArranger.swift */,
 			);
 			name = "Extended Keyboard";
@@ -7050,6 +7056,7 @@
 				DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */,
 				DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */,
 				DE5C519B1F6E160700373B92 /* dosbatch.c in Sources */,
+				DE863ACF20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift in Sources */,
 				DE5C51B11F6E16CB00373B92 /* cobol.c in Sources */,
 				DE5C51B01F6E16C500373B92 /* verilog.c in Sources */,
 				DE7BA7B61F21E8D800705E67 /* getchar.c in Sources */,
@@ -7109,6 +7116,7 @@
 				DE7BA7D71F21F28900705E67 /* crypt.c in Sources */,
 				DE5C518F1F6E158400373B92 /* eiffel.c in Sources */,
 				DE7BA7CE1F21F17200705E67 /* fold.c in Sources */,
+				DE863AD120A18297000FC5F8 /* FileLineReader.swift in Sources */,
 				DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */,
 				DE5C51A91F6E168700373B92 /* ocaml.c in Sources */,
 				DE7BA7971F21A76100705E67 /* OptionalButton.swift in Sources */,

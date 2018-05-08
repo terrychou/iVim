@@ -31,15 +31,15 @@ extension ExtendedKeyboardManager {
         self.controller = c
     }
     
-    @objc func setKeyboard(with arguments: String, confirmed: Bool) {
-        NSLog("isetekbd: \"\(arguments)\"")
-        if !arguments.isEmpty {
-            let o = object_of_expr(arguments)
-            let ops = self.operations(from: o)
-            //        print(o)
-            print(ops)
-            //        self.edit(with: self.test)
-            self.edit(with: ops)
+    @objc func setKeyboard(with cmdArg: String, confirmed: Bool) {
+        NSLog("isetekbd: \"\(cmdArg)\"")
+        let item = cmdArg.trimmingCharacters(in: .whitespaces)
+        do {
+            try self.sourceItem(item)
+        } catch EKError.info(let msg) {
+            self.showError(msg)
+        } catch {
+            NSLog("[system] failed to generate operations")
         }
         if confirmed {
             self.confirmChanges()
@@ -54,50 +54,6 @@ extension ExtendedKeyboardManager {
     
     private func undoChanges() {
         self.sandbox = self.extendedBar.buttons
-    }
-}
-
-extension Character {
-    func isMemberOf(_ characterSet: CharacterSet) -> Bool {
-        let ns = CharacterSet(charactersIn: String(self))
-        return ns.isSubset(of: characterSet)
-    }
-}
-
-extension ExtendedKeyboardManager {
-    private func parseArguments(_ arg: String) -> (subcmd: EKSubcommand?, arg: String) {
-        var sc: String?
-        let retarg: String
-        if arg.hasPrefix("{") || arg.hasPrefix("[") {
-            retarg = arg.trimmingCharacters(in: .whitespaces)
-        } else if let r = arg.rangeOfCharacter(from: .whitespaces) {
-            sc = String(arg[..<r.lowerBound])
-            retarg = arg[r.upperBound...].trimmingCharacters(in: .whitespaces)
-        } else {
-            sc = arg.trimmingCharacters(in: .whitespaces)
-            retarg = ""
-        }
-        
-        return (EKSubcommand(name: sc), retarg)
-    }
-    
-}
-
-enum EKSubcommand: String {
-    case apply
-    case clear
-    case `default`
-    case opappend
-    case opinsert
-    case opremove
-    case opreplace
-    
-    init?(name: String?) {
-        guard var n = name else { return nil }
-        if n.hasPrefix(".") {
-            n = "op" + n.dropFirst()
-        }
-        self.init(rawValue: n)
     }
 }
 
@@ -276,15 +232,19 @@ extension ExtendedKeyboardManager {
     
     private func edit(with operation: EKOperationInfo) throws {
         switch operation.op {
-        case .append: try self.append(for: operation)
-        case .insert: try self.insert(for: operation)
-        case .remove: try self.remove(for: operation)
-        case .replace: try self.replace(for: operation)
+        case .append: try self.doAppend(for: operation)
+        case .insert: try self.doInsert(for: operation)
+        case .remove: try self.doRemove(for: operation)
+        case .replace: try self.doReplace(for: operation)
+        case .apply: try self.doApply(for: operation)
+        case .clear: try self.doClear(for: operation)
+        case .default: try self.doDefault(for: operation)
+        case .source: try self.doSource(for: operation)
 //        default: NSLog("Not implemented yet.")
         }
     }
     
-    private func remove(for op: EKOperationInfo) throws {
+    private func doRemove(for op: EKOperationInfo) throws {
         guard let bLocs = op.locations else {
             throw EKError.info("[remove] no target locations")
         }
@@ -309,7 +269,7 @@ extension ExtendedKeyboardManager {
         }
     }
     
-    private func insert(for op: EKOperationInfo) throws {
+    private func doInsert(for op: EKOperationInfo) throws {
         guard let bLocs = op.locations else {
             throw EKError.info("[insert] no target locations")
         }
@@ -347,8 +307,8 @@ extension ExtendedKeyboardManager {
         }
     }
     
-    private func append(for op: EKOperationInfo) throws {
-        // *append* can append buttons or keys to specific buttons
+    private func doAppend(for op: EKOperationInfo) throws {
+        // *append* appends buttons or keys to specific buttons
         //
         // 1. when the operation node doesn't have the *locations*
         // property, it means appending buttons only. All the buttons
@@ -401,8 +361,8 @@ extension ExtendedKeyboardManager {
         }
     }
     
-    private func replace(for op: EKOperationInfo) throws {
-        // *replace* can replace buttons or keys of specific buttons
+    private func doReplace(for op: EKOperationInfo) throws {
+        // *replace* replaces buttons or keys of specific buttons
         //
         // 1. *locations* of each node indicates the item to be replaced.
         // This property must present in an operation node, or there is no
@@ -419,7 +379,7 @@ extension ExtendedKeyboardManager {
         // 4. an error will emerge if the substitution items (items in
         // *buttons* or *keys*) size is less than that of *locations*.
         
-        guard let bLocs = op.locations?.locations else {
+        guard let bLocs = op.locations?.locations, bLocs.count > 0 else {
             throw EKError.info("[replace] no target button locations")
         }
         guard let subBtns = op.buttons?.array, subBtns.count >= bLocs.count else {
@@ -449,6 +409,109 @@ extension ExtendedKeyboardManager {
                 self.sandbox.replaceSubrange(bl..<bl + 1, with: [newBtn])
             }
         }
+    }
+    
+    private func doApply(for op: EKOperationInfo) throws {
+        // *apply* applies the pending edits
+        //
+        // before applying, all the edits will be within the sandbox.
+        // The extended bar will not update with the edits until this
+        // operation.
+        //
+        // this operation has the same effects as the bang
+        // command (:isetekbd!)
+        //
+        // no argument is needed
+        
+        self.confirmChanges()
+    }
+    
+    private func doClear(for op: EKOperationInfo) throws {
+        // *clear* removes all existing buttons
+        //
+        // no argument is needed
+        
+        self.sandbox.removeAll()
+    }
+    
+    private func doDefault(for op: EKOperationInfo) throws {
+        // *default* reverts the buttons to the default ones
+        //
+        // no argument is needed
+        
+        self.sandbox = self.defaultButtons
+    }
+    
+    private func doSource(for op: EKOperationInfo) throws {
+        // *source* reads the configurations in the given files
+        // and does the edits respectively
+        //
+        // 1. one *source* operation can read a bunch of
+        // configuration files and process them orderly. The file
+        // paths can be given as a vim string list.
+        //
+        // 2. the basic unit of a configuration file is a
+        // configuration item. One item is a :isetekbd command
+        // without the command name. (e.g. "clear" or "remove {...")
+        // The *source* operation will process the items one by
+        // one, like running one :isetekbd command after another.
+        //
+        // 3. the configuration file comply with the line continuation
+        // rule of vim (:h line-continuation).
+        //
+        // 4. the *source* operation will stop and cancel the effects
+        // of already processed configuration items when it encounters
+        // an error in the configuration file.
+        //
+        // 5. vim style comments are also supported in the configuration
+        // file.??? TODO
+        
+        let paths: [String]
+        if let s = op.arguments as? String { // string argument
+            paths = CommandTokenizer(line: s).run()
+        } else if let l = op.arguments as? [String] {
+            paths = l
+        } else {
+            throw EKError.info("[source] invalid argument")
+        }
+        guard paths.count > 0 else {
+            throw EKError.info("[source] no target files")
+        }
+        let backup = self.sandbox
+        do {
+            try paths.forEach { try self.sourceFile(at: $0) }
+        } catch { // something is wrong (4.)
+            self.sandbox = backup
+            throw error
+        }
+    }
+    
+    private func sourceFile(at path: String) throws {
+        guard let reader = LineReader(file: fopen(path, "r")) else {
+            throw EKError.info("[source] failed to open file at \(path)")
+        }
+        NSLog("source file at: \(path)")
+        var item = ""
+        var line = ""
+        for l in reader {
+            line = l.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !line.isEmpty else { continue } // ignore empty line
+            if line.hasPrefix("\\") { // it is a continued line
+                item += line.dropFirst()
+            } else { // it is a new item
+                try self.sourceItem(item)
+                item = line
+            }
+        }
+        try self.sourceItem(item) // source the last item
+    }
+    
+    private func sourceItem(_ item: String) throws {
+        NSLog("source item: \(item)")
+        guard !item.isEmpty else { return }
+        let ops = try EKOperationInfo.operations(from: item)
+        NSLog("\(ops)")
+        try self.edit(with: ops)
     }
     
     private func newButton(for bi: EKButtonInfo) throws -> [EKKeyOption] {
@@ -482,232 +545,9 @@ extension ExtendedKeyboardManager {
         }
     }
     
-    func edit(with operations: [EKOperationInfo]) {
-        do {
-            for op in operations {
-                try self.edit(with: op)
-            }
-        } catch EKError.info(let i) {
-//            NSLog(i)
-            self.showError(i)
-        } catch {
-            NSLog("Failed to edit extended keyboard: \(error)")
+    func edit(with operations: [EKOperationInfo]) throws {
+        for op in operations {
+            try self.edit(with: op)
         }
-    }
-    
-    private func operations(from object: Any?) -> [EKOperationInfo] {
-        var result = [EKOperationInfo]()
-        do {
-            if let array = object as? NodeArray {
-                result = try array.compactMap { try EKOperationInfo(object: $0) }
-            } else if let op = try EKOperationInfo(object: object) {
-                result.append(op)
-            }
-        } catch EKError.info(let msg) {
-//            NSLog(msg)
-            self.showError(msg)
-        } catch {
-            NSLog("Faild to parse for operations: \(error)")
-        }
-        
-        return result
-    }
-}
-
-typealias NodeArray = [Any]
-typealias NodeDict = [String: Any]
-
-enum EKError: Error {
-    case info(String)
-}
-
-enum EKModifierKey: String {
-    case alt
-    case command
-    case control
-    case meta
-    case shift
-    
-    init?(name: String?) {
-        guard let n = name else { return nil }
-        self.init(rawValue: n)
-    }
-    
-    var keyString: String {
-        switch self {
-        case .alt: return "A"
-        case .command: return "D"
-        case .control: return "C"
-        case .meta: return "M"
-        case .shift: return "S"
-        }
-    }
-}
-
-enum EKSpecialKey: String {
-    case esc
-    case up
-    case down
-    case left
-    case right
-    case tab
-    
-    init?(name: String?) {
-        guard let n = name else { return nil }
-        self.init(rawValue: n)
-    }
-}
-
-enum EKKeyType: String {
-    case command
-    case insert
-    case modifier
-    case special
-    
-    init?(name: String?) {
-        guard let n = name else { return nil }
-        self.init(rawValue: n)
-    }
-}
-
-private let kType = "type"
-private let kTitle = "title"
-private let kContents = "contents"
-
-struct EKKeyInfo: EKParseNode {
-    let type: EKKeyType
-    let title: String
-    let contents: String
-}
-
-extension EKKeyInfo {
-    init?(object: Any?) throws {
-        guard let d = object as? NodeDict else {
-            throw EKError.info("invalid key node: \(object ?? "nil")")
-        }
-        guard let tp = EKKeyType(name: d.anyValue(for: kType)) else {
-            throw EKError.info("no type for key: \(d)")
-        }
-        guard let tl: String = d.anyValue(for: kTitle), !tl.isEmpty else {
-            throw EKError.info("no title for key: \(d)")
-        }
-        guard let cnt: String = d.anyValue(for: kContents), !cnt.isEmpty else {
-            throw EKError.info("no contents for key: \(d)")
-        }
-        self.init(type: tp, title: tl, contents: cnt)
-    }
-}
-
-private let kKeys = "keys"
-
-struct EKButtonInfo: EKParseNode {
-    let locations: EKLocationsInfo?
-    let keys: EKSubitems<EKKeyInfo>?
-}
-
-extension EKButtonInfo {
-    init?(object: Any?) throws {
-        guard let d = object as? NodeDict else {
-            throw EKError.info("invalid button node: \(object ?? "nil")")
-        }
-        let locs = try EKLocationsInfo(object: d.anyValue(for: kLocations))
-        let keys = try EKSubitems<EKKeyInfo>(object: d.anyValue(for: kKeys))
-        self.init(locations: locs, keys: keys)
-    }
-}
-
-enum EKOperation: String {
-    case append
-    case insert
-    case remove
-    case replace
-    
-    init?(name: String?) {
-        guard let n = name else { return nil }
-        self.init(rawValue: n)
-    }
-}
-
-struct EKLocationsInfo: EKParseNode {
-    let locations: [Int]
-}
-
-extension EKLocationsInfo {
-    init?(object: Any?) throws {
-        if object == nil {
-            return nil
-        }
-        guard let locs = object as? [Int] else {
-            throw EKError.info("invalid locations \(object!)")
-        }
-        self.init(locations: locs)
-    }
-    
-    subscript(_ i: Int) -> Int {
-        return self.locations[i]
-    }
-}
-
-private let kOperation = "operation"
-private let kLocations = "locations"
-private let kButtons = "buttons"
-
-struct EKOperationInfo {
-    let op: EKOperation
-    let locations: EKLocationsInfo?
-    let buttons: EKSubitems<EKButtonInfo>?
-}
-
-extension EKOperationInfo: EKParseNode {
-    init?(object: Any?) throws {
-        guard let d = object as? NodeDict else {
-            throw EKError.info("invalid operation node: \(object ?? "nil")")
-        }
-        guard let op = EKOperation(name: d.anyValue(for: kOperation)) else {
-            throw EKError.info("no valid operation for node: \(d)")
-        }
-        let locations = try EKLocationsInfo(object: d.anyValue(for: kLocations))
-        let buttons = try EKSubitems<EKButtonInfo>(object: d.anyValue(for: kButtons))
-        self.init(op: op, locations: locations, buttons: buttons)
-    }
-}
-
-private extension Dictionary where Key: StringProtocol {
-    func anyValue<T>(for key: Key) -> T? {
-        return self[key] as? T
-    }
-}
-
-protocol EKParseNode {
-    init?(object: Any?) throws
-}
-
-struct EKSubitems<T: EKParseNode>: EKParseNode {
-    let array: [T]?
-    let dict: [Int: T]?
-}
-
-extension EKSubitems {
-    init?(object: Any?) throws {
-        var array: [T]? = nil
-        var dict: [Int: T]? = nil
-        if let a = object as? NodeArray {
-            array = []
-            for e in a {
-                if let si = try T(object: e) {
-                    array!.append(si)
-                }
-            }
-        } else if let d = object as? NodeDict {
-            dict = [:]
-            for (k, o) in d {
-                if let i = Int(k) {
-                    dict![i] = try T(object: o)
-                } else {
-                    throw EKError.info("invalid location \"\(k)\"")
-                }
-            }
-        }
-        self.init(array: array, dict: dict)
     }
 }
