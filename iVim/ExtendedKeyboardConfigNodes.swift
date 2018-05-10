@@ -33,10 +33,19 @@ enum EKOperation: String {
     case clear
     case `default`
     case source
+    case compose
+    case normal
+    case undo
+    case redo
+    case export
     
     init?(name: String?) {
         guard let n = name else { return nil }
         self.init(rawValue: n)
+    }
+    
+    var name: String {
+        return self.rawValue
     }
 }
 
@@ -99,6 +108,7 @@ struct EKOperationInfo {
     let locations: EKLocationsInfo?
     let buttons: EKSubitems<EKButtonInfo>?
     let arguments: Any?
+    let isForced: Bool
 }
 
 extension EKOperationInfo: EKParseNode {
@@ -106,15 +116,24 @@ extension EKOperationInfo: EKParseNode {
         guard let d = object as? NodeDict else {
             throw EKError.info("invalid operation node: \(object ?? "nil")")
         }
-        guard let op = EKOperation(name: d.anyValue(for: kOperation)) else {
-            throw EKError.info("no valid operation for node: \(d)")
+        guard var name: String = d.anyValue(for: kOperation) else {
+            throw EKError.info("no operation name for node: \(d)")
+        }
+        var isForced = false
+        if name.hasSuffix("!") {
+            isForced = true
+            name.removeLast()
+        }
+        guard let op = EKOperation(name: name) else {
+            throw EKError.info("invalid operation name \(name)")
         }
         let locations = try EKLocationsInfo(object: d.anyValue(for: kLocations))
         let buttons = try EKSubitems<EKButtonInfo>(object: d.anyValue(for: kButtons))
         self.init(op: op,
                   locations: locations,
                   buttons: buttons,
-                  arguments: d.anyValue(for: kArguments))
+                  arguments: d.anyValue(for: kArguments),
+                  isForced: isForced)
     }
 }
 

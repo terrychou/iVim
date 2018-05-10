@@ -10,6 +10,7 @@
 		DE0D2EC8205A1797004C29F8 /* ArgumentToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */; };
 		DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */; };
 		DE1ADB792099549200B21E9E /* ExtendedKeyboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */; };
+		DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */; };
 		DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3B043B205B7087009F81E8 /* URLOpener.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
@@ -197,6 +198,7 @@
 		DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArgumentToken.swift; sourceTree = "<group>"; };
 		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLRealizer.swift; sourceTree = "<group>"; };
 		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
+		DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardEditingHistory.swift; sourceTree = "<group>"; };
 		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLOpener.swift; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
@@ -3054,6 +3056,7 @@
 				DE44D41A1F209627007AFD63 /* OptionalButtonsBar.swift */,
 				DE44D41B1F209627007AFD63 /* VimViewController+ExtendedKeyboard.swift */,
 				DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */,
+				DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */,
 				DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */,
 				DE863AD020A18297000FC5F8 /* FileLineReader.swift */,
 				DED04865209EA7B900D744EE /* ModifiersArranger.swift */,
@@ -7094,6 +7097,7 @@
 				DE5C51A41F6E166000373B92 /* options.c in Sources */,
 				DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */,
 				DE7BA7BB1F21EB7C00705E67 /* term.c in Sources */,
+				DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */,
 				DE7BA7AD1F21E63400705E67 /* misc1.c in Sources */,
 				DE5C51B61F6E170500373B92 /* html.c in Sources */,
 				DE7BA7951F21A75400705E67 /* URLSchemeWorker.swift in Sources */,

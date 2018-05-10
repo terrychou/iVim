@@ -9,7 +9,28 @@
 import UIKit
 
 let gEKM = ExtendedKeyboardManager.shared
-private typealias EKButtons = [[EKKeyOption]]
+typealias EKButtons = [[EKKeyOption]]
+
+private enum EKMode {
+    case compose
+    //   compose: this mode is for experimenting and composing
+    //   configuration files. Each editing item will update
+    //   the bar immediately and be recorded into the editing
+    //   history. As a result, you can edit the bar more
+    //   conveniently: using *undo* to undo one item; *redo* to
+    //   redo one item; *export* to export items so far to a
+    //   configuration file for future sourcing.
+    case normal
+    //   normal: this is for editing on the command line without
+    //   history records.
+    //   The bar will not be updated until the next *apply*
+    //   operation. The editing items will not be recorded
+    //   therefore all history-related operations will not work
+    //   in this mode.
+    case source
+    //   source: it is like .normal and indicates that it is
+    //   during a sourcing.
+}
 
 final class ExtendedKeyboardManager: NSObject {
     @objc static let shared = ExtendedKeyboardManager()
@@ -18,12 +39,17 @@ final class ExtendedKeyboardManager: NSObject {
     private weak var controller: VimViewController!
     lazy var extendedBar: OptionalButtonsBar = {
         let newBar = self.newBar()
-        self.sandbox = newBar.buttons //initialize sandbox
+        self.sandbox = newBar.buttons // initialize sandbox
         
         return newBar
     }()
-    private var sandbox: EKButtons! //operate on it before confirmation
+    private var sandbox: EKButtons! // operate on it before confirmation
     private lazy var modifiers = EKModifiersArranger()
+    
+    private lazy var history = EKEditingHistory()
+    private var mode: EKMode = .normal
+    private var operationsCount: Int = 0 // record the amount of operations for each item
+    private var allowedInHistory = true
 }
 
 extension ExtendedKeyboardManager {
@@ -34,15 +60,17 @@ extension ExtendedKeyboardManager {
     @objc func setKeyboard(with cmdArg: String, confirmed: Bool) {
         NSLog("isetekbd: \"\(cmdArg)\"")
         let item = cmdArg.trimmingCharacters(in: .whitespaces)
+        self.allowedInHistory = true // allowed by default
         do {
             try self.sourceItem(item)
+            self.addHistory(with: item)
+            if confirmed || self.isComposing {
+                self.confirmChanges()
+            }
         } catch EKError.info(let msg) {
             self.showError(msg)
         } catch {
-            NSLog("[system] failed to generate operations")
-        }
-        if confirmed {
-            self.confirmChanges()
+            NSLog("[system] failed to generate operations \(error)")
         }
     }
     
@@ -51,9 +79,26 @@ extension ExtendedKeyboardManager {
         self.extendedBar.updateButtons()
         self.modifiers.clear()
     }
+}
+
+extension ExtendedKeyboardManager {
+    private var isComposing: Bool {
+        return self.mode == .compose
+    }
     
-    private func undoChanges() {
-        self.sandbox = self.extendedBar.buttons
+    private var isSourcing: Bool {
+        return self.mode == .source
+    }
+    
+    private var isSingleOperation: Bool {
+        return self.operationsCount == 1
+    }
+    
+    private func addHistory(with item: String) {
+        guard self.isComposing &&
+            self.allowedInHistory else { return }
+        self.history.add(buttons: self.sandbox,
+                         sourceItem: item)
     }
 }
 
@@ -230,16 +275,21 @@ extension ExtendedKeyboardManager {
         gSVO.showError(msg.escaping("\""))
     }
     
-    private func edit(with operation: EKOperationInfo) throws {
-        switch operation.op {
-        case .append: try self.doAppend(for: operation)
-        case .insert: try self.doInsert(for: operation)
-        case .remove: try self.doRemove(for: operation)
-        case .replace: try self.doReplace(for: operation)
-        case .apply: try self.doApply(for: operation)
-        case .clear: try self.doClear(for: operation)
-        case .default: try self.doDefault(for: operation)
-        case .source: try self.doSource(for: operation)
+    private func edit(with op: EKOperationInfo) throws {
+        switch op.op {
+        case .append: try self.doAppend(for: op)
+        case .insert: try self.doInsert(for: op)
+        case .remove: try self.doRemove(for: op)
+        case .replace: try self.doReplace(for: op)
+        case .apply: try self.doApply(for: op)
+        case .clear: try self.doClear(for: op)
+        case .default: try self.doDefault(for: op)
+        case .source: try self.doSource(for: op)
+        case .compose: try self.doCompose(for: op)
+        case .normal: try self.doNormal(for: op)
+        case .undo: try self.doUndo(for: op)
+        case .redo: try self.doRedo(for: op)
+        case .export: try self.doExport(for: op)
 //        default: NSLog("Not implemented yet.")
         }
     }
@@ -442,6 +492,19 @@ extension ExtendedKeyboardManager {
         self.sandbox = self.defaultButtons
     }
     
+    private func paths(from op: EKOperationInfo) throws -> [String] {
+        let paths: [String]
+        if let s = op.arguments as? String { // string argument
+            paths = CommandTokenizer(line: s).run()
+        } else if let l = op.arguments as? [String] {
+            paths = l
+        } else {
+            throw EKError.info("[\(op.op.name)] invalid argument")
+        }
+        
+        return paths.map { $0.nsstring.expandingTildeInPath }
+    }
+    
     private func doSource(for op: EKOperationInfo) throws {
         // *source* reads the configurations in the given files
         // and does the edits respectively
@@ -463,25 +526,20 @@ extension ExtendedKeyboardManager {
         // of already processed configuration items when it encounters
         // an error in the configuration file.
         //
-        // 5. vim style comments are also supported in the configuration
-        // file.??? TODO
+        // 5. lines beginning with " will be treated as comments
         
-        let paths: [String]
-        if let s = op.arguments as? String { // string argument
-            paths = CommandTokenizer(line: s).run()
-        } else if let l = op.arguments as? [String] {
-            paths = l
-        } else {
-            throw EKError.info("[source] invalid argument")
-        }
+        let paths = try self.paths(from: op)
         guard paths.count > 0 else {
             throw EKError.info("[source] no target files")
         }
         let backup = self.sandbox
+        let oldMode = self.mode
+        self.mode = .source // set the mode temporarily
+        defer { self.mode = oldMode } // restore to old mode anyway
         do {
             try paths.forEach { try self.sourceFile(at: $0) }
         } catch { // something is wrong (4.)
-            self.sandbox = backup
+            self.sandbox = backup // restore to state before sourcing
             throw error
         }
     }
@@ -492,26 +550,204 @@ extension ExtendedKeyboardManager {
         }
         NSLog("source file at: \(path)")
         var item = ""
-        var line = ""
-        for l in reader {
-            line = l.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !line.isEmpty else { continue } // ignore empty line
-            if line.hasPrefix("\\") { // it is a continued line
-                item += line.dropFirst()
+        for line in reader {
+            guard let l = self.validLine(from: line) else { continue } // ignore empty line or comments
+            if l.hasPrefix("\\") { // it is a continued line
+                item += l.dropFirst()
             } else { // it is a new item
                 try self.sourceItem(item)
-                item = line
+                item = l
             }
         }
         try self.sourceItem(item) // source the last item
     }
     
+    private func validLine(from line: String) -> String? {
+        let l = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        return l.isEmpty || l.hasPrefix("\"") ? nil : l
+    }
+    
     private func sourceItem(_ item: String) throws {
         NSLog("source item: \(item)")
+        self.operationsCount = 0
         guard !item.isEmpty else { return }
         let ops = try EKOperationInfo.operations(from: item)
-        NSLog("\(ops)")
+        self.operationsCount = ops.count
+//        NSLog("\(ops)")
         try self.edit(with: ops)
+    }
+    
+    private func validateComposeOperation(_ op: String) throws {
+        // test whether it is a valid compose operation environment
+        //
+        // 1. it can only run as a single operation, meaning it is
+        // an error if the operation is one of several operations of
+        // an item
+        //
+        // 2. it can only run from the command line, meaning it is
+        // an error when it is in a file being sourced
+        
+        guard self.isSingleOperation else {
+            throw EKError.info("[\(op)] only allowed as a single operation")
+        }
+        guard !self.isSourcing else {
+            throw EKError.info("[\(op)] not allowed during sourcing")
+        }
+    }
+    
+    private func doCompose(for op: EKOperationInfo) throws {
+        // *compose* starts the compose mode
+        //
+        // 1. the .compose mode is described in EKMode
+        //
+        // 2. this operation should only run in compose env
+        //
+        // 3. recorded in the editing history as the first item
+        //
+        // 4. no argument is required
+        
+        try self.validateComposeOperation("compose") // (2.)
+        guard !self.isComposing else {
+            throw EKError.info("[compose] already in compose mode")
+        }
+        self.mode = .compose // history works now
+    }
+    
+    private func doNormal(for op: EKOperationInfo) throws {
+        // *normal* starts the normal mode
+        //
+        // 1. its main use is to end the compose mode
+        //
+        // 2. it should only run in compose env
+        //
+        // 3. it will clear the history
+        //
+        // 4. not recorded in the editing history
+        //
+        // 5. no argument is required
+        
+        try self.validateComposeOperation("normal") // (2.)
+        guard self.mode != .normal else {
+            throw EKError.info("[normal] already in normal mode")
+        }
+        self.allowedInHistory = false
+        self.mode = .normal
+        self.history.clear() // clear the history (3., 4.)
+    }
+    
+    private func doUndo(for op: EKOperationInfo) throws {
+        // *undo* reverts the bar to the last state
+        //
+        // 1. it should only run in compose env
+        //
+        // 2. not recorded in editing history
+        //
+        // 3. no argument is required
+        
+        try self.validateComposeOperation("undo") // (1.)
+        guard self.isComposing else {
+            throw EKError.info("[undo] not in compose mode")
+        }
+        self.allowedInHistory = false // (2.)
+        if let i = self.history.undo() {
+            self.sandbox = i.buttons
+        } else {
+            throw EKError.info("[undo] already at the beginning of history")
+        }
+    }
+    
+    private func doRedo(for op: EKOperationInfo) throws {
+        // *redo* reverts the last *undo*
+        //
+        // 1. it should only run in compose env
+        //
+        // 2. not recorded in editing history
+        //
+        // 3. no argument is required
+        
+        try self.validateComposeOperation("redo") // (1.)
+        guard self.isComposing else {
+            throw EKError.info("[redo] not in compose mode")
+        }
+        self.allowedInHistory = false // (2.)
+        if let i = self.history.redo() {
+            self.sandbox = i.buttons
+        } else {
+            throw EKError.info("[redo] already at the end of history")
+        }
+    }
+    
+    private func doExport(for op: EKOperationInfo) throws {
+        // *export* exports editing items in current compose session
+        // into configuration files, for future use.
+        //
+        // 1. the editing items to be exported include those which
+        // had made the state since the beginning of the current
+        // compose session (i.e. items in history[1...index]). If there
+        // is no editing item yet, an error will be thrown
+        //
+        // 2. each editing item will take one line in the outcome
+        // file, one blank line will be inserted therefore padding
+        // between two items
+        //
+        // 3. it accepts one or more target paths as its arguments as
+        // *source* does. Each path will be tested for existence before
+        // exporting. It will be an error if any target path is directory.
+        // And any overwrite attempts will also be an error unless it is
+        // forced (i.e. "export!")
+        //
+        // 4. when no target file is given, it prints the result in
+        // the command window for review
+        //
+        // 5. it should only run in the compose env
+        //
+        // 6. itself will not be recorded in the editing history
+        
+        try validateComposeOperation("export") // (5.)
+        guard self.isComposing else {
+            throw EKError.info("[export] not in compose mode")
+        }
+        self.allowedInHistory = false // (6.)
+        
+        let paths = try self.paths(from: op)
+        // test paths (3.)
+        for p in paths {
+            var isDir = ObjCBool(false)
+            if FileManager.default.fileExists(atPath: p, isDirectory: &isDir) {
+                if isDir.boolValue {
+                    throw EKError.info("[export] '\(p)' is a directory")
+                } else if !op.isForced {
+                    throw EKError.info("[export] '\(p)' already exists, use 'export!' to force overwrite")
+                }
+            }
+        }
+        
+        // generate contents (1.)
+        let items = self.history.editingItems()
+        guard items.count > 0 else {
+            throw EKError.info("[export] not edited yet")
+        }
+        var contents = ""
+        for i in items {
+            contents += i + "\n\n" // (2.)
+        }
+        contents.removeLast(2) // no empty lines at the end
+        
+        if paths.count > 0 {
+            // write to targets
+            for p in paths {
+                do {
+                    try contents.write(toFile: p, atomically: true, encoding: .utf8)
+                } catch {
+                    NSLog("[export] failed to write to file: \(error)")
+                    throw EKError.info("[export] failed to write to file '\(p)'")
+                }
+            }
+        } else { // (4.)
+            let opname = "export" + (op.isForced ? "!" : "")
+            gSVO.showContent(contents, withCommand: "isetekbd \(opname)")
+        }
     }
     
     private func newButton(for bi: EKButtonInfo) throws -> [EKKeyOption] {
@@ -545,7 +781,7 @@ extension ExtendedKeyboardManager {
         }
     }
     
-    func edit(with operations: [EKOperationInfo]) throws {
+    private func edit(with operations: [EKOperationInfo]) throws {
         for op in operations {
             try self.edit(with: op)
         }

@@ -5,8 +5,7 @@
 //  It reads file line by line without reading it into
 //  the memory altogether.
 //
-//  It accepts a file handle instead of a file path string,
-//  in order to remind the caller to close the opened file.
+//  It accepts a file handle instead of a file path string.
 //
 //  The lines have the newline character attached.
 //
@@ -18,16 +17,20 @@
 
 import Foundation
 
-struct LineReader {
+final class LineReader {
     private let file: UnsafeMutablePointer<FILE>
+    
+    init?(file: UnsafeMutablePointer<FILE>?) {
+        guard let f = file else { return nil }
+        self.file = f
+    }
+    
+    deinit {
+        fclose(self.file)
+    }
 }
 
 extension LineReader {
-    init?(file: UnsafeMutablePointer<FILE>?) {
-        guard let f = file else { return nil }
-        self.init(file: f)
-    }
-    
     var nextLine: String? {
         var line: UnsafeMutablePointer<CChar>?
         var linecap: Int = 0
@@ -35,10 +38,6 @@ extension LineReader {
         
         return getline(&line, &linecap, self.file) > 0 ?
             String(cString: line!) : nil
-    }
-    
-    func close() {
-        fclose(self.file)
     }
 }
 
