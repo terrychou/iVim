@@ -132,6 +132,26 @@ void input_special_name(const char * name) {
 #define TONSSTRING(chars) [[NSString alloc] initWithUTF8String:(const char *)chars]
 #define TOCHARS(str) (char_u *)[str UTF8String]
 /*
+ * expand tilde (home directory) for *path*
+ * the original path will be returned if
+ * it is unnecessary to expand or the expanding failed.
+ *
+ * The NSString's expandingTildeInPath method will not
+ * work because the HOME path is different in vim
+ */
+NSString * expand_tilde_of_path(NSString * path) {
+    if (path == nil || ![path hasPrefix:@"~"]) {
+        return path;
+    }
+    char_u * p = TOCHARS(path);
+    int len = (int)STRLEN(p) + MAXPATHL + 1;
+    char_u buf[len];
+    expand_env(p, buf, len);
+    
+    return TONSSTRING(buf);
+}
+
+/*
  * get the absolute path of *path*
  */
 static NSString * full_path_of_path(const char * path) {
@@ -139,7 +159,7 @@ static NSString * full_path_of_path(const char * path) {
     NSString * p = TONSSTRING(path);
     NSString * res = nil;
     if ([p isAbsolutePath]) {
-        res = p;
+        res = expand_tilde_of_path(p);
     } else {
         NSString * cwd = [[NSFileManager defaultManager] currentDirectoryPath];
         NSURL * cwdURL = [NSURL fileURLWithPath:cwd];

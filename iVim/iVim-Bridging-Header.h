@@ -27,6 +27,8 @@ int const mouseRELEASE;
 void input_special_key(int key);
 void input_special_name(const char * name);
 
+NSString * expand_tilde_of_path(NSString * path);
+
 void ivim_reload_buffer_for_mirror(NSString * path);
 
 NSString * string_value_of_expr(const char * expr);

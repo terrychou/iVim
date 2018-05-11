@@ -102,6 +102,101 @@ protocol EKParseNode {
     init?(object: Any?) throws
 }
 
+protocol EKSubitemPairIteratable {
+    associatedtype EKSubitemType: EKParseNode
+    typealias EKSubitemPair = (Int?, EKSubitemType)
+    typealias EKLocationPair = (Int, EKSubitemType?)
+    
+    var subitems: EKSubitems<EKSubitemType>? { get }
+    var locations: EKLocationsInfo? { get }
+    var subitemsArray: [EKSubitemType] { get }
+    var subitemsCount: Int { get }
+    var locationsCount: Int { get }
+    var hasSubitems: Bool { get }
+    var hasLocations: Bool { get }
+    
+    func forEachLocation(worker: (EKLocationPair) throws -> Void) rethrows
+    func forEachLocation(preprocess: ([EKLocationPair]) throws -> [EKLocationPair],
+                         worker: (EKLocationPair) throws -> Void) rethrows
+    func forEachSubitem(worker: (EKSubitemPair) throws -> Void) rethrows
+    func forEachSubitem(preprocess: ([EKSubitemPair]) throws -> [EKSubitemPair],
+                        worker: (EKSubitemPair) throws -> Void) rethrows
+}
+
+extension EKSubitemPairIteratable {
+    var subitemsCount: Int {
+        return self.subitemsArray.count
+    }
+    
+    var locationsCount: Int {
+        return self.locationsArray.count
+    }
+    
+    var hasSubitems: Bool {
+        return self.subitemsCount > 0
+    }
+    
+    var hasLocations: Bool {
+        return self.locationsCount > 0
+    }
+    
+    var subitemsArray: [EKSubitemType] {
+        return self.subitems?.array ?? []
+    }
+    
+    private var locationsArray: [Int] {
+        return self.locations?.locations ?? []
+    }
+    
+    private func pairingLocation(worker: (EKLocationPair) throws -> Void) rethrows {
+        let locations = self.locationsArray
+        let subitems = self.subitemsArray
+        for (i, loc) in locations.enumerated() {
+            let p = (loc, subitems.value(at: i))
+            try worker(p)
+        }
+    }
+    
+    private func pairingSubitem(worker: (EKSubitemPair) throws -> Void) rethrows {
+        let locations = self.locationsArray
+        let subitems = self.subitemsArray
+        for (i, si) in subitems.enumerated() {
+            let p = (locations.value(at: i), si)
+            try worker(p)
+        }
+    }
+    
+    func forEachLocation(preprocess: ([EKLocationPair]) throws -> [EKLocationPair],
+                         worker: (EKLocationPair) throws -> Void) rethrows {
+        var pairs = [EKLocationPair]()
+        self.pairingLocation {
+            pairs.append($0)
+        }
+        try preprocess(pairs).forEach { try worker($0) }
+    }
+    
+    func forEachLocation(worker: (EKLocationPair) throws -> Void) rethrows {
+        try self.pairingLocation {
+            try worker($0)
+        }
+    }
+    
+    func forEachSubitem(preprocess: ([EKSubitemPair]) throws -> [EKSubitemPair],
+                        worker: (EKSubitemPair) throws -> Void) rethrows {
+        var pairs = [EKSubitemPair]()
+        self.pairingSubitem {
+            pairs.append($0)
+        }
+        try preprocess(pairs).forEach { try worker($0) }
+    }
+    
+    func forEachSubitem(worker: (EKSubitemPair) throws -> Void) rethrows {
+        try self.pairingSubitem {
+            try worker($0)
+        }
+    }
+}
+
 // operation node
 struct EKOperationInfo {
     let op: EKOperation
@@ -134,6 +229,20 @@ extension EKOperationInfo: EKParseNode {
                   buttons: buttons,
                   arguments: d.anyValue(for: kArguments),
                   isForced: isForced)
+    }
+}
+
+extension EKOperationInfo: EKSubitemPairIteratable {
+    typealias EKSubitemType = EKButtonInfo
+    
+    var subitems: EKSubitems<EKButtonInfo>? {
+        return self.buttons
+    }
+}
+
+extension EKOperationInfo {
+    func error(_ message: String) -> EKError { // generate operation specific error
+        return EKError.info("[\(self.op.name)] \(message)")
     }
 }
 
@@ -224,6 +333,14 @@ extension EKButtonInfo {
         let locs = try EKLocationsInfo(object: d.anyValue(for: kLocations))
         let keys = try EKSubitems<EKKeyInfo>(object: d.anyValue(for: kKeys))
         self.init(locations: locs, keys: keys)
+    }
+}
+
+extension EKButtonInfo: EKSubitemPairIteratable {
+    typealias EKSubitemType = EKKeyInfo
+    
+    var subitems: EKSubitems<EKKeyInfo>? {
+        return self.keys
     }
 }
 
@@ -323,3 +440,12 @@ private extension String {
         return self.isConfigDict || self.isConfigList
     }
 }
+
+private extension Array {
+    func value(at i: Index) -> Element? {
+        guard i >= self.startIndex && i < self.endIndex else { return nil }
+        
+        return self[i]
+    }
+}
+
