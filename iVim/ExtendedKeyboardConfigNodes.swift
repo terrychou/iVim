@@ -29,12 +29,12 @@ enum EKOperation: String {
     case insert
     case remove
     case replace
-    case apply
+//    case apply
     case clear
     case `default`
     case source
     case compose
-    case normal
+//    case normal
     case undo
     case redo
     case export

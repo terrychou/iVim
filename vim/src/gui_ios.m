@@ -178,6 +178,13 @@ static NSString * full_path_of_path(const char * path) {
 }
 
 /*
+ * get the current sourcing file name
+ */
+NSString * get_current_sourcing_name(void) {
+    return sourcing_name == NULL ? nil : TONSSTRING(sourcing_name);
+}
+
+/*
  * to get the write event for files
  */
 void mch_ios_post_buffer_write(buf_T * buf, char_u * fname) {

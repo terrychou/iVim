@@ -14,23 +14,38 @@ private typealias EKButtonPair = (Int, EKButtonInfo?)
 
 private enum EKMode {
     case compose
-    //   compose: this mode is for experimenting and composing
-    //   configuration files. Each editing item will update
+    //   when the editing item is from the ex command line
+    //   directly, it is in *compose* mode.
+    //
+    //   In this mode, each editing item will update
     //   the bar immediately and be recorded into the editing
-    //   history. As a result, you can edit the bar more
-    //   conveniently: using *undo* to undo one item; *redo* to
-    //   redo one item; *export* to export items so far to a
-    //   configuration file for future sourcing.
-    case normal
-    //   normal: this is for editing on the command line without
-    //   history records.
-    //   The bar will not be updated until the next *apply*
-    //   operation. The editing items will not be recorded
-    //   therefore all history-related operations will not work
-    //   in this mode.
+    //   history.
+    //
+    //   Several operations are specificly for this mode:
+    //      *undo*: undo one item;
+    //      *redo*: redo one item;
+    //      *compose*: initialize a new editing history
+    //      *export*: export items so far to a configuration
+    //          file for future sourcing.
+    case vimsource
+    //   when the editing item is from a file being sourced by
+    //   vim, it is in *vimsource* mode.
+    //
+    //   The bar will be updated after each editing item. But the
+    //   item will not be recorded into the editing history.
+    //
+    //   it throws an error if it encounters any compose-specific
+    //   operation
     case source
-    //   source: it is like .normal and indicates that it is
-    //   during a sourcing.
+    //   when the editing item is from a extended keyboard
+    //   configuration file, it is in *source* mode.
+    //
+    //   it won't update the bar until the whole sourcing operation
+    //   is done (the outmost source operation). And it won't record
+    //   items into the editing history
+    //
+    //   it throws an error if it encounters any compose-specific
+    //   operation
 }
 
 final class ExtendedKeyboardManager: NSObject {
@@ -38,17 +53,11 @@ final class ExtendedKeyboardManager: NSObject {
     private override init() {}
     
     private weak var controller: VimViewController!
-    lazy var extendedBar: OptionalButtonsBar = {
-        let newBar = self.newBar()
-        self.sandbox = newBar.buttons // initialize sandbox
-        
-        return newBar
-    }()
-    private var sandbox: EKButtons! // operate on it before confirmation
+    lazy var extendedBar: OptionalButtonsBar = self.newBar()
     private lazy var modifiers = EKModifiersArranger()
     
     private lazy var history = EKEditingHistory()
-    private var mode: EKMode = .normal
+    private var mode: EKMode = .vimsource
     private var operationsCount: Int = 0 // record the amount of operations for each item
     private var allowedInHistory = true
 }
@@ -59,15 +68,17 @@ extension ExtendedKeyboardManager {
     }
     
     @objc func setKeyboard(with cmdArg: String, confirmed: Bool) {
-        NSLog("isetekbd: \"\(cmdArg)\"")
         let item = cmdArg.trimmingCharacters(in: .whitespaces)
         self.allowedInHistory = true // allowed by default
+        self.updateMode() // it will never happen in mode .source
         do {
+            NSLog("mode: \(self.mode)")
             try self.sourceItem(item)
-            self.addHistory(with: item)
-            if confirmed || self.isComposing {
-                self.confirmChanges()
+            NSLog("mode: \(self.mode)")
+            if !confirmed { // not recorded when bang
+                self.addHistory(with: item)
             }
+            self.updateChanges()
         } catch EKError.info(let msg) {
             self.showError(msg)
         } catch {
@@ -75,10 +86,33 @@ extension ExtendedKeyboardManager {
         }
     }
     
-    private func confirmChanges() {
-        self.extendedBar.buttons = self.sandbox
-        self.extendedBar.updateButtons()
+    private func updateMode() {
+        let isVimSourcing = get_current_sourcing_name() != nil
+        switch self.mode {
+        case .compose:
+            if isVimSourcing {
+                self.mode = .vimsource
+            }
+        case .vimsource:
+            if !isVimSourcing {
+                self.mode = .compose
+                self.initCompose()
+            }
+        default: break
+        }
+    }
+    
+    private func updateChanges() {
+        guard self.shouldUpdateChanges else { return }
+        DispatchQueue.main.async {
+            self.extendedBar.updateButtons()
+        }
         self.modifiers.clear()
+    }
+    
+    private func initCompose() {
+        self.history.clear()
+        self.snapshotHistory(with: "init compose")
     }
 }
 
@@ -88,18 +122,26 @@ extension ExtendedKeyboardManager {
     }
     
     private var isSourcing: Bool {
-        return self.mode == .source
+        return self.mode == .source || self.mode == .vimsource
     }
     
     private var isSingleOperation: Bool {
         return self.operationsCount == 1
     }
     
+    private var shouldUpdateChanges: Bool {
+        return self.mode == .compose || self.mode == .vimsource
+    }
+    
+    private func snapshotHistory(with item: String) {
+        self.history.add(buttons: self.extendedBar.buttons,
+                         sourceItem: item)
+    }
+    
     private func addHistory(with item: String) {
         guard self.isComposing &&
             self.allowedInHistory else { return }
-        self.history.add(buttons: self.sandbox,
-                         sourceItem: item)
+        self.snapshotHistory(with: item)
     }
 }
 
@@ -282,12 +324,10 @@ extension ExtendedKeyboardManager {
         case .insert: try self.doInsert(for: op)
         case .remove: try self.doRemove(for: op)
         case .replace: try self.doReplace(for: op)
-        case .apply: try self.doApply(for: op)
         case .clear: try self.doClear(for: op)
         case .default: try self.doDefault(for: op)
         case .source: try self.doSource(for: op)
         case .compose: try self.doCompose(for: op)
-        case .normal: try self.doNormal(for: op)
         case .undo: try self.doUndo(for: op)
         case .redo: try self.doRedo(for: op)
         case .export: try self.doExport(for: op)
@@ -296,9 +336,9 @@ extension ExtendedKeyboardManager {
     }
     
     private func editButton(at i: Int, editing: (inout [EKKeyOption]) throws -> Void) rethrows {
-        var button = self.sandbox[i]
+        var button = self.extendedBar.buttons[i]
         try editing(&button)
-        self.sandbox[i] = button
+        self.extendedBar.buttons[i] = button
     }
     
     private func doRemove(for op: EKOperationInfo) throws {
@@ -325,7 +365,7 @@ extension ExtendedKeyboardManager {
         guard op.hasLocations else {
             throw op.error("no target button locations")
         }
-        let bCnt = self.sandbox.count
+        let bCnt = self.extendedBar.buttons.count
         try op.forEachLocation(preprocess: {
             $0.sorted { $0.0 > $1.0 } // (3.)
         }) { bLoc, btn in
@@ -345,7 +385,7 @@ extension ExtendedKeyboardManager {
                     }
                 }
             } else { // remove a button
-                self.sandbox.remove(at: bLoc)
+                self.extendedBar.buttons.remove(at: bLoc)
             }
         }
     }
@@ -375,7 +415,7 @@ extension ExtendedKeyboardManager {
         guard op.locationsCount <= op.subitemsCount else { // (1.)
             throw op.error("not enough new buttons")
         }
-        let bCnt = self.sandbox.count
+        let bCnt = self.extendedBar.buttons.count
         try op.forEachLocation { bLoc, bInfo in
             guard (0...bCnt).contains(bLoc) else {
                 throw op.error("invalid button location \(bLoc)")
@@ -395,7 +435,7 @@ extension ExtendedKeyboardManager {
                     }
                 }
             } else { // insert this new button (2.)
-                self.sandbox.insert(try self.newButton(for: b), at: bLoc) // (3.)
+                self.extendedBar.buttons.insert(try self.newButton(for: b), at: bLoc) // (3.)
             }
         }
     }
@@ -425,7 +465,7 @@ extension ExtendedKeyboardManager {
         guard op.locationsCount <= op.subitemsCount else {
             throw op.error("not enough new buttons for target locations")
         }
-        let bCnt = self.sandbox.count
+        let bCnt = self.extendedBar.buttons.count
         try op.forEachSubitem { bLoc, bInfo in
             if let bl = bLoc { // it is key-appending button (2.)
                 guard (0..<bCnt).contains(bl) else {
@@ -438,7 +478,7 @@ extension ExtendedKeyboardManager {
                     keys.append(contentsOf: newKeys)
                 }
             } else { // append buttons to the bar end (1., 2.)
-                self.sandbox.append(try self.newButton(for: bInfo))
+                self.extendedBar.buttons.append(try self.newButton(for: bInfo))
             }
         }
     }
@@ -467,7 +507,7 @@ extension ExtendedKeyboardManager {
         guard op.locationsCount <= op.subitemsCount else { // (4.)
             throw op.error("not enough substitution buttons")
         }
-        let bCnt = self.sandbox.count
+        let bCnt = self.extendedBar.buttons.count
         try op.forEachLocation { bLoc, bInfo in
             guard (0..<bCnt).contains(bLoc) else {
                 throw op.error("invalid button location \(bLoc)")
@@ -489,24 +529,9 @@ extension ExtendedKeyboardManager {
                 }
             } else { // replace the button (2.)
                 let newButton = try self.newButton(for: b)
-                self.sandbox.replaceElement(at: bLoc, with: newButton)
+                self.extendedBar.buttons.replaceElement(at: bLoc, with: newButton)
             }
         }
-    }
-    
-    private func doApply(for op: EKOperationInfo) throws {
-        // *apply* applies the pending edits
-        //
-        // before applying, all the edits will be within the sandbox.
-        // The extended bar will not update with the edits until this
-        // operation.
-        //
-        // this operation has the same effects as the bang
-        // command (:isetekbd!)
-        //
-        // no argument is needed
-        
-        self.confirmChanges()
     }
     
     private func doClear(for op: EKOperationInfo) throws {
@@ -514,7 +539,7 @@ extension ExtendedKeyboardManager {
         //
         // no argument is needed
         
-        self.sandbox.removeAll()
+        self.extendedBar.buttons.removeAll()
     }
     
     private func doDefault(for op: EKOperationInfo) throws {
@@ -522,7 +547,7 @@ extension ExtendedKeyboardManager {
         //
         // no argument is needed
         
-        self.sandbox = self.defaultButtons
+        self.extendedBar.buttons = self.defaultButtons
     }
     
     private func paths(from op: EKOperationInfo) throws -> [String] {
@@ -532,7 +557,7 @@ extension ExtendedKeyboardManager {
         } else if let l = op.arguments as? [String] {
             paths = l
         } else {
-            throw EKError.info("[\(op.op.name)] invalid argument")
+            throw op.error("invalid argument")
         }
         
         return paths.map { expand_tilde_of_path($0) }
@@ -563,28 +588,30 @@ extension ExtendedKeyboardManager {
         
         let paths = try self.paths(from: op)
         guard paths.count > 0 else {
-            throw EKError.info("[source] no target files")
+            throw op.error("no target files")
         }
-        let backup = self.sandbox
+        let backup = self.extendedBar.buttons
         let oldMode = self.mode
         self.mode = .source // set the mode temporarily
         defer { self.mode = oldMode } // restore to old mode anyway
         do {
-            try paths.forEach { try self.sourceFile(at: $0) }
+            try paths.forEach { try self.sourceFile(at: $0, for: op) }
         } catch { // something is wrong (4.)
-            self.sandbox = backup // restore to state before sourcing
+            self.extendedBar.buttons = backup // restore to state before sourcing
             throw error
         }
     }
     
-    private func sourceFile(at path: String) throws {
+    private func sourceFile(at path: String, for op: EKOperationInfo) throws {
         guard let reader = LineReader(file: fopen(path, "r")) else {
-            throw EKError.info("[source] failed to open file at \(path)")
+            throw op.error("failed to open file at \(path)")
         }
         NSLog("source file at: \(path)")
         var item = ""
         for line in reader {
-            guard let l = self.validLine(from: line) else { continue } // ignore empty line or comments
+            guard let l = self.validLine(from: line) else {
+                continue
+            } // ignore empty line or comments
             if l.hasPrefix("\\") { // it is a continued line
                 item += l.dropFirst()
             } else { // it is a new item
@@ -607,11 +634,10 @@ extension ExtendedKeyboardManager {
         guard !item.isEmpty else { return }
         let ops = try EKOperationInfo.operations(from: item)
         self.operationsCount = ops.count
-//        NSLog("\(ops)")
         try self.edit(with: ops)
     }
     
-    private func validateComposeOperation(_ op: String) throws {
+    private func validateComposeOperation(_ op: EKOperationInfo) throws {
         // test whether it is a valid compose operation environment
         //
         // 1. it can only run as a single operation, meaning it is
@@ -622,51 +648,27 @@ extension ExtendedKeyboardManager {
         // an error when it is in a file being sourced
         
         guard self.isSingleOperation else {
-            throw EKError.info("[\(op)] only allowed as a single operation")
+            throw op.error("only allowed as a single operation")
         }
         guard !self.isSourcing else {
-            throw EKError.info("[\(op)] not allowed during sourcing")
+            throw op.error("not allowed during sourcing")
         }
     }
     
     private func doCompose(for op: EKOperationInfo) throws {
-        // *compose* starts the compose mode
+        // *compose* restarts a compose environment
         //
         // 1. the .compose mode is described in EKMode
         //
         // 2. this operation should only run in compose env
         //
-        // 3. recorded in the editing history as the first item
+        // 3. it is not recorded in editing history
         //
         // 4. no argument is required
         
-        try self.validateComposeOperation("compose") // (2.)
-        guard !self.isComposing else {
-            throw EKError.info("[compose] already in compose mode")
-        }
-        self.mode = .compose // history works now
-    }
-    
-    private func doNormal(for op: EKOperationInfo) throws {
-        // *normal* starts the normal mode
-        //
-        // 1. its main use is to end the compose mode
-        //
-        // 2. it should only run in compose env
-        //
-        // 3. it will clear the history
-        //
-        // 4. not recorded in the editing history
-        //
-        // 5. no argument is required
-        
-        try self.validateComposeOperation("normal") // (2.)
-        guard self.mode != .normal else {
-            throw EKError.info("[normal] already in normal mode")
-        }
-        self.allowedInHistory = false
-        self.mode = .normal
-        self.history.clear() // clear the history (3., 4.)
+        try self.validateComposeOperation(op) // (2.)
+        self.allowedInHistory = false // (3.)
+        self.initCompose()
     }
     
     private func doUndo(for op: EKOperationInfo) throws {
@@ -678,15 +680,15 @@ extension ExtendedKeyboardManager {
         //
         // 3. no argument is required
         
-        try self.validateComposeOperation("undo") // (1.)
+        try self.validateComposeOperation(op) // (1.)
         guard self.isComposing else {
-            throw EKError.info("[undo] not in compose mode")
+            throw op.error("not in compose mode")
         }
         self.allowedInHistory = false // (2.)
         if let i = self.history.undo() {
-            self.sandbox = i.buttons
+            self.extendedBar.buttons = i.buttons
         } else {
-            throw EKError.info("[undo] already at the beginning of history")
+            throw op.error("already at the beginning of history")
         }
     }
     
@@ -699,15 +701,15 @@ extension ExtendedKeyboardManager {
         //
         // 3. no argument is required
         
-        try self.validateComposeOperation("redo") // (1.)
+        try self.validateComposeOperation(op) // (1.)
         guard self.isComposing else {
-            throw EKError.info("[redo] not in compose mode")
+            throw op.error("not in compose mode")
         }
         self.allowedInHistory = false // (2.)
         if let i = self.history.redo() {
-            self.sandbox = i.buttons
+            self.extendedBar.buttons = i.buttons
         } else {
-            throw EKError.info("[redo] already at the end of history")
+            throw op.error("already at the end of history")
         }
     }
     
@@ -737,21 +739,22 @@ extension ExtendedKeyboardManager {
         //
         // 6. itself will not be recorded in the editing history
         
-        try validateComposeOperation("export") // (5.)
+        try validateComposeOperation(op) // (5.)
         guard self.isComposing else {
-            throw EKError.info("[export] not in compose mode")
+            throw op.error("not in compose mode")
         }
         self.allowedInHistory = false // (6.)
         
         let paths = try self.paths(from: op)
         // test paths (3.)
+        let fm = FileManager.default
         for p in paths {
             var isDir = ObjCBool(false)
-            if FileManager.default.fileExists(atPath: p, isDirectory: &isDir) {
+            if fm.fileExists(atPath: p, isDirectory: &isDir) {
                 if isDir.boolValue {
-                    throw EKError.info("[export] '\(p)' is a directory")
+                    throw op.error("'\(p)' is a directory")
                 } else if !op.isForced {
-                    throw EKError.info("[export] '\(p)' already exists, use 'export!' to force overwrite")
+                    throw op.error("'\(p)' already exists, use 'export!' to force overwrite")
                 }
             }
         }
@@ -759,7 +762,7 @@ extension ExtendedKeyboardManager {
         // generate contents (1.)
         let items = self.history.editingItems()
         guard items.count > 0 else {
-            throw EKError.info("[export] not edited yet")
+            throw op.error("not edited yet")
         }
         var contents = ""
         for i in items {
@@ -771,15 +774,18 @@ extension ExtendedKeyboardManager {
             // write to targets
             for p in paths {
                 do {
-                    try contents.write(toFile: p, atomically: true, encoding: .utf8)
+                    try contents.write(toFile: p,
+                                       atomically: true,
+                                       encoding: .utf8)
                 } catch {
-                    NSLog("[export] failed to write to file: \(error)")
-                    throw EKError.info("[export] failed to write to file '\(p)'")
+                    NSLog("failed to write to file: \(error)")
+                    throw op.error("failed to write to file '\(p)'")
                 }
             }
         } else { // (4.)
             let opname = "export" + (op.isForced ? "!" : "")
-            gSVO.showContent(contents, withCommand: "isetekbd \(opname)")
+            gSVO.showContent(contents,
+                             withCommand: "isetekbd \(opname)")
         }
     }
     
