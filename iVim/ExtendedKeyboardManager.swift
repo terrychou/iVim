@@ -67,15 +67,13 @@ extension ExtendedKeyboardManager {
         self.controller = c
     }
     
-    @objc func setKeyboard(with cmdArg: String, confirmed: Bool) {
+    @objc func setKeyboard(with cmdArg: String, forced: Bool) {
         let item = cmdArg.trimmingCharacters(in: .whitespaces)
         self.allowedInHistory = true // allowed by default
         self.updateMode() // it will never happen in mode .source
         do {
-            NSLog("mode: \(self.mode)")
             try self.sourceItem(item)
-            NSLog("mode: \(self.mode)")
-            if !confirmed { // not recorded when bang
+            if !forced { // not recorded when bang
                 self.addHistory(with: item)
             }
             self.updateChanges()
@@ -96,7 +94,9 @@ extension ExtendedKeyboardManager {
         case .vimsource:
             if !isVimSourcing {
                 self.mode = .compose
-                self.initCompose()
+                if !self.history.isInitialized {
+                    self.initCompose()
+                }
             }
         default: break
         }

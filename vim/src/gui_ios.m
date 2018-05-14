@@ -620,9 +620,9 @@ static void execute_ctags(NSString * cmdline) {
  */
 static void ex_isetekbd(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
-    BOOL confirmed = eap->forceit == TRUE;
+    BOOL forced = eap->forceit == TRUE;
     [[ExtendedKeyboardManager shared] setKeyboardWith:arg
-                                            confirmed:confirmed];
+                                               forced:forced];
 }
 
 /*

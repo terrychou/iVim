@@ -19,8 +19,8 @@ extension EKModifiersArranger {
             if button.isOn { // register key info
                 if !button.isHeld { // just turned on
                     guard let eki = button.effectiveInfo else { return }
-//                    NSLog("add button \(keyString)")
-                    let mi = EKModifierInfo(string: keyString, button: button)
+                    let mi = EKModifierInfo(string: keyString,
+                                            button: button)
                     self.table[eki.identifier] = mi
                     // clear other keys on this button
                     for oki in button.info.values where oki.identifier != eki.identifier {
@@ -29,8 +29,6 @@ extension EKModifiersArranger {
                 }
             } else { // unregister key info
                 guard let eki = button.effectiveInfo else { return }
-//                let ks = self.table[eki.identifier]!.string
-//                NSLog("remove button \(ks)")
                 self.table[eki.identifier] = nil
             }
         }
@@ -40,12 +38,15 @@ extension EKModifiersArranger {
         var result = Set<String>()
         self.queue.sync {
             for (k, mi) in self.table {
-                result.insert(mi.string)
-                guard let b = mi.button, b.isOn else { continue }
-                b.tryRestore()
-                if !b.isOn {
-//                    let ks = self.table[k]!.string
-//                    NSLog("auto remove button \(ks)")
+                let discard: Bool
+                if let b = mi.button, b.isOn {
+                    result.insert(mi.string)
+                    b.tryRestore()
+                    discard = !b.isOn
+                } else {
+                    discard = true
+                }
+                if discard {
                     self.table[k] = nil
                 }
             }
@@ -54,26 +55,14 @@ extension EKModifiersArranger {
         return result
     }
     
-    func activeKeyStringSet(task: ((EKModifierInfo) -> Void)? = nil) -> Set<String> {
-        var result = Set<String>()
-        self.queue.sync {
-            for mi in self.table.values {
-                result.insert(mi.string)
-                task?(mi)
-            }
-        }
-        
-        return result
-    }
-    
     func clear() {
-        self.queue.sync(flags: .barrier) {
+        self.queue.sync {
             self.table.removeAll()
         }
     }
 }
 
-struct EKModifierInfo {
+private struct EKModifierInfo {
     let string: String
     weak var button: OptionalButton?
 }

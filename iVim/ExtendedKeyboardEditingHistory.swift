@@ -15,36 +15,14 @@ final class EKEditingHistory {
 
 extension EKEditingHistory {
     private func addItem(_ item: EKEditingHistoryItem) {
-//        let sofar: ArraySlice<EKEditingHistoryItem>
-//        if self.index < 0 {
-//            sofar = []
-//        } else if self.index >= self.history.count {
-//            sofar = self.history[...]
-//        } else {
-//            sofar = self.history[...self.index]
-//        }
-//        self.history = sofar + [item]
-//        self.index = sofar.count
         let sofar = self.index > -1 ? self.history[...self.index] : []
         self.history = sofar + [item]
         self.index = sofar.count
-//        NSLog("add: \(self.history.count), \(self.index)")
     }
-//
-//    private var isInSafeRange: Bool {
-//        return self.index >= 0 && self.index < self.history.count
-//    }
-//
-//    var currentItem: EKEditingHistoryItem? {
-//        guard self.isInSafeRange else { return nil }
-//        return self.history[self.index]
-//    }
-//
-//    func removeCurrent() {
-//        guard self.isInSafeRange else { return }
-//        self.history.remove(at: self.index)
-//        self.index -= 1
-//    }
+    
+    var isInitialized: Bool {
+        return self.history.count >= 1
+    }
     
     func add(buttons: EKButtons, sourceItem: String) {
         let item = EKEditingHistoryItem(buttons: buttons,
@@ -55,8 +33,6 @@ extension EKEditingHistory {
     func undo() -> EKEditingHistoryItem? {
         guard self.index > 0 else { return nil }
         self.index -= 1
-//        NSLog("history: \(self.history.count)")
-//        NSLog("index: \(self.index)")
         
         return self.history[self.index]
     }
@@ -64,8 +40,6 @@ extension EKEditingHistory {
     func redo() -> EKEditingHistoryItem? {
         guard self.index < self.history.count - 1 else { return nil }
         self.index += 1
-//        NSLog("history: \(self.history.count)")
-//        NSLog("index: \(self.index)")
         
         return self.history[self.index]
     }
