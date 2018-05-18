@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2018 Apr 08
+*os_ios.txt*	For Vim version 7.4.	Last change: 2018 May 18
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -132,6 +132,11 @@ Hide and show ~
 
 You can toggle the extended keyboard by one finger long pressing the screen. 
 The extended keyboard will show at launch by default.
+
+Customize ~
+
+If the default buttons or keys on the extended keyboard don't meet your own
+needs, you can customize them through command |:isetekbd|.
 
 
 ==============================================================================
