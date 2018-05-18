@@ -49,7 +49,11 @@ class OptionalButton: UIView {
 extension OptionalButton {
     fileprivate func setup() {
         self.layer.backgroundColor = UIColor.white.cgColor
-        self.layer.cornerRadius = 4
+        self.layer.cornerRadius = 5
+        self.layer.shadowColor = UIColor.black.cgColor
+        self.layer.shadowOffset = CGSize(width: 0, height: 1)
+        self.layer.shadowOpacity = 0.4
+        self.layer.shadowRadius = 0
     }
 }
 
