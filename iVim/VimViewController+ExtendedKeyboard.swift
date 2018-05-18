@@ -122,7 +122,7 @@ extension VimViewController {
     
     override var inputAccessoryView: UIView? {
         return self.shouldShowExtendedBar ?
-            ExtendedKeyboardManager.shared.extendedBar : nil
+            ExtendedKeyboardManager.shared.inputView : nil
     }
     
 //    func newExtendedBar() -> OptionalButtonsBar {

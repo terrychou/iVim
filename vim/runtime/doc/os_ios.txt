@@ -131,7 +131,8 @@ c. tapping it in any of the above state will restore its state.
 Hide and show ~ 
 
 You can toggle the extended keyboard by one finger long pressing the screen. 
-The extended keyboard will show at launch by default.
+The extended keyboard will show at launch by default. You can make it hide
+by default by toggle related option in |ios-settings|.
 
 Customize ~
 
@@ -343,6 +344,11 @@ b. Always
 This switch tells iVim about the term of validity of the launch arguments.
 If YES, iVim will take the arguments every time it launches.
 If NO, iVim will only launch with the arguments once, then remove them.
+
+Extended Keyboard ~
+
+Hide By Default
+It controls whether iVim hides the extended keyboard by default or not.
 
 Hardware Keyboard ~
 

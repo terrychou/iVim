@@ -28,18 +28,12 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var documentController: UIDocumentInteractionController?
     
-//    weak var ctrlButton: OptionalButton?
-//    var ctrlEnabled: Bool {
-//        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
-//    }
-    
     var textTokenizer: UITextInputStringTokenizer!
     var markedInfo: MarkedInfo?
     var dictationHypothesis: String?
     var isNormalPending = false
     
     var shouldTuneFrame = true
-//    lazy var extendedBar: OptionalButtonsBar = self.newExtendedBar()
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
@@ -81,7 +75,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.inputAssistantItem.trailingBarButtonGroups = []
         
         gEKM.registerController(self)
-        self.toggleExtendedBar()
     }
     
     func resetKeyboard() {
@@ -213,7 +206,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var keyboardType = UIKeyboardType.default
     var autocorrectionType = UITextAutocorrectionType.no
     
-    fileprivate func toggleExtendedBar() {
+    func toggleExtendedBar() {
         self.shouldShowExtendedBar = !self.shouldShowExtendedBar
         self.reloadInputViews()
     }

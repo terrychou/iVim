@@ -8,6 +8,8 @@
 
 import UIKit
 
+private let kUDHideExtendedKeyboardByDefault = "kUDHideExtendedKeyboardByDefault"
+
 let gEKM = ExtendedKeyboardManager.shared
 typealias EKButtons = [[EKKeyOption]]
 private typealias EKButtonPair = (Int, EKButtonInfo?)
@@ -53,7 +55,15 @@ final class ExtendedKeyboardManager: NSObject {
     private override init() {}
     
     private weak var controller: VimViewController!
-    lazy var extendedBar: OptionalButtonsBar = self.newBar()
+    private lazy var extendedBar: OptionalButtonsBar = self.newBar()
+    lazy var inputView: UIInputView = {
+        let bar = self.extendedBar
+        let frame = bar.frame
+        let result = UIInputView(frame: frame, inputViewStyle: .keyboard)
+        result.addSubview(bar)
+        
+        return result
+    }()
     private lazy var modifiers = EKModifiersArranger()
     
     private lazy var history = EKEditingHistory()
@@ -65,6 +75,14 @@ final class ExtendedKeyboardManager: NSObject {
 extension ExtendedKeyboardManager {
     func registerController(_ c: VimViewController) {
         self.controller = c
+        self.initToggle()
+    }
+    
+    private func initToggle() {
+        if UserDefaults.standard.bool(forKey: kUDHideExtendedKeyboardByDefault) {
+            return
+        }
+        self.controller.toggleExtendedBar()
     }
     
     @objc func setKeyboard(with cmdArg: String, forced: Bool) {
@@ -304,10 +322,11 @@ extension ExtendedKeyboardManager {
     private func newBar() -> OptionalButtonsBar {
         let width: CGFloat = 100
         let height: CGFloat = UIDevice.current.isPhone ? 58 : 72
-        let bar = OptionalButtonsBar(frame: CGRect(x: 0, y: 0, width: width, height: height))
+        let frame = CGRect(x: 0, y: 0, width: width, height: height)
+        let bar = OptionalButtonsBar(frame: frame)
         bar.autoresizingMask = [.flexibleWidth]
         bar.setButtons(with: self.defaultButtons)
-        bar.backgroundColor = UIColor(white: 0.860, alpha: 1)
+//        bar.backgroundColor = UIColor(white: 0.860, alpha: 1)
         
         return bar
     }

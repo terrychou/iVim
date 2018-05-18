@@ -46,6 +46,22 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
+			<string>Extended Keyboard</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Hide By Default</string>
+			<key>Key</key>
+			<string>kUDHideExtendedKeyboardByDefault</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
 			<string>Hardware Keyboard</string>
 			<key>FooterText</key>
 			<string>Mapping caps lock has caveats. See &quot;:h ios-external-keyboard&quot;. Mapping [alt] enables iVim take over alt- keystrokes.</string>
