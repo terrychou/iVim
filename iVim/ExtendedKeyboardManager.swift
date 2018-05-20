@@ -90,7 +90,7 @@ extension ExtendedKeyboardManager {
         self.allowedInHistory = true // allowed by default
         self.updateMode() // it will never happen in mode .source
         do {
-            try self.sourceItem(item)
+            try self.sourceItem(item, ignoreEmpty: false)
             if !forced { // not recorded when bang
                 self.addHistory(with: item)
             }
@@ -647,10 +647,16 @@ extension ExtendedKeyboardManager {
         return l.isEmpty || l.hasPrefix("\"") ? nil : l
     }
     
-    private func sourceItem(_ item: String) throws {
+    private func sourceItem(_ item: String, ignoreEmpty: Bool = true) throws {
         NSLog("source item: \(item)")
         self.operationsCount = 0
-        guard !item.isEmpty else { return }
+        guard !item.isEmpty else {
+            if ignoreEmpty {
+                return
+            } else {
+                throw EKError.info("empty editing item")
+            }
+        }
         let ops = try EKOperationInfo.operations(from: item)
         self.operationsCount = ops.count
         try self.edit(with: ops)

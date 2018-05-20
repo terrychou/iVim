@@ -1,6 +1,6 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 18
+*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 20
 
-			iVim REFERENCE MANUAL	by Terry Chou
+				iVim REFERENCE MANUAL	by Terry Chou
 
 						*ios-commands* *icommands*
 
@@ -250,14 +250,15 @@ The extended keyboard consists of compact buttons, each of which, in turn,
 contains some keys. By editing its default buttons or keys, you can customize
 the extended keyboard to meet your own needs.
 
-The editings such as remove, append or insert are called operations. According
-to the arguments obtained from the configuration, they change the buttons or
-keys. The format of the configuration is given below.
+The editings such as `remove`, `append` or `insert` are called operations. 
+According to the arguments obtained from the configuration, they change the 
+buttons or keys. The format of the configuration is given below.
 
 Configuration format ~
 
 The configuration is written in vim's |dict|, |list| or their mixing. For 
-example:>
+example: >
+
 	:isetekbd {'operation':'remove', 'locations':[0]}
 <
 this command will remove the button at location 0. The configuration is given
@@ -271,58 +272,62 @@ operation node, which may have the following properties:
 a. operation
 
 it gives the name of the operation. An error will emerge if it is not one of
-the available operations (introduced below). A special characteristic of this
-property is that you can give it as a subcommand of the command |:isetekbd|
-therefore put it outside of the dict:>
+the available operations |isetekbd-operations|. A special characteristic of 
+this property is that you can use it as a subcommand of command |:isetekbd|
+therefore put it outside of the dict: >
+
 	:isetekbd remove {'locations':[0]}
 <
-this command is the same as the last one. And this is the reason of the 
-[operation] part's existence of the command. When an operation is given as a
-subcommand, it will be added to the following configuration as the `operation` 
-property: one if the following configuration is a dict; or one for each if a 
-list, meaning an operations group.
+this command is the same as the last one. The operation `remove` becomes the
+[operation] part in the command's usage. When an operation is given as a
+subcommand like this, it will be added to its following configuration as the 
+`operation` property: one if the configuration is a single node (a dict); or 
+one for each if an node group (a list of nodes). 
 
 Note this property is mandatory.
 
 b. locations
 
-it means locations of buttons for this operation. As shown in the example, it
-is a integer list and zero-based (button location starts at zero). An error
-will appear if any location is out of the legal bounds.
+it means locations of buttons for this operation. As in the above example, it
+is an integer list and zero-based (button location starts at zero). An error
+appears if any location is outside of the legal range.
 
 c. buttons
 
-it is a list of button nodes |isetekbd-button-node| providing information on 
-the button level for the operation. For example:>
+it is a list of button nodes (|isetekbd-button-node|) providing information on 
+the button level for the operation. For example: >
+
 	:isetekbd remove {'locations':[0], 'buttons':[{'locations':[1]}]}
 <
-this will remove the second key on the first button. The target locations of
-keys need to be given in the button node.
+this will remove the second key on the first button. In order to remove keys 
+on a specific button, their locations need to be given in the button node.
 
 d. arguments
 
-it contains information for operations that require plain arguments.
+it contains information for operations that require plain arguments. Such as
+config file paths for `source` operation (|isetekbd-op-source|).
 
-As you can see, except for `operation`, which property is necessary depends
-on the specific operation. Each operation will try and seek the properties it
-needs, and ignore the rest.
+Except for `operation`, which property is necessary depends on the specific 
+operation. Each operation will try and seek the properties it needs, and 
+ignore the rest.
 
 						*isetekbd-button-node*
-As mentioned above, a button node provides the button level information for
-an operation. The following properties may be available:
+A button node provides the button level information for an operation. It may 
+have the following properties:
 
 a. locations
 
-it is an integer list indicating the locations of keys on this button. It is
-an error if any location is outside of the legal range.
+it is an integer list indicating the locations of keys on this button. Like
+button locations, it is zero-based and an error shows if any location is 
+outside of the legal range.
 
 b. keys
 
-it is a list of key nodes |isetekbd-key-node| providing new keys information 
-when necessary.
+it is a list of key nodes (|isetekbd-key-node|).
 
 						*isetekbd-key-node*
-A key node is for making a new key. It contains the following properties:
+A key node contains information for making a new key. It has the following 
+properties:
 
 a. title
 
@@ -330,85 +335,88 @@ it is the text shown as the key on a button.
 
 b. type
 
-there are several key types for different scenarios:
+it is the name of the key type. Together with property `contents`, it decides
+the function of the key. There are several key types for different scenarios:
 
 1) command
 
-it means that an ex command indicated in `contents` will be invoked:>
+it means that this key invokes an ex command in `contents`: >
+
 	{'title':'Fs', 'type':'command', 'contents':'isetekbd source funcs'}
 <
-it will run command ":isetekbd source funcs", therefore change the extended
-keyboard according to the configuration file "funcs", when this key is 
+this runs command ":isetekbd source funcs", therefore changes the extended
+keyboard according to the configuration file named "funcs", when this key is 
 triggered.
 
 2) insert
 
-it means that the characters in `contents` will be inserted:>
+it means that this key inserts the characters in `contents`: >
+
 	{'title':'A', 'type':'insert', 'contents':'A'}
 <
-it will insert the uppercase 'A' whenever the key is triggered.
+this inserts the uppercase 'A' whenever the key is triggered.
 
 3) modifier
 
-it means that it will be the modifier key indicated in `contents`:>
+it means that this key is a modifier key indicated in `contents`: >
+
 	{'title':'D', 'type':'modifier', 'contents':'command'}
 <
-it will be the Command key |<D-|.
+this makes the key the Command key |<D-|.
 
 The following modifier keys are supported:	*isetekbd-modifier-keys*
 	
-	'alt':		the alt key |<A-|
-	'command':	the Command key |<D-|
-	'control':	the control key |<C-|
-	'meta':		the meta key |<M-|
-	'shift':	the shift key |<S-|
+	alt:		the alt key |<A-|
+	command:	the Command key |<D-|
+	control:	the control key |<C-|
+	meta:		the meta key |<M-|
+	shift:		the shift key |<S-|
 
 If the key name is not found among the above, it shows an error.
 
-Note that a modifier key will be sticky like the default `ctrl` key.
+Note that a modifier key will be sticky like the default `ctrl` key. And a
+modifier key will lose its state after the extended keyboard is updated.
 
 4) special
 
 for iVim to work properly, some keys need to be handled in a special way. You
-can make a special key by indicating it in `contents`:>
+can make a special key by indicating it in `contents`: >
+
 	{'title':'esc', 'type':'special', 'contents':'esc'}
 <
-this will the `esc` key. Note that it is different from simply running the
-command ":call feedkeys('\<Esc>')" because iVim does other things when `esc`
-is pressed.
+this makes the key be the `esc` key. Note that this is different from simply 
+running command ":call feedkeys('\<Esc>')" because iVim does extra things when
+`esc` is pressed.
 
 The following special keys are available:	*isetekbd-special-keys*
 
-	'esc':		the esc key
-	'up':		the arrow Up
-	'down':		the arrow Down
-	'left':		the arrow Left
-	'right':	the arrow Right
-	'tab':		the tab key
+	esc:		the esc key
+	up:		the arrow Up
+	down:		the arrow Down
+	left:		the arrow Left
+	right:		the arrow Right
+	tab:		the tab key
 
-If the key name is not found among the above, it shows an error.
+If the key name is not one of the above, it shows an error.
 
-
-Note that it is an error if the key type is not one of the available ones.
+Note that it is an error if the key type is not one of the above.
 
 c. contents
 
-together with the key type, it decides what it will do when the key is 
-triggered.
+it provides the contents for a specific key type, as shown above.
  
 Editing modes ~					*isetekbd-modes*
 
-There are several different situations in which the editing behavior will 
-differ:
+There are several different situations in which the editing behavior differs:
 
 a. compose
 
 when a |:isetekbd| command is ran directly from the ex command line, it is
 in the compose mode. In this mode, each editing will be recorded into the
-editing history. As a result, you can tune the editing by manipulating 
+editing history. As a result, you can edit the editing by manipulating 
 the history: you can give up the last editing with the `undo` operation; 
-resume it with the `redo` operation; save the editings in the history into
-a configuration file for future use when you are content with the result.
+resume it with `redo`; save the editings in the history into a config file 
+for future use when you are content with the result, with `export`.
 
 The result of each editing (i.e. each |:isetekbd| command) will be reflected
 on the extended keyboard immediately.
@@ -422,49 +430,52 @@ will be applied immediately.
 
 c. source
 
-editing entries could also be saved into a configuration file and be applied
-by the `source` operation later. Except for the outmost `source` operation,
-all the editing entries in the configuration file will not be recorded into
-the editing history in this mode. Also for the sake of efficiency, the 
-changes will not be applied to the extended keyboard until the end of the 
-sourcing operation.
+editing items could also be saved into a config file that could be applied
+by the `source` operation later. It is in the `source` mode during a `source`
+operation. None of editing items in the config file will be recorded into the
+editing history. Also for the sake of efficiency, the changes will not be 
+applied to the extended keyboard until the end of the outmost `source`
+operation.
 
-iVim will change into related mode automatically when the situation comes.
+iVim will change into the related mode automatically when the situation comes.
 
 Operations ~					*isetekbd-operations*
 
-The |:isetekbd| command fulfills its function through different operations.
+The command |:isetekbd| fulfills its function through different operations.
 The available operations and their details are listed as following:
 
-a. remove
+a. remove					*isetekbd-op-remove*
 
 it removes buttons or keys on specific buttons. 
 
-For the locations of target buttons, it will seek the `locations` property 
-of the operation node. For example:>
+For the locations of target buttons, it seeks the `locations` property of the 
+operation node. For example: >
+
 	:isetekbd remove {'locations':[3,7]}
 <
-this command will remove buttons at locations 3 and 7.
+this command removes buttons at locations 3 and 7.
 
-If the `buttons` property also presents, it will try and associate located
-buttons with the button nodes in it one by one and orderly. If a located 
-button finds its associated node and a non-empty `locations` property in the
+If the property `buttons` also presents, it tries and associates button
+locations with the button nodes in it one by one and orderly. If a button 
+location finds its associated node and a non-empty `locations` property in the
 node also presents, this button will be treated as a key-removing button and
-the related keys will be removed from it. For example:>
-	:isetekbd remove {'locations':[5,2],
-			\'buttons':[{'locations':[3]}]}
-<
-this will remove the key at location 3 of the button at 5, and remove the 
-button at 2. In this example, the button 5 finds a associated node in the 
-buttons list and is considered as a key-removing button. On the other hand,
-button 2 fails to associate any node therefore is removed as a button.
+the related keys will be removed from it. For example: >
 
-b. append
+	:isetekbd remove {'locations':[5,2],
+			 \'buttons':[{'locations':[3]}]}
+<
+this removes key 3 on button 5, and then removes button 2. In this example, 
+button 5 finds a associated node in the buttons list and is considered as a 
+key-removing button. On the other hand, button 2 fails to associate any node 
+therefore is removed as a whole button.
+
+b. append					*isetekbd-op-append*
 
 it appends new buttons to the end of the extended keyboard bar, or new keys
-to the end of the specific button.
+to the end of a specific button.
 
-For the new buttons, it will seek the `buttons` property. Example:>
+For the new buttons, it seeks the property `buttons`. Example: >
+
 	:isetekbd append {'buttons':[
 				    \{'keys':[
 					     \{'title':'C',
@@ -478,14 +489,15 @@ For the new buttons, it will seek the `buttons` property. Example:>
 					     \]}
 				    \]}
 <
-this will append two new buttons, the first with a modifier `control` key and
-the second a modifier `command`, to the end of the current extended keyboard.
+this appends two new buttons, the first with a modifier `control` key and the 
+second a modifier `command`, to the end of the current extended keyboard.
 
-If the `locations` property also presents in the operation node, it tries and 
+If the property `locations` also presents in the operation node, it tries and 
 associates the button nodes in `buttons` with locations in `locations` one by
 one and orderly. Any associated button node will be key-appending, meaning
-new keys generated from its `keys` property will be appended to the end of
-the button at its associated location. Example:>
+new keys generated from its property `keys` will be appended to the end of
+the button. Example: >
+
 	:isetekbd append {'buttons':[
 				    \{'keys':[
 					     \{'title':'C',
@@ -500,19 +512,20 @@ the button at its associated location. Example:>
 				    \],
 			 \'locations':[3]}
 <
-because of the presence of the `locations` property, this command will append
-a new modifier `control` key to the end of the button 3, and a new button with
-a modifier `command` key to the end of the extended keyboard.
+because of the presence of `locations`, this command appends a new modifier 
+`control` key to the end of button 3, and a new button with a modifier 
+`command` to the end of the extended keyboard.
 
 Note that iVim will hide buttons or keys if they exceed their respective
 visual limits (enough space on extended keyboard bar for buttons; 5 for keys).
 
-c. insert
+c. insert					*isetekbd-op-insert*
 
-it inserts new buttons or new keys to the specific button.
+it inserts new buttons or new keys to a specific button.
 
-For the new buttons, it seeks the `buttons` property. For the target locations 
-of them, it seeks the `locations` property of the operation node. Example:>
+For the new buttons, it seeks the property `buttons`. For the target locations 
+of them, it seeks `locations` of the operation node. Example: >
+
 	:isetekbd insert {'buttons':[
 				    \{'keys':[
 					     \{'title':'C',
@@ -527,18 +540,18 @@ of them, it seeks the `locations` property of the operation node. Example:>
 				    \],
 			 \'locations':[3,5]}
 <
-this will insert a button with a modifier `control` key to location 3, and a 
-button with a modifier `command` key to location 5. Note that the insertion is
-processed in the order of the locations, so later locations should take the 
-results of earlier ones into account. e.g. the location 5 in the above example
-is the new location 5 after the insertion at location 3.
+this inserts a button with a modifier `control` key to location 3, and a 
+button with a modifier `command` to 5. Note that the insertion is processed in
+the order of the locations, so later locations should take the results of the
+earlier ones into account. e.g. the location 5 in the above example is the new 
+location 5 after the insertion at location 3.
 
-It respects the locations more, which means the size of button nodes for new 
+The locations are respected more, which means the size of button nodes for new 
 buttons should be enough for locations, it is an error otherwise.
 
 If a button node also has a non-empty `locations` property, it means the new
-keys in the `keys` property will be inserted to the button at the locations
-indicated by it. Example:>
+keys in the property `keys` will be inserted to this button. Example: >
+
 	:isetekbd insert {'buttons':[
 				    \{'keys':[
 					     \{'title':'C',
@@ -554,20 +567,21 @@ indicated by it. Example:>
 				    \],
 			 \'locations':[3,5]}
 <
-this command will still insert a new button generated by the first button node
-to location 3 like the last example; however, it will not insert a new button
-at location 5, rather, it inserts the new modifier `command` key at location 2
-on button 5.
+while this still inserts a new button generated by the first button node to 
+location 3 like the last example did, it inserts a new `command` key at
+location 2 on button 5 rather than inserting a new button at location 5, 
+because the second button node has its `locations` property present.
 
 Likewise, the key-insertion locations should also take the order significantly.
 And the key nodes should always be enough for the target locations.
 
-d. replace
+d. replace					*isetekbd-op-replace*
 
-it replaces buttons or keys on the specific button with new ones.
+it replaces buttons or keys on a specific button with new ones.
 
-It seeks the `locations` property for the locations of the buttons to be 
-replaced. For the new buttons, it seeks the `buttons` property. Example:>
+It seeks the property `locations` for the locations of the buttons to be 
+replaced. For the new buttons, it seeks `buttons`. Example: >
+
 	:isetekbd replace {'buttons':[
 				     \{'keys':[
 					      \{'title':'C',
@@ -582,15 +596,16 @@ replaced. For the new buttons, it seeks the `buttons` property. Example:>
 				     \],
 			  \'locations':[3,5]}
 <
-this replaces button 3 with a new one that has a modifier `control` key, and
-button 5 with one that has a modifier `command` key.
+this replaces button 3 with a new one generated by the first button node, and
+button 5 with one by the second.
 
-Like operation insert, the size of button nodes should be enough for that of
+Like operation `insert`, the size of button nodes should be enough for that of
 the target locations. Or it is an error.
 
-If a button node has the `locations` property, instead of replacing this 
-button, it will replace the keys indicated by this property with new ones in
-the `keys` property. Example:>
+If a button node has its own `locations`, instead of replacing this button, it 
+will replace the keys located by this property on this button, with new ones 
+generated by its property `keys`. Example: >
+
 	:isetekbd replace {'buttons':[
 				     \{'keys':[
 					      \{'title':'C',
@@ -606,55 +621,59 @@ the `keys` property. Example:>
 				     \],
 			  \'locations':[3,5]}
 <
-the difference of this command is that it replaces the key 2 on button 5 with
-one modifier `command`, rather than replace the button altogether.
+thanks to the property `locations` in the second button node, this replaces 
+key 2 on button 5, rather than replacing button 5 altogether like the last
+example did.
 
 Also, the size of key nodes should be enough for the target locations for key
 replacing.
 
-e. clear
+e. clear					*isetekbd-op-clear*
 
 it removes all existing buttons from the extended keyboard.
 
-It requires no other properties. Example:>
+It requires no other properties. Example: >
+
 	:isetekbd clear
 <
 
-f. default
+f. default					*isetekbd-op-default*
 
 it makes the extended keyboard revert to its default state.
 
-It requires no other properties. Example:>
+It requires no other properties. Example: >
+
 	:isetekbd default
 <
 
-g. source
+g. source					*isetekbd-op-source*
 
 it reads configuration files and applies them to the extended keyboard.
 
 The trailing part of a |:isetekbd| invoking (the part without the command 
-name, e.g. remove {'locations':[3]}) is called an editing item. A 
-configuration file is comprised of editing items, one on each line.
+name, e.g. "remove {'locations':[3]}") is called an editing item. A config
+file is comprised of editing items, one on each line.
 
-The `source` operation reads the configuration file line by line and process 
-them in order. As mentioned above, it is in the `source` mode while a config
-file is being sourced. Therefore, changes brought by each editing item won't
-be applied until the outmost (it could be recursive) sourcing procedure is 
-done.
+The `source` operation reads the config file line by line and processes them
+in order. As mentioned above, it is in the `source` mode while a config file 
+is being sourced. Therefore, changes brought by each editing item won't be 
+applied until the outmost (it could be recursive) sourcing is done.
 
-It accepts multiple configuration files at once, and will process them in
-order. Example:>
+It accepts multiple config files at once, and will process them in order: >
+
 	:isetekbd source cfile1 cfile2 cfile3 ...
 <
 
-In a configuration file, all whitespaces at the beginning of each line will be
+In a config file, all whitespaces at the beginning of each line will be
 ignored. And a line will be treated as a comment if it begins with a double 
-quote '"', for example:>
+quote '"', for example: >
+
 	"this is a comment
 	remove {'locations':[3]}
 <
 and a line will be the continuation of its last line if it begins with a
-backslash '\', and they will be treated as one line altogether, example:>
+backslash '\', and they will be treated as one line altogether, example: >
+
 	replace {
 		\'locations":[2],
 		\'buttons':[
@@ -665,33 +684,39 @@ backslash '\', and they will be treated as one line altogether, example:>
 		\}
 <
 
-The 7 ones above are editing operations that modify buttons or keys on the 
-extended keyboard.
+Note that any error during a `source` operation will stop the whole operation
+and revert to the state before it.
 
-h. compose
+The 7 operations above are ones that modify buttons or keys on the extended 
+keyboard.
+
+h. compose					*isetekbd-op-compose*
 
 it resets the compose mode.
 
-In the `compose` mode, each time it is called, it clears the existing editing 
-history and set the current state as the first history entry. As a result, it
-makes a clean environment for the composition. Example:>
+In the `compose` mode, this operatio clears the existing editing history and 
+sets the current state as the initial history entry. As a result, it makes a 
+clean environment for its following composition. Example: >
+
 	:isetekbd compose
 <
-Since it doesn't  makes sense otherwise, it can only be called in `compose`
-mode as a single operation (cannot be a member of a operations group).>
+Since it doesn't makes sense otherwise, it can only be called in `compose`
+mode as a single operation (cannot be a member of a operation group): >
+
 	:isetekbd [
 		  \{'operation':'compose'},
 		  \{'operation':'remove',...}
 		 \]
 <
-the above example will show an error because it is a member of an operation
-group.
+the above example will show an error because the `compose` operation becomes a
+member of an operation group.
 
-i. undo
+i. undo						*isetekbd-op-undo*
 
 it goes back to the previous state in the editing history.
 
-It requires no further arguments, example:>
+It requires no further arguments, example: >
+
 	:isetekbd undo
 <
 An error shows if there is no previous entry in the history.
@@ -699,37 +724,40 @@ An error shows if there is no previous entry in the history.
 Like operation `compose`, it is only allowed in `compose` mode as a single
 operation. It is an error otherwise.
 
-j. redo
+j. redo						*isetekbd-op-redo*
 
 it goes to the next state in the editing history.
 
-It requires no further arguments, example:>
+It requires no further arguments, example: >
+
 	:isetekbd redo
 <
 An error shows if there is no more entry in the history.
 
 Likewise, it is only allowed in `compose` mode as a single operation.
 
-k. export
+k. export					*isetekbd-op-export*
 
 it writes current items in the editing history to configuration files.
 
 The items in the editing history are those that have been making the extended
 keyboard to its current state since the beginning of the related `compose` 
-mode. Therefore, the outcome of the `export` operation is configuration files
-that can be sourced by the `source` operation in the future.
+mode. Therefore, the outcome of the `export` operation is config files that 
+can be re-applied by the `source` operation in the future.
 
-It accepts multiple files at once, and writes the contents to each of them:>
+It accepts multiple files at once, and writes the contents to each of them: >
+
 	:isetekbd export cfile1 cfile2 ...
 <
-You can peek the contents by invoking it without any target file:>
+You can peek the contents by invoking it without any target files: >
+
 	:isetekbd export
 <
-this command prints the contents in the ex command line window.
+this prints the contents in the ex command line window.
 
 It is only allowed as a single operation in `compose` mode.
 
-The 4 ones above are helper operations to assist editing in `compose` mode.
+The 4 operations above are helper ones to assist editing in `compose` mode.
 
 
  vim:tw=78:ts=8:ft=help:norl:
