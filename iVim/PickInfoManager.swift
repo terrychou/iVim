@@ -27,14 +27,20 @@ final class PickInfoManager: NSObject {
 }
 
 extension PickInfoManager {
-    fileprivate func setup() {
+    private func setup() {
         self.registerNotifications()
     }
     
     private func registerNotifications() {
         let nfc = NotificationCenter.default
-        nfc.addObserver(self, selector: #selector(self.didBecomeActive), name: .UIApplicationDidBecomeActive, object: nil)
-        nfc.addObserver(self, selector: #selector(self.willResignActive), name: .UIApplicationWillResignActive, object: nil)
+        nfc.addObserver(self,
+                        selector: #selector(self.didBecomeActive),
+                        name: .UIApplicationDidBecomeActive,
+                        object: nil)
+        nfc.addObserver(self,
+                        selector: #selector(self.willResignActive),
+                        name: .UIApplicationWillResignActive,
+                        object: nil)
     }
 }
 
@@ -49,6 +55,10 @@ extension PickInfoManager {
     
     @objc func willResignActive() {
         NSLog("resign active")
+        self.wrapUp()
+    }
+    
+    @objc func wrapUp() {
         self.table.values.forEach {
             NSFileCoordinator.removeFilePresenter($0)
         }
@@ -85,6 +95,10 @@ extension PickInfoManager {
         }
     }
     
+    func hasEntry(for url: URL) -> Bool {
+        return self.table[url] != nil
+    }
+    
     func reloadBufferForMirror(at url: URL) {
         DispatchQueue.main.async {
             ivim_reload_buffer_for_mirror(url.path)
@@ -98,12 +112,6 @@ extension PickInfoManager {
         self.table[newURL] = old
         self.table[url] = nil
     }
-    
-//    func updateDate(with newDate: Date? = nil, for url: URL) {
-//        guard let info = self.table[url] else { return }
-//        let date = newDate ?? Date()
-//        info.updatedDate = date
-//    }
     
     /*
      * update after app becomes active again

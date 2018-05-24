@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2018 May 18
+*os_ios.txt*	For Vim version 7.4.	Last change: 2018 May 24
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -322,6 +322,13 @@ edit the target file in place. Note that it needs the sharing app's support
 for this feature.
 
 Note that supported font files are always copied for installation.
+
+Old Documents ~						*ivim-old-documents*
+
+Once an edit-in-place file or directory is opened in iVim, it will be 
+bookmarked as one of the old documents. Therefore you can open it later
+directly from the record. iVim provides the command |:iolddocs| to support
+this function. Refer to it for the related details. 
 
 Type ":help :ishare" or ":help :idocuments" for more detailed information.
 

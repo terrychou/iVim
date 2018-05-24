@@ -39,8 +39,10 @@ extension VimViewController: UIDocumentPickerDelegate {
     private func handle(url: URL, in mode: UIDocumentPickerMode) {
         var urlMode: VimURLMode?
         switch mode {
-        case .open: urlMode = .open
-        case .import: urlMode = .copy
+        case .open:
+            urlMode = .open
+        case .import:
+            urlMode = .copy
         default: break
         }
         _ = VimURLHandler(url: url, nonLocalMode: urlMode)?.open()

@@ -154,6 +154,12 @@
 		DEEAD1801F23005500B4CAC9 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DEEAD17E1F23005500B4CAC9 /* MainInterface.storyboard */; };
 		DEEAD1841F23005500B4CAC9 /* iVimShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DEEAD17A1F23005500B4CAC9 /* iVimShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DEEAD1891F2300B900B4CAC9 /* GlobalConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4251F209661007AFD63 /* GlobalConfiguration.swift */; };
+		DEF17D7920B3B89F00FE0693 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D7720B3B89F00FE0693 /* DataModel.xcdatamodeld */; };
+		DEF17D8120B3BA2600FE0693 /* OldDocument+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D7F20B3BA2600FE0693 /* OldDocument+CoreDataClass.swift */; };
+		DEF17D8220B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8020B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift */; };
+		DEF17D8420B3BBF400FE0693 /* OldDocumentsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8320B3BBF400FE0693 /* OldDocumentsManager.swift */; };
+		DEF17D8720B3BD3A00FE0693 /* CoreDataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8620B3BD3A00FE0693 /* CoreDataExtension.swift */; };
+		DEF17D8920B3BEBF00FE0693 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2986,6 +2992,12 @@
 		DEEAD1811F23005500B4CAC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DEEAD18A1F2300F800B4CAC9 /* iVimShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iVimShare.entitlements; sourceTree = "<group>"; };
 		DEEAD18B1F23014E00B4CAC9 /* iVim.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iVim.entitlements; sourceTree = "<group>"; };
+		DEF17D7820B3B89F00FE0693 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+		DEF17D7F20B3BA2600FE0693 /* OldDocument+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OldDocument+CoreDataClass.swift"; sourceTree = "<group>"; };
+		DEF17D8020B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OldDocument+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		DEF17D8320B3BBF400FE0693 /* OldDocumentsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldDocumentsManager.swift; sourceTree = "<group>"; };
+		DEF17D8620B3BD3A00FE0693 /* CoreDataExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataExtension.swift; sourceTree = "<group>"; };
+		DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6619,6 +6631,7 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DEF17D7E20B3BA0900FE0693 /* Old Documents */,
 				DE0D2EC6205A15F4004C29F8 /* Open URL */,
 				DE7234511F739BD20033F3E8 /* URL Handler */,
 				DE7364831F53A5D4006ACE4C /* External Keyboard Support */,
@@ -6646,6 +6659,7 @@
 				DE531B011F20941100D71DB3 /* Info.plist */,
 				DE7BA7AA1F21DC8700705E67 /* ios_prefix.h */,
 				DE7BA7E31F21F74000705E67 /* vimrc */,
+				DEF17D8520B3BD1E00FE0693 /* Data Model */,
 			);
 			path = iVim;
 			sourceTree = "<group>";
@@ -6847,6 +6861,26 @@
 				DEEAD1811F23005500B4CAC9 /* Info.plist */,
 			);
 			path = iVimShare;
+			sourceTree = "<group>";
+		};
+		DEF17D7E20B3BA0900FE0693 /* Old Documents */ = {
+			isa = PBXGroup;
+			children = (
+				DEF17D7F20B3BA2600FE0693 /* OldDocument+CoreDataClass.swift */,
+				DEF17D8020B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift */,
+				DEF17D8320B3BBF400FE0693 /* OldDocumentsManager.swift */,
+			);
+			name = "Old Documents";
+			sourceTree = "<group>";
+		};
+		DEF17D8520B3BD1E00FE0693 /* Data Model */ = {
+			isa = PBXGroup;
+			children = (
+				DEF17D7720B3B89F00FE0693 /* DataModel.xcdatamodeld */,
+				DEF17D8620B3BD3A00FE0693 /* CoreDataExtension.swift */,
+				DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */,
+			);
+			name = "Data Model";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -7094,6 +7128,7 @@
 				DE7BA7941F21A75400705E67 /* VimMainView.swift in Sources */,
 				DE7BA7B41F21E87800705E67 /* mbyte.c in Sources */,
 				DE7BA7B31F21E83D00705E67 /* charset.c in Sources */,
+				DEF17D7920B3B89F00FE0693 /* DataModel.xcdatamodeld in Sources */,
 				DE5C51A41F6E166000373B92 /* options.c in Sources */,
 				DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */,
 				DE7BA7BB1F21EB7C00705E67 /* term.c in Sources */,
@@ -7113,6 +7148,7 @@
 				DE7BA7B51F21E8AA00705E67 /* menu.c in Sources */,
 				DE5C51AC1F6E16A500373B92 /* matlab.c in Sources */,
 				DE7BA7C51F21EF5900705E67 /* edit.c in Sources */,
+				DEF17D8420B3BBF400FE0693 /* OldDocumentsManager.swift in Sources */,
 				DE5C51AD1F6E16AB00373B92 /* ruby.c in Sources */,
 				DE7BA7B81F21EB0400705E67 /* main.c in Sources */,
 				DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */,
@@ -7128,10 +7164,12 @@
 				DE7BA7981F21A76400705E67 /* OptionalButtonsBar.swift in Sources */,
 				DE7BA7DC1F21F33100705E67 /* pty.c in Sources */,
 				DE7BA7BD1F21EC1100705E67 /* window.c in Sources */,
+				DEF17D8720B3BD3A00FE0693 /* CoreDataExtension.swift in Sources */,
 				DE5C51951F6E15C500373B92 /* main.c in Sources */,
 				DE5C51A11F6E163800373B92 /* pascal.c in Sources */,
 				DE7BA7D11F21F1D300705E67 /* ex_cmds2.c in Sources */,
 				DE7BA7991F21A76800705E67 /* VimViewController+ExtendedKeyboard.swift in Sources */,
+				DEF17D8920B3BEBF00FE0693 /* CoreDataStack.swift in Sources */,
 				DE7BA79A1F21A77500705E67 /* PickInfoManager.swift in Sources */,
 				DE5C519C1F6E161100373B92 /* read.c in Sources */,
 				DE7BA7C81F21EFBA00705E67 /* ops.c in Sources */,
@@ -7149,6 +7187,7 @@
 				DE7BA7CB1F21F01900705E67 /* tag.c in Sources */,
 				DE7BA7C01F21EEB300705E67 /* misc2.c in Sources */,
 				DED04866209EA7B900D744EE /* ModifiersArranger.swift in Sources */,
+				DEF17D8220B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift in Sources */,
 				DE5C51AE1F6E16B900373B92 /* yacc.c in Sources */,
 				DE7BA79F1F21A77C00705E67 /* VimViewController+UITextInput.swift in Sources */,
 				DE7BA7D81F21F2B800705E67 /* crypt_zip.c in Sources */,
@@ -7159,6 +7198,7 @@
 				DE7BA7A01F21A78E00705E67 /* VimFontsManager.swift in Sources */,
 				DE5C518E1F6E157600373B92 /* flex.c in Sources */,
 				DE7BA7C41F21EF3F00705E67 /* search.c in Sources */,
+				DEF17D8120B3BA2600FE0693 /* OldDocument+CoreDataClass.swift in Sources */,
 				DE5C51961F6E15DF00373B92 /* make.c in Sources */,
 				DE7BA7D91F21F2DB00705E67 /* blowfish.c in Sources */,
 				DE5C518D1F6E157100373B92 /* vstring.c in Sources */,
@@ -7546,6 +7586,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		DEF17D7720B3B89F00FE0693 /* DataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				DEF17D7820B3B89F00FE0693 /* DataModel.xcdatamodel */,
+			);
+			currentVersion = DEF17D7820B3B89F00FE0693 /* DataModel.xcdatamodel */;
+			path = DataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = DE531AEA1F20941100D71DB3 /* Project object */;
 }

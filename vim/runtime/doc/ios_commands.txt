@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 20
+*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 24
 
 				iVim REFERENCE MANUAL	by Terry Chou
 
@@ -12,6 +12,7 @@ its features.
 3. Exuberant Ctags		|ctags-icommand|
 4. Open URL			|open-url-icommand|
 5. Set Extended Keyboard	|set-extended-keyboard-icommands|
+6. Old Documents		|old-documents-icommands|
 
 ==============================================================================
 1. Font Management				*font-management-icommands*
@@ -238,9 +239,12 @@ highlighted as ">...<".
 
 iVim offers one command for customizing the extended keyboard.
 
-:iset[ekbd] [operation] [configuration]			*:iset*	*:isetekbd*
+:iset[ekbd][!] [operation] [configuration]		*:iset*	*:isetekbd*
 		Set the extended keyboard according to the given [operation]
 		or [configuration].
+
+		If [!] presents, it won't record the editing into the history
+		in `compose` mode |isetekbd-mode-compose|.
 		
 		"isetekbd" means "iset extended keyboard".
 
@@ -409,26 +413,27 @@ Editing modes ~					*isetekbd-modes*
 
 There are several different situations in which the editing behavior differs:
 
-a. compose
+a. compose					*isetekbd-mode-compose*
 
 when a |:isetekbd| command is ran directly from the ex command line, it is
 in the compose mode. In this mode, each editing will be recorded into the
-editing history. As a result, you can edit the editing by manipulating 
-the history: you can give up the last editing with the `undo` operation; 
-resume it with `redo`; save the editings in the history into a config file 
-for future use when you are content with the result, with `export`.
+editing history unless the [!] presents. As a result, you can edit the 
+editing by manipulating the history: you can give up the last editing with 
+the `undo` operation; resume it with `redo`; save the editings in the history
+into a config file for future use when you are content with the result, with 
+`export`.
 
 The result of each editing (i.e. each |:isetekbd| command) will be reflected
 on the extended keyboard immediately.
 
-b. vim source
+b. vim source					*isetekbd-mode-vimsource*
 
 if a |:isetekbd| command is from a file being sourced by vim, e.g. in the 
 .vimrc file, it is in the vimsource mode. In this case, the editing will not 
 be recorded into the editing history. However, the result of each editing 
 will be applied immediately.
 
-c. source
+c. source					*isetekbd-mode-source*
 
 editing items could also be saved into a config file that could be applied
 by the `source` operation later. It is in the `source` mode during a `source`
@@ -758,6 +763,93 @@ this prints the contents in the ex command line window.
 It is only allowed as a single operation in `compose` mode.
 
 The 4 operations above are helper ones to assist editing in `compose` mode.
+
+
+==============================================================================
+6. Old Documents				*old-documents-icommands*
+
+iVim provides one command to manage the old documents |ivim-old-documents|
+
+:iold[docs][!] [pattern|I1 I2 ...]		*:iold* *:iolddocs*
+		Manage the old documents.
+
+		Without any argument, it lists all the old documents: >
+
+			1: /private/var/...
+			2: /private/var/...
+			3: /private/var/...
+			...
+<
+		The first column is the index of the document; the second its
+		original path. Note that the upper limit of saved entries is 
+		100, the oldest and excessive ones will yield places for the 
+		new ones.
+
+		You can open the old documents by their indexes [I1 I2 ...]: >
+			:iolddocs 4 2 8		"it opens documents 4, 2 and 8
+<
+		the documents will be opened in the given order. When a doc
+		is already opened, iVim will jump to its containing window
+		rather than open it again. Any invalid index will be reported
+		as an error. Note that especially, if the first index is not
+		valid, the arguments will be tried as [pattern] instead.
+
+		If [!] presents, rather than opening the indexed docs, their
+		records will be removed from the list permanently.
+
+		Besides using the indexes to indicate the documents, you can
+		also use [pattern] to filter them: >
+			:iolddocs /test/	"it opens the first doc that
+						"contains 'test' in path
+<
+		[pattern] is a vim search pattern. Any non-ID character (see
+		|'isident'|), besides "/", can be used to enclose the pattern,
+		as long as it does not in [pattern]. A pattern without a 
+		enclosing character also works (its end is decided by a space)
+		The [pattern] is matched against the document original path.
+
+		Also, the presence of [!] will change the operation from open
+		the documents to remove related records: >
+			:iolddocs! /test/	"it removes the first record
+						"that contains 'test' in path
+<
+		There are several flags that could change the [pattern]'s
+		behavior if present:
+
+		g: "global". Rather than only the first one, all the matched 
+		documents will be the targets: >
+			:iolddocs /test/g	"it opens all docs whose path
+						"contains 'test'
+<
+		p: "print". It prints the matched entries rather than doing
+		opening or removing: >
+			:iolddocs /test/p	"it prints the first entry 
+						"whose path contains 'test'
+<
+		i: "ignore case". The pattern match will ignore the cases of
+		letters: >
+			:iolddocs /test/i	"the pattern will match 'test'
+						"'TEST', or 'Test'
+<
+		n: "negate". The entries NOT matched will be the targets: >
+			:iolddocs /test/n	"it opens the first doc whose 
+						"path does not contain 'test'
+<
+		Flags can be mixed together to indicate more complicated 
+		behaviors: >
+			:iolddocs /test/gp	"it prints all entries whose
+						"path contains 'test'
+			:iolddocs /test/ng	"it opens all docs whose
+						"path does not contain 'test'
+<
+		Note that any repetitive or invalid flag, or spaces in between 
+		will be ignored.
+
+		To provide flags to patterns without enclosing characters, use
+		a space to separate them: >
+			:iolddocs test gp
+			:iolddocs test g p
+<
 
 
  vim:tw=78:ts=8:ft=help:norl:

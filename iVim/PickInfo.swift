@@ -313,7 +313,7 @@ extension URL {
         }
     }
     
-    private func resourceValue(for key: URLResourceKey, secured: Bool = false) -> URLResourceValues? {
+    func resourceValue(for key: URLResourceKey, secured: Bool = false) -> URLResourceValues? {
         do {
             if secured && !self.startAccessingSecurityScopedResource() {
                 return nil

@@ -263,12 +263,10 @@ extension EKOperationInfo {
         let retarg: String
         if arg.isConfig {
             retarg = arg.trimmingCharacters(in: .whitespaces)
-        } else if let r = arg.rangeOfCharacter(from: .whitespaces) {
-            sc = String(arg[..<r.lowerBound])
-            retarg = arg[r.upperBound...].trimmingCharacters(in: .whitespaces)
         } else {
-            sc = arg.trimmingCharacters(in: .whitespaces)
-            retarg = ""
+            let (s, a) = arg.parsingSubcommand()
+            sc = s
+            retarg = a
         }
         
         return (sc, retarg)
@@ -316,6 +314,22 @@ extension EKOperationInfo {
         }
         
         return try self.operations(from: obj)
+    }
+}
+
+extension String {
+    func parsingSubcommand() -> (subcmd: String, arg: String) {
+        let scmd: String
+        let arg: String
+        if let r = self.rangeOfCharacter(from: .whitespaces) {
+            scmd = String(self[..<r.lowerBound])
+            arg = self[r.upperBound...].trimmingCharacters(in: .whitespaces)
+        } else {
+            scmd = self.trimmingCharacters(in: .whitespaces)
+            arg = ""
+        }
+        
+        return (scmd, arg)
     }
 }
 

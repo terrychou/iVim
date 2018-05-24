@@ -344,6 +344,7 @@ static void ex_ideletefont(exarg_T *);
 static void ex_idocuments(exarg_T *);
 static void ex_ishare(exarg_T *);
 static void ex_ictags(exarg_T *);
+static void ex_iolddocs(exarg_T *);
 static void ex_iopenurl(exarg_T *);
 static void ex_isetekbd(exarg_T *);
 //static void ex_ifontsize(exarg_T * eap);
@@ -358,6 +359,9 @@ void ex_ios_cmds(exarg_T * eap) {
             break;
         case CMD_ideletefont:
             ex_ideletefont(eap);
+            break;
+        case CMD_iolddocs:
+            ex_iolddocs(eap);
             break;
         case CMD_iopenurl:
             ex_iopenurl(eap);
@@ -533,6 +537,15 @@ id object_of_expr(const char * expr) {
     typval_T * tv = eval_expr((char_u *)expr, NULL);
     
     return tv != NULL ? value_of_tv(tv) : NULL;
+}
+
+/*
+ * Handling function for command *iolddocs*
+ */
+static void ex_iolddocs(exarg_T * eap) {
+    NSString * arg = TONSSTRING(eap->arg);
+    [[OldDocumentsManager shared] runCommandWith:arg
+                                            bang:eap->forceit];
 }
 
 /*
@@ -744,6 +757,35 @@ BOOL file_is_in_buffer_list(NSString * path) {
 }
 
 /*
+ * Jump to the first window with the buffer at *path*
+ * return YES if a window is found; NO otherwise
+ */
+
+BOOL jump_to_window_with_buffer(NSString * path) {
+    tabpage_T * tp = nil;
+    win_T * wp = nil;
+    win_T * fwp = nil;
+    char_u * b_name = nil;
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next) {
+        fwp = tp->tp_firstwin;
+        if (fwp == NULL) {
+            fwp = firstwin;
+        }
+        for (wp = fwp; wp != NULL; wp = wp->w_next) {
+            b_name = wp->w_buffer->b_ffname;
+            if (b_name != NULL &&
+                [TONSSTRING(b_name) isEqualToString:path]) {
+                goto_tabpage_win(tp, wp);
+                do_cmdline_cmd((char_u *)"redraw!");
+                return YES;
+            }
+        }
+    }
+    
+    return NO;
+}
+
+/*
  * clean buffers for mirror at *path*
  * return true if deletion succeeded
  */
@@ -769,6 +811,41 @@ BOOL clean_buffer_for_mirror_path(NSString * path) {
  */
 BOOL is_in_normal_mode(void) {
     return State & NORMAL;
+}
+
+/*
+ * Get the regex pattern from *line*
+ * return last_search_pat() if itself isn't a valid pattern
+ */
+NSString * get_pattern_from_line(NSString * line) {
+    char_u * p;
+    char_u * s;
+    p = skip_vimgrep_pat(TOCHARS(line), &s, NULL);
+    if (p == NULL || (s != NULL && *s == NUL)) {
+        s = last_search_pat();
+    }
+    
+    return s != NULL ? TONSSTRING(s) : nil;
+}
+
+/*
+ *
+ */
+
+void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL (^matcher)(NSString *))) {
+    regmatch_T regmatch;
+    regmatch.regprog = NULL;
+    regmatch.regprog = vim_regcomp(TOCHARS(pattern), RE_MAGIC);
+    if (regmatch.regprog == NULL) {
+        return;
+    }
+    regmatch.rm_ic = ignore_case;
+    regmatch_T * rmp = &regmatch;
+    BOOL (^m)(NSString *) = ^(NSString * line) {
+        return (BOOL)vim_regexec(rmp, TOCHARS(line), 0);
+    };
+    worker(m);
+    vim_regfree(regmatch.regprog);
 }
 
 /*
@@ -848,7 +925,12 @@ gui_mch_init(void)
     void
 gui_mch_exit(int rc)
 {
-//    printf("%s\n",__func__);  
+//    printf("%s\n",__func__);
+    //save old documents
+    [[OldDocumentsManager shared] wrapUp];
+    
+    //unregister file presenters
+    [[PickInfoManager shared] wrapUp];
 }
 
 

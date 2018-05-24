@@ -2326,6 +2326,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :insert	insert.txt	/*:insert*
 :intro	starting.txt	/*:intro*
 :io	ios_commands.txt	/*:io*
+:iold	ios_commands.txt	/*:iold*
+:iolddocs	ios_commands.txt	/*:iolddocs*
 :iopenurl	ios_commands.txt	/*:iopenurl*
 :is	tagsrch.txt	/*:is*
 :isearch	tagsrch.txt	/*:isearch*
@@ -6731,6 +6733,9 @@ is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
 isetekbd-button-node	ios_commands.txt	/*isetekbd-button-node*
 isetekbd-key-node	ios_commands.txt	/*isetekbd-key-node*
+isetekbd-mode-compose	ios_commands.txt	/*isetekbd-mode-compose*
+isetekbd-mode-source	ios_commands.txt	/*isetekbd-mode-source*
+isetekbd-mode-vimsource	ios_commands.txt	/*isetekbd-mode-vimsource*
 isetekbd-modes	ios_commands.txt	/*isetekbd-modes*
 isetekbd-modifier-keys	ios_commands.txt	/*isetekbd-modifier-keys*
 isetekbd-op-append	ios_commands.txt	/*isetekbd-op-append*
@@ -6751,6 +6756,7 @@ islocked()	eval.txt	/*islocked()*
 it	motion.txt	/*it*
 italic	syntax.txt	/*italic*
 items()	eval.txt	/*items()*
+ivim-old-documents	os_ios.txt	/*ivim-old-documents*
 iw	motion.txt	/*iw*
 i{	motion.txt	/*i{*
 i}	motion.txt	/*i}*
@@ -7411,6 +7417,7 @@ ocaml.vim	syntax.txt	/*ocaml.vim*
 octal	eval.txt	/*octal*
 octal-nrformats	options.txt	/*octal-nrformats*
 octal-number	eval.txt	/*octal-number*
+old-documents-icommands	ios_commands.txt	/*old-documents-icommands*
 oldfiles-variable	eval.txt	/*oldfiles-variable*
 ole-activation	if_ole.txt	/*ole-activation*
 ole-eval	if_ole.txt	/*ole-eval*

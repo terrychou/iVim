@@ -1275,7 +1275,8 @@ tag	      command	      action ~
 |:inoreabbrev|	:inorea[bbrev]	like ":noreabbrev" but for Insert mode
 |:inoremenu|	:inoreme[nu]	like ":noremenu" but for Insert mode
 |:intro|	:int[ro]	print the introductory message
-|:iopenurl|	:io[penurl]	open the given URL
+|:iolddocs|	:iol[ddocs]	manage the old documents via :idocuments
+|:iopenurl|	:iop[enurl]	open the given URL
 |:isearch|	:is[earch]	list one line where identifier matches
 |:isetekbd|	:iset[ekbd]	configure the extended keyboard
 |:ishare|	:ish[are]	share file or text with other apps
