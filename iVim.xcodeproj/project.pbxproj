@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		22033AEF206D6D990080170B /* vimproc_ios.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22033AEE206D6D990080170B /* vimproc_ios.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		227A421520559D1A002A8C57 /* libctags.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421420559D19002A8C57 /* libctags.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		227A421720559E14002A8C57 /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421620559E13002A8C57 /* lua_ios.framework */; };
 		227A421820559E1B002A8C57 /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421620559E13002A8C57 /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -210,7 +209,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				22033AEF206D6D990080170B /* vimproc_ios.dylib in Embed Frameworks */,
 				22CB85FD20559FD4003D4614 /* libssh2.framework in Embed Frameworks */,
 				227A421A20559E62002A8C57 /* openssl.framework in Embed Frameworks */,
 				22F0616120309E93000C33B3 /* libpdftex.dylib in Embed Frameworks */,
