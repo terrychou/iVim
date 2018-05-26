@@ -625,7 +625,7 @@ extension ExtendedKeyboardManager {
         guard let reader = LineReader(file: fopen(path, "r")) else {
             throw op.error("failed to open file at \(path)")
         }
-        NSLog("source file at: \(path)")
+//        NSLog("source file at: \(path)")
         var item = ""
         for line in reader {
             guard let l = self.validLine(from: line) else {
@@ -648,7 +648,7 @@ extension ExtendedKeyboardManager {
     }
     
     private func sourceItem(_ item: String, ignoreEmpty: Bool = true) throws {
-        NSLog("source item: \(item)")
+//        NSLog("source item: \(item)")
         self.operationsCount = 0
         guard !item.isEmpty else {
             if ignoreEmpty {
