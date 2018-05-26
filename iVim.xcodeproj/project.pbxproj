@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2214B1AC20B931B000B1B54C /* network_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2214B1AA20B931A300B1B54C /* network_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		227A421520559D1A002A8C57 /* libctags.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421420559D19002A8C57 /* libctags.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		227A421720559E14002A8C57 /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421620559E13002A8C57 /* lua_ios.framework */; };
 		227A421820559E1B002A8C57 /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A421620559E13002A8C57 /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -18,7 +19,6 @@
 		22CB85FF2055A094003D4614 /* ios_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22CB85FE2055A093003D4614 /* ios_system.framework */; };
 		22CB86002055A120003D4614 /* ios_system.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CB85FE2055A093003D4614 /* ios_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22D364031FC37D95008A8A76 /* if_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC271F209A93007AFD63 /* if_lua.c */; settings = {COMPILER_FLAGS = "-I ../lua_ios/lua-5.3.4/src/"; }; };
-		22DD17ED2064193400B1BFD5 /* libnetwork_ios.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 228E7B5220506AFB00E5EF01 /* libnetwork_ios.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22F0615020309C67000C33B3 /* curl_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0614720309C65000C33B3 /* curl_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22F0615120309C67000C33B3 /* awk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0614820309C65000C33B3 /* awk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22F0615220309C67000C33B3 /* shell.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F0614920309C66000C33B3 /* shell.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -218,7 +218,6 @@
 				22F0616420309E93000C33B3 /* libkpathsea.6.dylib in Embed Frameworks */,
 				22F0616520309E93000C33B3 /* libluatex.dylib in Embed Frameworks */,
 				22F0615920309C7F000C33B3 /* Python_ios.framework in Embed Frameworks */,
-				22DD17ED2064193400B1BFD5 /* libnetwork_ios.dylib in Embed Frameworks */,
 				22F0615020309C67000C33B3 /* curl_ios.framework in Embed Frameworks */,
 				22F0615120309C67000C33B3 /* awk.framework in Embed Frameworks */,
 				22F0615220309C67000C33B3 /* shell.framework in Embed Frameworks */,
@@ -226,6 +225,7 @@
 				22F0615420309C67000C33B3 /* files.framework in Embed Frameworks */,
 				22CB86002055A120003D4614 /* ios_system.framework in Embed Frameworks */,
 				22F0615520309C67000C33B3 /* text.framework in Embed Frameworks */,
+				2214B1AC20B931B000B1B54C /* network_ios.framework in Embed Frameworks */,
 				22F0615620309C67000C33B3 /* tar.framework in Embed Frameworks */,
 				227A421820559E1B002A8C57 /* lua_ios.framework in Embed Frameworks */,
 			);
@@ -247,10 +247,10 @@
 
 /* Begin PBXFileReference section */
 		22033AEE206D6D990080170B /* vimproc_ios.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = vimproc_ios.dylib; path = ../vimproc.vim/vimproc_ios.dylib; sourceTree = "<group>"; };
+		2214B1AA20B931A300B1B54C /* network_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = network_ios.framework; path = Frameworks/network_ios.framework; sourceTree = "<group>"; };
 		227A421420559D19002A8C57 /* libctags.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctags.dylib; path = Frameworks/libctags.dylib; sourceTree = "<group>"; };
 		227A421620559E13002A8C57 /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua_ios.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
 		227A421920559E62002A8C57 /* openssl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = openssl.framework; path = Frameworks/openssl.framework; sourceTree = "<group>"; };
-		228E7B5220506AFB00E5EF01 /* libnetwork_ios.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libnetwork_ios.dylib; path = Frameworks/libnetwork_ios.dylib; sourceTree = "<group>"; };
 		2293CA2F1FDC7DAA00A96ADC /* libbibtex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbibtex.dylib; path = Frameworks/libbibtex.dylib; sourceTree = "<group>"; };
 		22CA592E204EA28C00AB40D1 /* commandDictionary.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = commandDictionary.plist; path = Resources/commandDictionary.plist; sourceTree = "<group>"; };
 		22CA592F204EA28C00AB40D1 /* extraCommandsDictionary.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = extraCommandsDictionary.plist; path = Resources/extraCommandsDictionary.plist; sourceTree = "<group>"; };
@@ -3105,6 +3105,7 @@
 		22D4BE5D1FC076F4007EDB4B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2214B1AA20B931A300B1B54C /* network_ios.framework */,
 				22CB85FE2055A093003D4614 /* ios_system.framework */,
 				227A421420559D19002A8C57 /* libctags.dylib */,
 				22F0614820309C65000C33B3 /* awk.framework */,
@@ -3113,7 +3114,6 @@
 				22F0614A20309C66000C33B3 /* ssh_cmd.framework */,
 				22F0614E20309C67000C33B3 /* tar.framework */,
 				22F0614D20309C67000C33B3 /* text.framework */,
-				228E7B5220506AFB00E5EF01 /* libnetwork_ios.dylib */,
 				22F0615820309C7F000C33B3 /* Python_ios.framework */,
 				227A421620559E13002A8C57 /* lua_ios.framework */,
 				22F0614720309C65000C33B3 /* curl_ios.framework */,
