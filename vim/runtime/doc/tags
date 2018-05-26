@@ -6732,6 +6732,7 @@ iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
 isetekbd-button-node	ios_commands.txt	/*isetekbd-button-node*
+isetekbd-config-format	ios_commands.txt	/*isetekbd-config-format*
 isetekbd-key-node	ios_commands.txt	/*isetekbd-key-node*
 isetekbd-mode-compose	ios_commands.txt	/*isetekbd-mode-compose*
 isetekbd-mode-source	ios_commands.txt	/*isetekbd-mode-source*

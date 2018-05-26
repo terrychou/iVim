@@ -164,6 +164,7 @@ extension VimViewController {
             if flags.contains(.shift) {
                 modifiers.append("S")
             }
+            //combine with modifiers from the extended keyboard
             var keys = gEKM.modifiersString(byCombining: modifiers)
             switch command.input {
             case UIKeyInputEscape?: keys.append("Esc")

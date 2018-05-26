@@ -291,8 +291,8 @@ extension OldDocumentsManager {
             self.removeEntries(at: toRemove, save: true)
         }
         
-        NSLog("flags string: \(flagStr)")
-        NSLog("flags: \(flags)")
+//        NSLog("flags string: \(flagStr)")
+//        NSLog("flags: \(flags)")
         
         return true
     }

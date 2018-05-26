@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 24
+*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 26
 
 				iVim REFERENCE MANUAL	by Terry Chou
 
@@ -258,7 +258,7 @@ The editings such as `remove`, `append` or `insert` are called operations.
 According to the arguments obtained from the configuration, they change the 
 buttons or keys. The format of the configuration is given below.
 
-Configuration format ~
+Configuration format ~				*isetekbd-config-format*
 
 The configuration is written in vim's |dict|, |list| or their mixing. For 
 example: >
@@ -807,6 +807,8 @@ iVim provides one command to manage the old documents |ivim-old-documents|
 		as long as it does not in [pattern]. A pattern without a 
 		enclosing character also works (its end is decided by a space)
 		The [pattern] is matched against the document original path.
+		Note that the last search pattern is used when [pattern] is
+		empty.
 
 		Also, the presence of [!] will change the operation from open
 		the documents to remove related records: >
