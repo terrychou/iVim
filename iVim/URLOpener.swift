@@ -22,10 +22,10 @@ final class URLOpener: NSObject {
             if let url = try realizer.run() {
                 self.open(url)
             } else {
-                gSVO.showError("invalid path: \(self.path)")
+                gSVO.showError("invalid path")
             }
         } catch let URLRealizingError.syntax(msg, pos) {
-            let pointed = self.path.pointing(at: pos).replacingOccurrences(of: "\\", with: "\\\\")
+            let pointed = self.path.pointing(at: pos).escaping("\\")
             let errMsg = msg + ": " + pointed
             gSVO.showError(errMsg)
         } catch {

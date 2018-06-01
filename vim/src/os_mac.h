@@ -247,8 +247,8 @@
 #define WILDCHAR_LIST "*?[{`$"
 
 /**************/
+#define mch_rename(src, dst) rename(src, dst)
 #ifndef FEAT_GUI_IOS
-# define mch_rename(src, dst) rename(src, dst)
 # define mch_remove(x) unlink((char *)(x))
 #endif
 #ifndef mch_getenv

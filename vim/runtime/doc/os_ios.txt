@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2018 Mar 17
+*os_ios.txt*	For Vim version 7.4.	Last change: 2018 May 24
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -131,7 +131,13 @@ c. tapping it in any of the above state will restore its state.
 Hide and show ~ 
 
 You can toggle the extended keyboard by one finger long pressing the screen. 
-The extended keyboard will show at launch by default.
+The extended keyboard will show at launch by default. You can make it hide
+by default by toggle related option in |ios-settings|.
+
+Customize ~
+
+If the default buttons or keys on the extended keyboard don't meet your own
+needs, you can customize them through command |:isetekbd|.
 
 
 ==============================================================================
@@ -233,35 +239,28 @@ And keyboard layout settings may not be respected during dictation.
 ==============================================================================
 6. Open URL				*ios-open-url*
 
-Another way for sharing info among apps in iOS is via URL scheme. After one
-app registers a custom URL scheme, other apps can wrap info into an URL with
-this scheme and open it. Then the system will invoke the supporting app and
-let it handle this URL. With it, the other apps are able to send info to and 
-therefore control the supporting app.
-
-iVim adds support to open URLs to communicate with other apps in this way.
+Another way for sharing info among apps in iOS is via URL scheme. You can put
+info into an URL and open it. Then the system will launch the supporting app
+if there is one, and let it handle this URL. iVim adds support of opening URLs 
+in this way to communicate with or control other apps.
 
 Example ~
 
 URL scheme "https://" is handled by the browser Safari in iOS. When you open
 an URL "https://www.example.com/search?q={expand('<cword>')%[Q}", the browser
-will be launched, open the site example.com, and do some search with the word
-under the cursor as the query. All this workflow can be done with just one 
-opening of this URL.
-
-Tool ~
-
-In iVim, you open URLs through the command |:iopenurl|.
+will be launched, open the site "example.com", and do some search with the 
+word under the cursor as the query. All of these actions as a workflow are
+done with just this one opening of the URL.
 
 Include information ~
 
-URL scheme would not have too much use if it just contained static text. iVim 
-introduces "variable token" as a way for you to include the needed info into 
-the URL. By utilizing vim's |expression|, you can get realtime info such as
+iVim introduces "variable token" as a way for you to include dynamic info into 
+an URL. By utilizing vim's |expression|, you can get useful info such as
 clipboard contents, current file name or results of functions. In the example 
 above, "{expand('<cword>')%[Q}" is one variable token which will be replaced 
-with the word under the cursor when the URL is opened. Refer to |:iopenurl| 
-for the details on its format and usage.
+with the word under the cursor when the URL is opened. 
+
+Refer to command |:iopenurl| for the details on the usage of URL opening.
 
 
 ==============================================================================
@@ -292,6 +291,13 @@ iCloud Drive or other document provider apps. All the modifications will be
 saved into the original files even though this is normally not allowed because 
 they are in different sandbox environments.
 
+iVim also supports opening directories. After you select and open a directory 
+from the document picker, besides file editing, you can do all the supported 
+filesystem operations within it. Such as create or rename subdirectories or 
+files, delete files, etc. All the changes will be synced back to the original 
+directory. Note that the operations need to go in the vim way (e.g. via vim 
+functions, commands, etc.).
+
 Also see |open-in-ivim|.
 
 Items in the share panel ~
@@ -317,6 +323,13 @@ for this feature.
 
 Note that supported font files are always copied for installation.
 
+Old Documents ~						*ivim-old-documents*
+
+Once an edit-in-place file or directory is opened in iVim, it will be 
+bookmarked as one of the old documents. Therefore you can open it later
+directly from the record. iVim provides the command |:iolddocs| to support
+this function. Refer to it for the related details. 
+
 Type ":help :ishare" or ":help :idocuments" for more detailed information.
 
 
@@ -338,6 +351,11 @@ b. Always
 This switch tells iVim about the term of validity of the launch arguments.
 If YES, iVim will take the arguments every time it launches.
 If NO, iVim will only launch with the arguments once, then remove them.
+
+Extended Keyboard ~
+
+Hide By Default
+It controls whether iVim hides the extended keyboard by default or not.
 
 Hardware Keyboard ~
 

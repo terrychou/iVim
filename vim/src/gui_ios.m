@@ -131,30 +131,73 @@ void input_special_name(const char * name) {
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
 #define TONSSTRING(chars) [[NSString alloc] initWithUTF8String:(const char *)chars]
 #define TOCHARS(str) (char_u *)[str UTF8String]
-
 /*
- * to get the write event for files
+ * expand tilde (home directory) for *path*
+ * the original path will be returned if
+ * it is unnecessary to expand or the expanding failed.
+ *
+ * The NSString's expandingTildeInPath method will not
+ * work because the HOME path is different in vim
  */
-void mch_post_buffer_write(buf_T * buf) {
-    NSString * path = TONSSTRING(buf->b_ffname);
-    [[PickInfoManager shared] writeFor:path];
+NSString * expand_tilde_of_path(NSString * path) {
+    if (path == nil || ![path hasPrefix:@"~"]) {
+        return path;
+    }
+    char_u * p = TOCHARS(path);
+    int len = (int)STRLEN(p) + MAXPATHL + 1;
+    char_u buf[len];
+    expand_env(p, buf, len);
+    
+    return TONSSTRING(buf);
 }
 
 /*
  * get the absolute path of *path*
  */
-static NSString * absolute_path_of_path(const char * path) {
+static NSString * full_path_of_path(const char * path) {
     if (path == NULL) { return nil; }
     NSString * p = TONSSTRING(path);
-    return [p isAbsolutePath] ?
-        p : [[[NSFileManager defaultManager] currentDirectoryPath] stringByAppendingPathComponent:p];
+    NSString * res = nil;
+    if ([p isAbsolutePath]) {
+        res = expand_tilde_of_path(p);
+    } else {
+        NSString * cwd = [[NSFileManager defaultManager] currentDirectoryPath];
+        NSURL * cwdURL = [NSURL fileURLWithPath:cwd];
+        NSURL * resURL = [NSURL fileURLWithPath:p relativeToURL:cwdURL];
+        res = [resURL path];
+    }
+    res = [res stringByStandardizingPath];
+    
+    return res;
+//    char_u buf[MAXPATHL];
+//    if (vim_FullName((char_u *)path, buf, MAXPATHL, TRUE) == FAIL) {
+//        return nil;
+//    }
+//
+//    return TONSSTRING(buf);
+}
+
+/*
+ * get the current sourcing file name
+ */
+NSString * get_current_sourcing_name(void) {
+    return sourcing_name == NULL ? nil : TONSSTRING(sourcing_name);
+}
+
+/*
+ * to get the write event for files
+ */
+void mch_ios_post_buffer_write(buf_T * buf, char_u * fname) {
+    NSString * path = full_path_of_path((char *)fname);
+    if (path == NULL) { return; }
+    [[PickInfoManager shared] writeFor:path];
 }
 
 /*
  * to get the file remove event
  */
 void mch_ios_post_file_remove(const char * file) {
-    NSString * p = absolute_path_of_path(file);
+    NSString * p = full_path_of_path(file);
     if (p == NULL) { return; }
     [[PickInfoManager shared] removeFor:p];
 }
@@ -162,9 +205,9 @@ void mch_ios_post_file_remove(const char * file) {
 /*
  * to get the file rename event
  */
-void mch_ios_post_file_rename(const char * old, const char * new) {
-    NSString * op = absolute_path_of_path(old);
-    NSString * np = absolute_path_of_path(new);
+void mch_ios_post_item_rename(const char * old, const char * new) {
+    NSString * op = full_path_of_path(old);
+    NSString * np = full_path_of_path(new);
     if (op == NULL || np == NULL) { return; }
     [[PickInfoManager shared] renameFrom:op to:np];
 }
@@ -173,7 +216,7 @@ void mch_ios_post_file_rename(const char * old, const char * new) {
  * to get the make directory event
  */
 void mch_ios_post_dir_make(const char * path) {
-    NSString * p = absolute_path_of_path(path);
+    NSString * p = full_path_of_path(path);
     if (p == NULL) { return; }
     [[PickInfoManager shared] mkdirFor:p];
 }
@@ -182,57 +225,9 @@ void mch_ios_post_dir_make(const char * path) {
  * to get the remove directory event
  */
 void mch_ios_post_dir_remove(const char * path) {
-    NSString * p = absolute_path_of_path(path);
+    NSString * p = full_path_of_path(path);
     if (p == NULL) { return; }
     [[PickInfoManager shared] rmdirFor:p];
-}
-
-/*
- * implementation for mch_rename
- */
-int mch_ios_rename(const char * old, const char * new) {
-    int ret = rename(old, new);
-    if (ret == 0) {
-        mch_ios_post_file_rename(old, new);
-    }
-    
-    return ret;
-}
-
-/*
- * implementation for mch_remove
- */
-int mch_ios_remove(const char * file) {
-    int ret = unlink(file);
-    if (ret == 0) {
-        mch_ios_post_file_remove(file);
-    }
-    
-    return ret;
-}
-
-/*
- * implementation for vim_mkdir
- */
-int mch_ios_mkdir(const char * path, mode_t mode) {
-    int ret = mkdir(path, mode);
-    if (ret == 0) {
-        mch_ios_post_dir_make(path);
-    }
-    
-    return ret;
-}
-
-/*
- * implementation for mch_rmdir
- */
-int mch_ios_rmdir(const char * path) {
-    int ret = rmdir(path);
-    if (ret == 0) {
-        mch_ios_post_dir_remove(path);
-    }
-    
-    return ret;
 }
 
 /*
@@ -349,7 +344,9 @@ static void ex_ideletefont(exarg_T *);
 static void ex_idocuments(exarg_T *);
 static void ex_ishare(exarg_T *);
 static void ex_ictags(exarg_T *);
+static void ex_iolddocs(exarg_T *);
 static void ex_iopenurl(exarg_T *);
+static void ex_isetekbd(exarg_T *);
 //static void ex_ifontsize(exarg_T * eap);
 
 /*
@@ -363,6 +360,9 @@ void ex_ios_cmds(exarg_T * eap) {
         case CMD_ideletefont:
             ex_ideletefont(eap);
             break;
+        case CMD_iolddocs:
+            ex_iolddocs(eap);
+            break;
         case CMD_iopenurl:
             ex_iopenurl(eap);
             break;
@@ -374,6 +374,9 @@ void ex_ios_cmds(exarg_T * eap) {
             break;
         case CMD_ictags:
             ex_ictags(eap);
+            break;
+        case CMD_isetekbd:
+            ex_isetekbd(eap);
             break;
         default:
             break;
@@ -409,24 +412,140 @@ static void ex_ideletefont(exarg_T * eap) {
 /*
  * get the string value of an expression *expr*
  */
-NSString * string_value_of_expr(const char * expr) {
-    typval_T * ret = eval_expr((char_u *)expr, NULL);
-    if (ret == NULL) {
+static NSString * string_value_of_tv(typval_T *);
+
+static NSString * string_value_of_tv(typval_T * tv) {
+    char_u * s = tv->vval.v_string;
+    if (s == NULL) {
         return @"";
     }
-    switch (ret->v_type) {
+    
+    return TONSSTRING(s);
+}
+
+static NSString * force_string_value_of_tv(typval_T * tv) {
+    switch (tv->v_type) {
         case VAR_NUMBER:
-            return [NSString stringWithFormat:@"%d", ret->vval.v_number];
+            return [NSString stringWithFormat:@"%d", tv->vval.v_number];
+            break;
+        case VAR_FLOAT:
+            return [NSString stringWithFormat:@"%f", tv->vval.v_float];
             break;
         case VAR_STRING:
-            return ret->vval.v_string != NULL ?
-                TONSSTRING(ret->vval.v_string) :
-                @"";
+            return string_value_of_tv(tv);
             break;
         default:
             return @"";
             break;
     }
+}
+
+NSString * string_value_of_expr(const char * expr) {
+    typval_T * ret = eval_expr((char_u *)expr, NULL);
+    if (ret == NULL) {
+        return @"";
+    }
+    
+    return force_string_value_of_tv(ret);
+}
+
+/*
+ * translate the tv value to Cocoa compatible
+ */
+static id value_of_tv(typval_T *);
+static NSDictionary * dict_value_of_tv(typval_T *);
+static NSArray * list_value_of_tv(typval_T *);
+
+static id value_of_tv(typval_T * tv) {
+    switch (tv->v_type) {
+        case VAR_STRING:
+            return string_value_of_tv(tv);
+            break;
+        case VAR_NUMBER:
+            return [NSNumber numberWithInt:tv->vval.v_number];
+            break;
+        case VAR_FLOAT:
+            return [NSNumber numberWithDouble:tv->vval.v_float];
+            break;
+        case VAR_LIST:
+            return list_value_of_tv(tv);
+            break;
+        case VAR_DICT:
+            return dict_value_of_tv(tv);
+            break;
+        default:
+            return NULL;
+            break;
+    }
+}
+
+/*
+ * translate vim dict to NSDictionary
+ */
+static dictitem_T * dict_item_from_hash_item(hashitem_T * hi) {
+    static dictitem_T dumdi;
+    return (dictitem_T *)(hi->hi_key - (dumdi.di_key - (char_u *)&dumdi));
+}
+
+static NSDictionary * dict_value_of_tv(typval_T * tv) {
+    dict_T * dict = tv->vval.v_dict;
+    if (dict == NULL) {
+        return NULL;
+    }
+    int todo = (int)dict->dv_hashtab.ht_used;
+    hashitem_T * hi;
+    dictitem_T * di;
+    NSString * key;
+    id value;
+    NSMutableDictionary * ret = [NSMutableDictionary dictionary];
+    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi) {
+        if (HASHITEM_EMPTY(hi)) {
+            continue;
+        }
+        --todo;
+        di = dict_item_from_hash_item(hi);
+        key = TONSSTRING(&di->di_key);
+        value = value_of_tv(&di->di_tv);
+        [ret setValue:value forKey:key];
+    }
+    
+    return ret;
+}
+
+/*
+ * translate vim list to NSArray
+ */
+static NSArray * list_value_of_tv(typval_T * tv) {
+    list_T * list = tv->vval.v_list;
+    if (list == NULL) {
+        return NULL;
+    }
+    NSMutableArray * ret = [NSMutableArray array];
+    listitem_T * li;
+    for (li = list->lv_first; li != NULL; li = li->li_next) {
+        id value = value_of_tv(&li->li_tv);
+        [ret addObject:value];
+    }
+    
+    return ret;
+}
+
+/*
+ * get Cocoa object of expression *expr*
+ */
+id object_of_expr(const char * expr) {
+    typval_T * tv = eval_expr((char_u *)expr, NULL);
+    
+    return tv != NULL ? value_of_tv(tv) : NULL;
+}
+
+/*
+ * Handling function for command *iolddocs*
+ */
+static void ex_iolddocs(exarg_T * eap) {
+    NSString * arg = TONSSTRING(eap->arg);
+    [[OldDocumentsManager shared] runCommandWith:arg
+                                            bang:eap->forceit];
 }
 
 /*
@@ -507,6 +626,16 @@ static void execute_ctags(NSString * cmdline) {
     NSString * escapedInfo = [info stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
     NSString * cmd = [NSString stringWithFormat:cmdfmt, escapedInfo];
     do_cmdline_cmd(TOCHARS(cmd));
+}
+
+/*
+ * Handling function for command *isetekbd*
+ */
+static void ex_isetekbd(exarg_T * eap) {
+    NSString * arg = TONSSTRING(eap->arg);
+    BOOL forced = eap->forceit == TRUE;
+    [[ExtendedKeyboardManager shared] setKeyboardWith:arg
+                                               forced:forced];
 }
 
 /*
@@ -628,6 +757,35 @@ BOOL file_is_in_buffer_list(NSString * path) {
 }
 
 /*
+ * Jump to the first window with the buffer at *path*
+ * return YES if a window is found; NO otherwise
+ */
+
+BOOL jump_to_window_with_buffer(NSString * path) {
+    tabpage_T * tp = nil;
+    win_T * wp = nil;
+    win_T * fwp = nil;
+    char_u * b_name = nil;
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next) {
+        fwp = tp->tp_firstwin;
+        if (fwp == NULL) {
+            fwp = firstwin;
+        }
+        for (wp = fwp; wp != NULL; wp = wp->w_next) {
+            b_name = wp->w_buffer->b_ffname;
+            if (b_name != NULL &&
+                [TONSSTRING(b_name) isEqualToString:path]) {
+                goto_tabpage_win(tp, wp);
+                do_cmdline_cmd((char_u *)"redraw!");
+                return YES;
+            }
+        }
+    }
+    
+    return NO;
+}
+
+/*
  * clean buffers for mirror at *path*
  * return true if deletion succeeded
  */
@@ -653,6 +811,41 @@ BOOL clean_buffer_for_mirror_path(NSString * path) {
  */
 BOOL is_in_normal_mode(void) {
     return State & NORMAL;
+}
+
+/*
+ * Get the regex pattern from *line*
+ * return last_search_pat() if itself isn't a valid pattern
+ */
+NSString * get_pattern_from_line(NSString * line) {
+    char_u * p;
+    char_u * s;
+    p = skip_vimgrep_pat(TOCHARS(line), &s, NULL);
+    if (p == NULL || (s != NULL && *s == NUL)) {
+        s = last_search_pat();
+    }
+    
+    return s != NULL ? TONSSTRING(s) : nil;
+}
+
+/*
+ *
+ */
+
+void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL (^matcher)(NSString *))) {
+    regmatch_T regmatch;
+    regmatch.regprog = NULL;
+    regmatch.regprog = vim_regcomp(TOCHARS(pattern), RE_MAGIC);
+    if (regmatch.regprog == NULL) {
+        return;
+    }
+    regmatch.rm_ic = ignore_case;
+    regmatch_T * rmp = &regmatch;
+    BOOL (^m)(NSString *) = ^(NSString * line) {
+        return (BOOL)vim_regexec(rmp, TOCHARS(line), 0);
+    };
+    worker(m);
+    vim_regfree(regmatch.regprog);
 }
 
 /*
@@ -732,7 +925,12 @@ gui_mch_init(void)
     void
 gui_mch_exit(int rc)
 {
-//    printf("%s\n",__func__);  
+//    printf("%s\n",__func__);
+    //save old documents
+    [[OldDocumentsManager shared] wrapUp];
+    
+    //unregister file presenters
+    [[PickInfoManager shared] wrapUp];
 }
 
 

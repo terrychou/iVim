@@ -79,6 +79,10 @@ final class SafeVimOperations {
     
     func openFile(at url: URL) {
         self.run {
+            if jump_to_window_with_buffer(url.path) {
+//                NSLog("already opened")
+                return
+            }            
             let isNewBuf = is_current_buf_new()
             let openCmd = isNewBuf ? "edit" : "tabedit"
             let path = url.path.spaceEscaped

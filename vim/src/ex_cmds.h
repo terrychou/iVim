@@ -674,6 +674,9 @@ EX(CMD_intro,		"intro",	ex_intro,
 			TRLBAR|CMDWIN,
 			ADDR_LINES),
 #ifdef FEAT_GUI_IOS
+EX(CMD_iolddocs,	"iolddocs",	ex_ios_cmds,
+			BANG|EXTRA|CMDWIN,
+			ADDR_LINES),
 EX(CMD_iopenurl,	"iopenurl",	ex_ios_cmds,
 			EXTRA|CMDWIN,
 			ADDR_LINES),
@@ -681,6 +684,11 @@ EX(CMD_iopenurl,	"iopenurl",	ex_ios_cmds,
 EX(CMD_isearch,		"isearch",	ex_findpat,
 			BANG|RANGE|DFLALL|WHOLEFOLD|EXTRA|CMDWIN,
 			ADDR_LINES),
+#ifdef FEAT_GUI_IOS
+EX(CMD_isetekbd,	"isetekbd",	ex_ios_cmds,
+			BANG|EXTRA|CMDWIN|FILES,
+			ADDR_LINES),
+#endif
 #ifdef FEAT_GUI_IOS
 EX(CMD_ishare, "ishare", ex_ios_cmds,
    RANGE|EXTRA|CMDWIN,

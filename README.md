@@ -13,7 +13,7 @@ Also, iVim provides commands for more intuitive and efficient font management.
 
 ### Extended keyboard
 
-By introducing compact buttons, iVim covers as many keys as possible in its extended keyboard, so that users can input symbols without switching among key groups.
+By introducing compact buttons, iVim covers as many keys as possible in its extended keyboard, so that you can input symbols without switching among key groups. Moreover, you can customize it to meet your own special needs.
 
 ### Multistage language input
 
@@ -23,8 +23,11 @@ iVim adds support to multistage input languages such as Chinese or Japanese.
 
 Through sharing, iVim makes its editing power available to more apps.
 Via the share extension, iVim can import text or text files from, or export to other apps.
-Via the document picker, users can also import or edit text files in iCloud Drive or documents providers, without leaving iVim.
+Via the document picker, you can also import or edit files or directories in iCloud Drive or documents providers, without leaving iVim.
 
+### External hardware keyboard
+
+iVim supports external hardware keyboards well, just connect your favorite one to the device and start typing. If you are using a standard English keyboard, you can remap the `caps lock` key, too.
 
 ## How to install it
 

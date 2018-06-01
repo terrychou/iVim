@@ -9,7 +9,7 @@
 import UIKit
 
 final class OptionalButtonsBar: UIView {
-    var buttons = [[ButtonOption]]()
+    var buttons = [[EKKeyOption]]()
     var style: ButtonsBarStyle?
     var horizontalMargin = CGFloat(8)
     var verticalMargin = CGFloat(8)
@@ -24,19 +24,29 @@ extension OptionalButtonsBar {
         return self.bounds.height - self.verticalMargin * 2
     }
     
-    private func addButtons() {
-        guard self.buttons.count > 0 else { return }
-        self.subviews.forEach { $0.removeFromSuperview() }
+    func updateButtons() {
         let m = self.measure
         let width = self.buttonWidth ?? m
-        let frame = CGRect(x: 0, y: self.verticalMargin, width: width, height: m)
-        for bo in self.buttons {
+        let frame = CGRect(x: 0, y: self.verticalMargin,
+                           width: width, height: m)
+        let fbc = self.properButtonsCount(for: width)
+        self.subviews.forEach { $0.removeFromSuperview() }
+        for bi in 0..<fbc {
             let ob = OptionalButton(frame: frame)
             ob.primaryFontSize = self.primaryFontSize
             ob.optionalFontSize = self.optionalFontSize
-            ob.setOptions(bo)
+            ob.setOptions(self.buttons[bi])
             self.addSubview(ob)
         }
+    }
+    
+    private func properButtonsCount(for buttonWidth: CGFloat) -> Int {
+        let bc = self.buttons.count
+        let hm = self.horizontalMargin + self.horizontalInset()
+        let width = self.bounds.width - 2 * hm + self.spacing
+        let maxCount = Int(width / (buttonWidth + self.spacing))
+        
+        return min(bc, maxCount)
     }
     
     private func horizontalInset() -> CGFloat {
@@ -55,34 +65,37 @@ extension OptionalButtonsBar {
         var x = hm
         for i in 0..<halfCount {
             buttons[i].frame.origin.x = x
-            x += width + spacing
+            x += width + self.spacing
         }
         
         x = self.bounds.width - hm - width
-        for i in stride(from: self.buttons.count - 1, through: halfCount, by: -1) {
+        for i in stride(from: buttons.count - 1, through: halfCount, by: -1) {
             buttons[i].frame.origin.x = x
-            x -= width + spacing
+            x -= width + self.spacing
         }
     }
     
     private func tuneButtons() {
         let width = self.frame.width
         let style = ButtonsBarStyle(width: width)
-        guard style != self.style else { return }
-        style.setMeasures(for: self)
-        self.style = style
-        self.addButtons()
+        if style != self.style {
+            style.setMeasures(for: self)
+            self.style = style
+        }
+        self.updateButtons()
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         self.tuneButtons()
-        self.layoutButtons()
+        UIView.performWithoutAnimation {
+            self.layoutButtons()
+        }
     }
     
-    func setButtons(with info: [[ButtonOption]]) {
+    func setButtons(with info: [[EKKeyOption]]) {
         self.buttons = info
-        self.addButtons()
+        self.updateButtons()
         self.setNeedsLayout()
     }
 }

@@ -110,6 +110,7 @@ extension VimURLHandler {
                 into: URL.documentsDirectory) else { return false }
             gSVO.openFile(at: path)
         case .open:
+            gODM.addURL(self.url) //only save files in *open* mode
             gPIM.addPickInfo(for: self.url, task: {
                 gSVO.openFile(at: $0)
             })

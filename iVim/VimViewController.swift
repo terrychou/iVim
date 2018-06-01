@@ -28,18 +28,12 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var documentController: UIDocumentInteractionController?
     
-    weak var ctrlButton: OptionalButton?
-    var ctrlEnabled: Bool {
-        return self.ctrlButton?.isOn(withTitle: "ctrl") ?? false
-    }
-    
     var textTokenizer: UITextInputStringTokenizer!
     var markedInfo: MarkedInfo?
     var dictationHypothesis: String?
     var isNormalPending = false
     
     var shouldTuneFrame = true
-    lazy var extendedBar: OptionalButtonsBar = self.newExtendedBar()
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
@@ -80,7 +74,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.inputAssistantItem.leadingBarButtonGroups = []
         self.inputAssistantItem.trailingBarButtonGroups = []
         
-        self.toggleExtendedBar()
+        gEKM.registerController(self)
     }
     
     func resetKeyboard() {
@@ -180,14 +174,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func handleModifiers(with text: String) -> Bool {
-        if self.ctrlEnabled {
-            self.ctrlButton!.tryRestore()
-            let t = text == "\n" ? "CR" : text
-            self.insertSpecialName("<C-\(t)>")
-            return true
-        }
-        
-        return false
+        return ExtendedKeyboardManager.shared.handleModifiers(with:text)
     }
     
     func escapingText(_ text: String) -> String {
@@ -219,7 +206,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var keyboardType = UIKeyboardType.default
     var autocorrectionType = UITextAutocorrectionType.no
     
-    fileprivate func toggleExtendedBar() {
+    func toggleExtendedBar() {
         self.shouldShowExtendedBar = !self.shouldShowExtendedBar
         self.reloadInputViews()
     }
@@ -384,7 +371,11 @@ extension String {
     }
     
     var spaceEscaped: String {
-        return self.replacingOccurrences(of: " ", with: "\\ ")
+        return self.escaping(" ")
+    }
+    
+    func escaping(_ target: String) -> String {
+        return self.replacingOccurrences(of: target, with: "\\" + target)
     }
 }
 
