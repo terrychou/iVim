@@ -2436,7 +2436,7 @@ msgstr "-f\t\t\tKhông sử dụng newcli để mở cửa sổ"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <thiết bị>\t\tSử dụng <thiết bị> cho I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tKhởi động vào chế độ Ả Rập"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4774,8 +4774,8 @@ msgstr "    hãy gõ :q<Enter>               để thoát khỏi chương trình
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr " hãy gõ :help<Enter> hoặc <F1>  để có được trợ giúp        "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "hãy gõ :help version7<Enter>   để biết về phiên bản này  "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "hãy gõ :help version8<Enter>   để biết về phiên bản này  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Làm việc trong chế độ tương thích với Vi"

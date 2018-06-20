@@ -22,6 +22,7 @@ LANGUAGES = \
 		ja \
 		ko \
 		ko.UTF-8 \
+                lv \
 		nb \
 		nl \
 		no \
@@ -29,6 +30,7 @@ LANGUAGES = \
 		pt_BR \
 		ru \
 		sk \
+		sr \
 		sv \
 		uk \
 		vi \
@@ -63,6 +65,7 @@ MOFILES = \
 		ja.mo \
 		ko.mo \
 		ko.UTF-8.mo \
+                lv.mo \
 		nb.mo \
 		nl.mo \
 		no.mo \
@@ -70,6 +73,7 @@ MOFILES = \
 		pt_BR.mo \
 		ru.mo \
 		sk.mo \
+		sr.mo \
 		sv.mo \
 		uk.mo \
 		vi.mo \
@@ -111,6 +115,7 @@ CHECKFILES = \
 		pt_BR.ck \
 		ru.ck \
 		sk.ck \
+		sr.ck \
 		sv.ck \
 		uk.ck \
 		vi.ck \
@@ -232,12 +237,13 @@ sk.cp1250.po: sk.po
 	iconv -f iso-8859-2 -t cp1250 sk.po | \
 		sed -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from sk.po, DO NOT EDIT/' > sk.cp1250.po
 
-# Convert zh_CN.po to create zh_CN.cp936.po.
-# set 'charset' to gbk to avoid that msfmt generates a warning
-zh_CN.cp936.po: zh_CN.po
+# Convert zh_CN.UTF-8.po to create zh_CN.cp936.po.
+# Set 'charset' to gbk to avoid that msfmt generates a warning.
+# This used to convert from zh_CN.po, but that results in a conversion error.
+zh_CN.cp936.po: zh_CN.UTF-8.po
 	rm -f zh_CN.cp936.po
-	iconv -f gb2312 -t cp936 zh_CN.po | \
-		sed -e 's/charset=gb2312/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.po, DO NOT EDIT/' > zh_CN.cp936.po
+	iconv -f UTF-8 -t cp936 zh_CN.UTF-8.po | \
+		sed -e 's/charset=utf-8/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.cp936.po
 
 # Convert ko.UTF-8.po to create ko.po.
 ko.po: ko.UTF-8.po
@@ -275,10 +281,10 @@ distclean: clean
 checkclean:
 	rm -f *.ck
 
-$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h
+$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h ../vim.h
 	cd ..; $(XGETTEXT) --default-domain=$(PACKAGE) \
-		--add-comments --keyword=_ --keyword=N_ \
-		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
+		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h vim.h
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
 
 update-po: $(LANGUAGES)

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.4.  Last change: 2015 Sep 25
+*cmdline.txt*   For Vim version 8.1.  Last change: 2018 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -101,6 +101,11 @@ CTRL-E or <End>					*c_CTRL-E* *c_<End>* *c_End*
 							*c_<LeftMouse>*
 <LeftMouse>	Move the cursor to the position of the mouse click.
 
+							*c_<MiddleMouse>*
+<MiddleMouse>	Paste the contents of the clipboard (for X11 the primary
+		selection).  This is similar to using CTRL-R *, but no CR
+		characters are inserted between lines.
+
 CTRL-H						*c_<BS>* *c_CTRL-H* *c_BS*
 <BS>		Delete the character in front of the cursor (see |:fixdel| if
 		your <BS> key does not do what you want).
@@ -170,12 +175,14 @@ CTRL-R CTRL-F				*c_CTRL-R_CTRL-F* *c_<C-R>_<C-F>*
 CTRL-R CTRL-P				*c_CTRL-R_CTRL-P* *c_<C-R>_<C-P>*
 CTRL-R CTRL-W				*c_CTRL-R_CTRL-W* *c_<C-R>_<C-W>*
 CTRL-R CTRL-A				*c_CTRL-R_CTRL-A* *c_<C-R>_<C-A>*
+CTRL-R CTRL-L				*c_CTRL-R_CTRL-L* *c_<C-R>_<C-L>*
 		Insert the object under the cursor:
 			CTRL-F	the Filename under the cursor
 			CTRL-P	the Filename under the cursor, expanded with
 				'path' as in |gf|
 			CTRL-W	the Word under the cursor
 			CTRL-A	the WORD under the cursor; see |WORD|
+			CTRL-L	the line under the cursor
 
 		When 'incsearch' is set the cursor position at the end of the
 		currently displayed match is used.  With CTRL-W the part of
@@ -187,8 +194,8 @@ CTRL-R CTRL-A				*c_CTRL-R_CTRL-A* *c_<C-R>_<C-A>*
 
 					*c_CTRL-R_CTRL-R* *c_<C-R>_<C-R>*
 					*c_CTRL-R_CTRL-O* *c_<C-R>_<C-O>*
-CTRL-R CTRL-R {0-9a-z"%#:-=. CTRL-F CTRL-P CTRL-W CTRL-A}
-CTRL-R CTRL-O {0-9a-z"%#:-=. CTRL-F CTRL-P CTRL-W CTRL-A}
+CTRL-R CTRL-R {0-9a-z"%#:-=. CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
+CTRL-R CTRL-O {0-9a-z"%#:-=. CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
 		Insert register or object under the cursor.  Works like
 		|c_CTRL-R| but inserts the text literally.  For example, if
 		register a contains "xy^Hz" (where ^H is a backspace),
@@ -224,9 +231,10 @@ CTRL-Y		When there is a modeless selection, copy the selection into
 		the clipboard. |modeless-selection|
 		If there is no selection CTRL-Y is inserted as a character.
 
-CTRL-J					*c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
+CTRL-M or CTRL-J		*c_CTRL-M* *c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
 <CR> or <NL>	start entered command
-							*c_<Esc>* *c_Esc*
+
+CTRL-[						*c_CTRL-[* *c_<Esc>* *c_Esc*
 <Esc>		When typed and 'x' not present in 'cpoptions', quit
 		Command-line mode without executing.  In macros or when 'x'
 		present in 'cpoptions', start entered command.
@@ -353,8 +361,11 @@ terminals)
 		List entries 6 to 12 from the search history: >
 			:history / 6,12
 <
-		List the recent five entries from all histories: >
-			:history all -5,
+		List the penultimate entry from all histories: >
+			:history all -2
+<
+		List the most recent two entries from all histories: >
+			:history all -2,
 
 :keepp[atterns] {command}			*:keepp* *:keeppatterns*
 		Execute {command}, without adding anything to the search
@@ -401,14 +412,17 @@ CTRL-D		List names that match the pattern in front of the cursor.
 		match is inserted.  After the last match, the first is used
 		again (wrap around).
 		The behavior can be changed with the 'wildmode' option.
+							*c_<S-Tab>*
+<S-Tab>		Like 'wildchar' or <Tab>, but begin with the last match and
+		then go to the previous match.
+		<S-Tab> does not work everywhere.
 							*c_CTRL-N*
 CTRL-N		After using 'wildchar' which got multiple matches, go to next
 		match.  Otherwise recall more recent command-line from history.
-<S-Tab>							*c_CTRL-P* *c_<S-Tab>*
+							*c_CTRL-P*
 CTRL-P		After using 'wildchar' which got multiple matches, go to
 		previous match.  Otherwise recall older command-line from
-		history.  <S-Tab> only works with the GUI, on the Amiga and
-		with MS-DOS.
+		history.
 							*c_CTRL-A*
 CTRL-A		All names that match the pattern in front of the cursor are
 		inserted.
@@ -418,19 +432,40 @@ CTRL-L		A match is done on the pattern in front of the cursor.  If
 		If there are multiple matches the longest common part is
 		inserted in place of the pattern.  If the result is shorter
 		than the pattern, no completion is done.
+							*/_CTRL-L*
 		When 'incsearch' is set, entering a search pattern for "/" or
 		"?" and the current match is displayed then CTRL-L will add
 		one character from the end of the current match.  If
 		'ignorecase' and 'smartcase' are set and the command line has
 		no uppercase characters, the added character is converted to
 		lowercase.
+	                                            *c_CTRL-G* */_CTRL-G*
+CTRL-G		When 'incsearch' is set, entering a search pattern for "/" or
+		"?" and the current match is displayed then CTRL-G will move
+		to the next match (does not take |search-offset| into account)
+		Use CTRL-T to move to the previous match.  Hint: on a regular
+		keyboard T is above G.
+	                                            *c_CTRL-T* */_CTRL-T*
+CTRL-T		When 'incsearch' is set, entering a search pattern for "/" or
+		"?" and the current match is displayed then CTRL-T will move
+		to the previous match (does not take |search-offset| into
+		account).
+		Use CTRL-G to move to the next match.  Hint: on a regular
+		keyboard T is above G.
 
 The 'wildchar' option defaults to <Tab> (CTRL-E when in Vi compatible mode; in
 a previous version <Esc> was used).  In the pattern standard wildcards '*' and
 '?' are accepted when matching file names.  '*' matches any string, '?'
 matches exactly one character.
 
+When repeating 'wildchar' or CTRL-N you cycle through the matches, eventually
+ending up back to what was typed.  If the first match is not what you wanted,
+you can use <S-Tab> or CTRL-P to go straight back to what you typed.
+
 The 'wildignorecase' option can be set to ignore case in filenames.
+
+The 'wildmenu' option can be set to show the matches just above the command
+line.
 
 If you like tcsh's autolist completion, you can use this mapping:
 	:cnoremap X <C-L><C-D>
@@ -800,14 +835,21 @@ Also see |`=|.
 			       *:<cword>* *:<cWORD>* *:<cfile>* *<cfile>*
 			       *:<sfile>* *<sfile>* *:<afile>* *<afile>*
 			       *:<abuf>* *<abuf>* *:<amatch>* *<amatch>*
+			       *:<cexpr>* *<cexpr>*
 			       *<slnum>* *E495* *E496* *E497* *E499* *E500*
 Note: these are typed literally, they are not special keys!
 	<cword>    is replaced with the word under the cursor (like |star|)
 	<cWORD>    is replaced with the WORD under the cursor (see |WORD|)
+	<cexpr>    is replaced with the word under the cursor, including more
+		   to form a C expression.  E.g., when the cursor is on "arg"
+		   of "ptr->arg" then the result is "ptr->arg"; when the
+		   cursor is on "]" of "list[idx]" then the result is
+		   "list[idx]".  This is used for |v:beval_text|.
 	<cfile>    is replaced with the path name under the cursor (like what
 		   |gf| uses)
 	<afile>    When executing autocommands, is replaced with the file name
-		   for a file read or write.
+		   of the buffer being manipulated, or the file for a read or
+		   write.
 	<abuf>     When executing autocommands, is replaced with the currently
 		   effective buffer number (for ":r file" and ":so file" it is
 		   the current buffer, the file being read/sourced is not in a
@@ -852,7 +894,8 @@ These modifiers can be given, in this order:
 		directory.
 	:.	Reduce file name to be relative to current directory, if
 		possible.  File name is unmodified if it is not below the
-		current directory.
+		current directory, but on MS-Windows the drive is removed if
+		it is the current drive.
 		For maximum shortness, use ":~:.".
 	:h	Head of the file name (the last component and any separators
 		removed).  Cannot be used with :e, :r or :t.
@@ -1037,10 +1080,10 @@ There are several ways to leave the command-line window:
 		Insert and in Normal mode.
 CTRL-C		Continue in Command-line mode.  The command-line under the
 		cursor is used as the command-line.  Works both in Insert and
-		in Normal mode.  ":close" also works.  There is no redraw,
-		thus the window will remain visible.
+		in Normal mode.  There is no redraw, thus the window will
+		remain visible.
 :quit		Discard the command line and go back to Normal mode.
-		":exit", ":xit" and CTRL-\ CTRL-N also work.
+		":close", ":exit", ":xit" and CTRL-\ CTRL-N also work.
 :qall		Quit Vim, unless there are changes in some buffer.
 :qall!		Quit Vim, discarding changes to any buffer.
 

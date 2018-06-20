@@ -30,36 +30,67 @@ func! GetMline()
   return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
 endfunc
 
-" This only works when 'wrapscan' is set.
+" This only works when 'wrapscan' is not set.
 let s:save_wrapscan = &wrapscan
-set wrapscan
+set nowrapscan
 
 " Start at the first "msgid" line.
+let wsv = winsaveview()
 1
-/^msgid
-let startline = line('.')
+/^msgid\>
+
+" When an error is detected this is set to the line number.
+" Note: this is used in the Makefile.
 let error = 0
 
 while 1
   if getline(line('.') - 1) !~ "no-c-format"
-    let fromline = GetMline()
+    " go over the "msgid" and "msgid_plural" lines
+    let prevfromline = 'foobar'
+    while 1
+      let fromline = GetMline()
+      if prevfromline != 'foobar' && prevfromline != fromline
+	echomsg 'Mismatching % in line ' . (line('.') - 1)
+	echomsg 'msgid: ' . prevfromline
+	echomsg 'msgid ' . fromline
+	if error == 0
+	  let error = line('.')
+	endif
+      endif
+      if getline('.') !~ 'msgid_plural'
+	break
+      endif
+      let prevfromline = fromline
+    endwhile
+
     if getline('.') !~ '^msgstr'
-      echo 'Missing "msgstr" in line ' . line('.')
-      let error = 1
+      echomsg 'Missing "msgstr" in line ' . line('.')
+      if error == 0
+	let error = line('.')
+      endif
     endif
-    let toline = GetMline()
-    if fromline != toline
-      echo 'Mismatching % in line ' . (line('.') - 1)
-      echo 'msgid: ' . fromline
-      echo 'msgstr: ' . toline
-      let error = 1
-    endif
+
+    " check all the 'msgstr' lines
+    while getline('.') =~ '^msgstr'
+      let toline = GetMline()
+      if fromline != toline
+	echomsg 'Mismatching % in line ' . (line('.') - 1)
+	echomsg 'msgid: ' . fromline
+	echomsg 'msgstr: ' . toline
+	if error == 0
+	  let error = line('.')
+	endif
+      endif
+      if line('.') == line('$')
+	break
+      endif
+    endwhile
   endif
 
-  " Find next msgid.
-  " Wrap around at the end of the file, quit when back at the first one.
-  /^msgid
-  if line('.') == startline
+  " Find next msgid.  Quit when there is no more.
+  let lnum = line('.')
+  silent! /^msgid\>
+  if line('.') == lnum
     break
   endif
 endwhile
@@ -74,12 +105,81 @@ endwhile
 "
 1
 if search('msgid "\("\n"\)\?\([EW][0-9]\+:\).*\nmsgstr "\("\n"\)\?[^"]\@=\2\@!') > 0
-  echo 'Mismatching error/warning code in line ' . line('.')
-  let error = 1
+  echomsg 'Mismatching error/warning code in line ' . line('.')
+  if error == 0
+    let error = line('.')
+  endif
 endif
 
+func! CountNl(first, last)
+  let nl = 0
+  for lnum in range(a:first, a:last)
+    let nl += count(getline(lnum), "\n")
+  endfor
+  return nl
+endfunc
+
+" Check that the \n at the end of the msgid line is also present in the msgstr
+" line.  Skip over the header.
+1
+/^"MIME-Version:
+while 1
+  let lnum = search('^msgid\>')
+  if lnum <= 0
+    break
+  endif
+  let strlnum = search('^msgstr\>')
+  let end = search('^$')
+  if end <= 0
+    let end = line('$') + 1
+  endif
+  let origcount = CountNl(lnum, strlnum - 1)
+  let transcount = CountNl(strlnum, end - 1)
+  " Allow for a few more or less line breaks when there are 2 or more
+  if origcount != transcount && (origcount <= 2 || transcount <= 2)
+    echomsg 'Mismatching "\n" in line ' . line('.')
+    if error == 0
+      let error = lnum
+    endif
+  endif
+endwhile
+
+" Check that the file is well formed according to msgfmts understanding
+if executable("msgfmt")
+  let filename = expand("%")
+  " Newer msgfmt does not take OLD_PO_FILE_INPUT argument, must be in
+  " environment.
+  let $OLD_PO_FILE_INPUT = 'yes'
+  let a = system("msgfmt --statistics " . filename)
+  if v:shell_error != 0
+    let error = matchstr(a, filename.':\zs\d\+\ze:')+0
+    for line in split(a, '\n') | echomsg line | endfor
+  endif
+endif
+
+" Check that the plural form is properly initialized
+1
+let plural = search('^msgid_plural ', 'n')
+if (plural && search('^"Plural-Forms: ', 'n') == 0) || (plural && search('^msgstr\[0\] ".\+"', 'n') != plural + 1)
+  if search('^"Plural-Forms: ', 'n') == 0
+    echomsg "Missing Plural header"
+    if error == 0
+      let error = search('\(^"[A-Za-z-_]\+: .*\\n"\n\)\+\zs', 'n') - 1
+    endif
+  elseif error == 0
+    let error = plural
+  endif
+elseif !plural && search('^"Plural-Forms: ', 'n')
+  " We allow for a stray plural header, msginit adds one.
+endif
+
+
 if error == 0
-  echo "OK"
+  " If all was OK restore the view.
+  call winrestview(wsv)
+  echomsg "OK"
+else
+  exe error
 endif
 
 let &wrapscan = s:save_wrapscan

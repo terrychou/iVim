@@ -17,7 +17,10 @@
 #define HAVE_DIRENT_H 1
 #define HAVE_STDARG_H 1
 #define HAVE_OPENDIR 1
-#define MACOS_X_UNIX 1
+#define MACOS_X_DARWIN 1
+//#define MACOS_X_UNIX 1
+#define HAVE_ISNAN 1
+#define HAVE_ISINF 1
 #define ALWAYS_USE_GUI 1
 #define FEAT_GUI 1
 #define FEAT_GUI_SCROLL_WHEEL_FORCE 1

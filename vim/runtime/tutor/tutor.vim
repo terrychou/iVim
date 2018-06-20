@@ -1,12 +1,12 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer: Bram Moolenaar
-" Last Change:	2014 Jun 25
+" Last Change:	2018 Apr 11
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
 " If the translation does not exist, or no extension is given,
-" it defaults to the english version.
+" it defaults to the English version.
 
 " It is invoked by the vimtutor shell script.
 
@@ -42,6 +42,8 @@ else
       let s:ext = ".cs"
     elseif s:lang =~ "Dutch"
       let s:ext = ".nl"
+    elseif s:lang =~ "Bulgarian"
+      let s:ext = ".bg"
     else
       let s:ext = "." . strpart(s:lang, 0, 2)
     endif

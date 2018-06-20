@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 7.4.  Last change: 2011 Jun 12
+*if_cscop.txt*  For Vim version 8.1.  Last change: 2018 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -91,14 +91,15 @@ suggested use.)
 2. Cscope related commands				*cscope-commands*
 
 		*:cscope* *:cs* *:scs* *:scscope* *E259* *E262* *E561* *E560*
-All cscope commands are accessed through suboptions to the main cscope
-command ":cscope".  The shortest abbreviation is ":cs".  The ":scscope"
-command does the same and also splits the window (short: "scs").
+All cscope commands are accessed through suboptions to the cscope commands.
+	`:cscope` or `:cs` is the main command
+	`:scscope` or `:scs` does the same and splits the window
+	`:lcscope` or `:lcs` uses the location list, see |:lcscope|
 
 The available subcommands are:
 
-			*E563* *E564* *E566* *E568* *E569* *E622* *E623*
-			*E625* *E626* *E609*
+			*E563* *E564* *E566* *E568* *E622* *E623* *E625*
+			*E626* *E609*
     add   : Add a new cscope database/connection.
 
 	USAGE	:cs add {file|dir} [pre-path] [flags]
@@ -129,6 +130,7 @@ The available subcommands are:
 		6 or e: Find this egrep pattern
 		7 or f: Find this file
 		8 or i: Find files #including this file
+		9 or a: Find places where this symbol is assigned a value
 
 	For all types, except 4 and 6, leading white space for {name} is
 	removed.  For 4 and 6 there is exactly one space between {querytype}
@@ -255,13 +257,13 @@ started will have no effect!
 {not available when compiled without the |+quickfix| feature}
 'cscopequickfix' specifies whether to use quickfix window to show cscope
 results.  This is a list of comma-separated values. Each item consists of
-|cscope-find| command (s, g, d, c, t, e, f or i) and flag (+, - or 0).
+|cscope-find| command (s, g, d, c, t, e, f, i or a) and flag (+, - or 0).
 '+' indicates that results must be appended to quickfix window,
 '-' implies previous results clearance, '0' or command absence - don't use
 quickfix.  Search is performed from start until first command occurrence.
 The default value is "" (don't use quickfix anyway).  The following value
 seems to be useful: >
-	:set cscopequickfix=s-,c-,d-,i-,t-,e-
+	:set cscopequickfix=s-,c-,d-,i-,t-,e-,a-
 <
 							*cscopetag* *cst*
 If 'cscopetag' is set, the commands ":tag" and CTRL-] as well as "vim -t"
@@ -422,6 +424,7 @@ Cscope Home Page (http://cscope.sourceforge.net/): >
 	nmap <C-_>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
 	nmap <C-_>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 	nmap <C-_>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>a :cs find a <C-R>=expand("<cword>")<CR><CR>
 
 	" Using 'CTRL-spacebar' then a search type makes the vim window
 	" split horizontally, with search result displayed in
@@ -435,6 +438,7 @@ Cscope Home Page (http://cscope.sourceforge.net/): >
 	nmap <C-Space>f :scs find f <C-R>=expand("<cfile>")<CR><CR>
 	nmap <C-Space>i :scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 	nmap <C-Space>d :scs find d <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>a :scs find a <C-R>=expand("<cword>")<CR><CR>
 
 	" Hitting CTRL-space *twice* before the search type does a vertical
 	" split instead of a horizontal one
@@ -453,6 +457,8 @@ Cscope Home Page (http://cscope.sourceforge.net/): >
 		\:vert scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 	nmap <C-Space><C-Space>d
 		\:vert scs find d <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>a
+		\:vert scs find a <C-R>=expand("<cword>")<CR><CR>
 
 ==============================================================================
 7. Cscope availability and information			*cscope-info*
@@ -462,36 +468,18 @@ license or OS distribution), then you can download it for free from:
 	http://cscope.sourceforge.net/
 This is released by SCO under the BSD license.
 
-If you want a newer version of cscope, you will probably have to buy it.
-According to the (old) nvi documentation:
-
-	You can buy version 13.3 source with an unrestricted license
-	for $400 from AT&T Software Solutions by calling +1-800-462-8146.
-
-Also you can download cscope 13.x and mlcscope 14.x (multi-lingual cscope
-which supports C, C++, Java, lex, yacc, breakpoint listing, Ingres, and SDL)
-from World-Wide Exptools Open Source packages page:
-	http://www.bell-labs.com/project/wwexptools/packages.html
-
 In Solaris 2.x, if you have the C compiler license, you will also have
 cscope.  Both are usually located under /opt/SUNWspro/bin
-
-SGI developers can also get it.  Search for Cscope on this page:
-	http://freeware.sgi.com/index-by-alpha.html
-	https://toolbox.sgi.com/toolbox/utilities/cscope/
-The second one is for those who have a password for the SGI toolbox.
 
 There is source to an older version of a cscope clone (called "cs") available
 on the net.  Due to various reasons, this is not supported with Vim.
 
 The cscope interface/support for Vim was originally written by
 Andy Kahn <ackahn@netapp.com>.  The original structure (as well as a tiny
-bit of code) was adapted from the cscope interface in nvi.  Please report
-any problems, suggestions, patches, et al., you have for the usage of
-cscope within Vim to him.
+bit of code) was adapted from the cscope interface in nvi.
 							*cscope-win32*
-For a cscope version for Win32 see:
-	http://code.google.com/p/cscope-win32/
+For a cscope version for Win32 see (seems abandoned):
+	https://code.google.com/archive/p/cscope-win32/
 
 Win32 support was added by Sergey Khorev <sergey.khorev@gmail.com>.  Contact
 him if you have Win32-specific issues.

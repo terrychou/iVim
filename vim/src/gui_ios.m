@@ -114,7 +114,7 @@ void input_special_key(int key) {
 void input_special_name(const char * name) {
     char_u * n = (char_u *)name;
     char_u re[6];
-    int len = trans_special(&n, re, TRUE);
+    int len = trans_special(&n, re, TRUE, FALSE);
     for (int i = 0; i < len; i += 3) {
         if (re[i] == K_SPECIAL) { re[i] = CSI; }
     }
@@ -1524,9 +1524,11 @@ gui_mch_start_blink(void)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
-    [shellViewController() stopBlink];
+    if (may_call_gui_update_cursor) {
+        [shellViewController() stopBlink];
+    }
 //    printf("%s\n",__func__);  
 //    [gui_ios.blink_timer invalidate];
 //    
@@ -1535,6 +1537,18 @@ gui_mch_stop_blink(void)
 //    
 //    gui_ios.blink_state = BLINK_NONE;
 //    gui_ios.blink_timer = nil;
+}
+
+int
+gui_mch_is_blinking(void)
+{
+    return FALSE;
+}
+
+int
+gui_mch_is_blink_off(void)
+{
+    return FALSE;
 }
 
 

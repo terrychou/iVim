@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -8,8 +8,8 @@
  */
 
 /* for debugging */
-/* #define CHECK(c, s)	if (c) EMSG(s) */
-#define CHECK(c, s)
+/* #define CHECK(c, s)	do { if (c) EMSG(s); } while (0) */
+#define CHECK(c, s)	do { /**/ } while (0)
 
 /*
  * memline.c: Contains the functions for appending, deleting and changing the
@@ -235,41 +235,41 @@ typedef enum {
 } upd_block0_T;
 
 #ifdef FEAT_CRYPT
-static void ml_set_mfp_crypt __ARGS((buf_T *buf));
-static void ml_set_b0_crypt __ARGS((buf_T *buf, ZERO_BL *b0p));
+static void ml_set_mfp_crypt(buf_T *buf);
+static void ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p);
 #endif
-static int ml_check_b0_id __ARGS((ZERO_BL *b0p));
-static void ml_upd_block0 __ARGS((buf_T *buf, upd_block0_T what));
-static void set_b0_fname __ARGS((ZERO_BL *, buf_T *buf));
-static void set_b0_dir_flag __ARGS((ZERO_BL *b0p, buf_T *buf));
+static int ml_check_b0_id(ZERO_BL *b0p);
+static void ml_upd_block0(buf_T *buf, upd_block0_T what);
+static void set_b0_fname(ZERO_BL *, buf_T *buf);
+static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
 #ifdef FEAT_MBYTE
-static void add_b0_fenc __ARGS((ZERO_BL *b0p, buf_T *buf));
+static void add_b0_fenc(ZERO_BL *b0p, buf_T *buf);
 #endif
-static time_t swapfile_info __ARGS((char_u *));
-static int recov_file_names __ARGS((char_u **, char_u *, int prepend_dot));
-static int ml_append_int __ARGS((buf_T *, linenr_T, char_u *, colnr_T, int, int));
-static int ml_delete_int __ARGS((buf_T *, linenr_T, int));
-static char_u *findswapname __ARGS((buf_T *, char_u **, char_u *));
-static void ml_flush_line __ARGS((buf_T *));
-static bhdr_T *ml_new_data __ARGS((memfile_T *, int, int));
-static bhdr_T *ml_new_ptr __ARGS((memfile_T *));
-static bhdr_T *ml_find_line __ARGS((buf_T *, linenr_T, int));
-static int ml_add_stack __ARGS((buf_T *));
-static void ml_lineadd __ARGS((buf_T *, int));
-static int b0_magic_wrong __ARGS((ZERO_BL *));
+static time_t swapfile_info(char_u *);
+static int recov_file_names(char_u **, char_u *, int prepend_dot);
+static int ml_append_int(buf_T *, linenr_T, char_u *, colnr_T, int, int);
+static int ml_delete_int(buf_T *, linenr_T, int);
+static char_u *findswapname(buf_T *, char_u **, char_u *);
+static void ml_flush_line(buf_T *);
+static bhdr_T *ml_new_data(memfile_T *, int, int);
+static bhdr_T *ml_new_ptr(memfile_T *);
+static bhdr_T *ml_find_line(buf_T *, linenr_T, int);
+static int ml_add_stack(buf_T *);
+static void ml_lineadd(buf_T *, int);
+static int b0_magic_wrong(ZERO_BL *);
 #ifdef CHECK_INODE
-static int fnamecmp_ino __ARGS((char_u *, char_u *, long));
+static int fnamecmp_ino(char_u *, char_u *, long);
 #endif
-static void long_to_char __ARGS((long, char_u *));
-static long char_to_long __ARGS((char_u *));
+static void long_to_char(long, char_u *);
+static long char_to_long(char_u *);
 #if defined(UNIX) || defined(WIN3264)
-static char_u *make_percent_swname __ARGS((char_u *dir, char_u *name));
+static char_u *make_percent_swname(char_u *dir, char_u *name);
 #endif
 #ifdef FEAT_CRYPT
-static cryptstate_T *ml_crypt_prepare __ARGS((memfile_T *mfp, off_t offset, int reading));
+static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading);
 #endif
 #ifdef FEAT_BYTEOFF
-static void ml_updatechunk __ARGS((buf_T *buf, long line, long len, int updtype));
+static void ml_updatechunk(buf_T *buf, long line, long len, int updtype);
 #endif
 
 /*
@@ -278,8 +278,7 @@ static void ml_updatechunk __ARGS((buf_T *buf, long line, long len, int updtype)
  * Return FAIL for failure, OK otherwise.
  */
     int
-ml_open(buf)
-    buf_T	*buf;
+ml_open(buf_T *buf)
 {
     memfile_T	*mfp;
     bhdr_T	*hp = NULL;
@@ -327,13 +326,6 @@ ml_open(buf)
     curwin->w_nrwidth_line_count = 0;
 #endif
 
-#if defined(MSDOS) && !defined(DJGPP)
-    /* for 16 bit MS-DOS create a swapfile now, because we run out of
-     * memory very quickly */
-    if (p_uc != 0)
-	ml_open_file(buf);
-#endif
-
 /*
  * fill block0 struct and write page 0
  */
@@ -341,7 +333,7 @@ ml_open(buf)
 	goto error;
     if (hp->bh_bnum != 0)
     {
-	EMSG(_("E298: Didn't get block nr 0?"));
+	IEMSG(_("E298: Didn't get block nr 0?"));
 	goto error;
     }
     b0p = (ZERO_BL *)(hp->bh_data);
@@ -352,7 +344,7 @@ ml_open(buf)
     b0p->b0_magic_int = (int)B0_MAGIC_INT;
     b0p->b0_magic_short = (short)B0_MAGIC_SHORT;
     b0p->b0_magic_char = B0_MAGIC_CHAR;
-    STRNCPY(b0p->b0_version, "VIM ", 4);
+    mch_memmove(b0p->b0_version, "VIM ", 4);
     STRNCPY(b0p->b0_version + 4, Version, 6);
     long_to_char((long)mfp->mf_page_size, b0p->b0_page_size);
 
@@ -391,7 +383,7 @@ ml_open(buf)
 	goto error;
     if (hp->bh_bnum != 1)
     {
-	EMSG(_("E298: Didn't get block nr 1?"));
+	IEMSG(_("E298: Didn't get block nr 1?"));
 	goto error;
     }
     pp = (PTR_BL *)(hp->bh_data);
@@ -409,7 +401,7 @@ ml_open(buf)
 	goto error;
     if (hp->bh_bnum != 2)
     {
-	EMSG(_("E298: Didn't get block nr 2?"));
+	IEMSG(_("E298: Didn't get block nr 2?"));
 	goto error;
     }
 
@@ -437,8 +429,7 @@ error:
  * Prepare encryption for "buf" for the current key and method.
  */
     static void
-ml_set_mfp_crypt(buf)
-    buf_T	*buf;
+ml_set_mfp_crypt(buf_T *buf)
 {
     if (*buf->b_p_key != NUL)
     {
@@ -456,9 +447,7 @@ ml_set_mfp_crypt(buf)
  * Prepare encryption for "buf" with block 0 "b0p".
  */
     static void
-ml_set_b0_crypt(buf, b0p)
-    buf_T	*buf;
-    ZERO_BL	*b0p;
+ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
 {
     if (*buf->b_p_key == NUL)
 	b0p->b0_id[1] = BLOCK0_ID1;
@@ -485,10 +474,10 @@ ml_set_b0_crypt(buf, b0p)
  * 'cryptmethod' when 'key' is changed.
  */
     void
-ml_set_crypt_key(buf, old_key, old_cm)
-    buf_T	*buf;
-    char_u	*old_key;
-    char_u	*old_cm;
+ml_set_crypt_key(
+    buf_T	*buf,
+    char_u	*old_key,
+    char_u	*old_cm)
 {
     memfile_T	*mfp = buf->b_ml.ml_mfp;
     bhdr_T	*hp;
@@ -546,8 +535,7 @@ ml_set_crypt_key(buf, old_key, old_cm)
 	idx = 0;		/* start with first index in block 1 */
 	error = 0;
 	buf->b_ml.ml_stack_top = 0;
-	vim_free(buf->b_ml.ml_stack);
-	buf->b_ml.ml_stack = NULL;
+	VIM_CLEAR(buf->b_ml.ml_stack);
 	buf->b_ml.ml_stack_size = 0;	/* no stack yet */
 
 	for ( ; !got_int; line_breakcheck())
@@ -639,14 +627,13 @@ ml_set_crypt_key(buf, old_key, old_cm)
  * It may rename the swap file.
  */
     void
-ml_setname(buf)
-    buf_T	*buf;
+ml_setname(buf_T *buf)
 {
     int		success = FALSE;
     memfile_T	*mfp;
     char_u	*fname;
     char_u	*dirp;
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
     char_u	*p;
 #endif
 
@@ -677,7 +664,7 @@ ml_setname(buf)
 	if (fname == NULL)	    /* no file name found for this dir */
 	    continue;
 
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	/*
 	 * Set full pathname for swap file now, because a ":!cd dir" may
 	 * change directory without us knowing it.
@@ -709,7 +696,7 @@ ml_setname(buf)
 	    vim_free(mfp->mf_fname);
 	    mfp->mf_fname = fname;
 	    vim_free(mfp->mf_ffname);
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	    mfp->mf_ffname = NULL;  /* mf_fname is full pathname already */
 #else
 	    mf_set_ffname(mfp);
@@ -733,7 +720,7 @@ ml_setname(buf)
 	{
 	    int fdflags = fcntl(mfp->mf_fd, F_GETFD);
 	    if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
-		fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
+		(void)fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
 	}
 #endif
     }
@@ -747,11 +734,11 @@ ml_setname(buf)
  * Used when 'updatecount' changes from zero to non-zero.
  */
     void
-ml_open_files()
+ml_open_files(void)
 {
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (!buf->b_p_ro || buf->b_changed)
 	    ml_open_file(buf);
 }
@@ -762,8 +749,7 @@ ml_open_files()
  * and the memfile will be in memory only (no recovery possible).
  */
     void
-ml_open_file(buf)
-    buf_T	*buf;
+ml_open_file(buf_T *buf)
 {
     memfile_T	*mfp;
     char_u	*fname;
@@ -803,7 +789,7 @@ ml_open_file(buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
 	{
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
 	     * change directory without us knowing it.
@@ -844,8 +830,8 @@ ml_open_file(buf)
  * file, or reading into an existing buffer, create a swap file now.
  */
     void
-check_need_swap(newfile)
-    int	    newfile;		/* reading file into new buffer */
+check_need_swap(
+    int	    newfile)		/* reading file into new buffer */
 {
     if (curbuf->b_may_swap && (!curbuf->b_p_ro || !newfile))
 	ml_open_file(curbuf);
@@ -856,9 +842,7 @@ check_need_swap(newfile)
  * If 'del_file' is TRUE, delete the swap file
  */
     void
-ml_close(buf, del_file)
-    buf_T	*buf;
-    int		del_file;
+ml_close(buf_T *buf, int del_file)
 {
     if (buf->b_ml.ml_mfp == NULL)		/* not open */
 	return;
@@ -867,8 +851,7 @@ ml_close(buf, del_file)
 	vim_free(buf->b_ml.ml_line_ptr);
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
-    vim_free(buf->b_ml.ml_chunksize);
-    buf->b_ml.ml_chunksize = NULL;
+    VIM_CLEAR(buf->b_ml.ml_chunksize);
 #endif
     buf->b_ml.ml_mfp = NULL;
 
@@ -884,12 +867,11 @@ ml_close(buf, del_file)
  * But don't delete files that were ":preserve"d when we are POSIX compatible.
  */
     void
-ml_close_all(del_file)
-    int		del_file;
+ml_close_all(int del_file)
 {
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	ml_close(buf, del_file && ((buf->b_flags & BF_PRESERVED) == 0
 				 || vim_strchr(p_cpo, CPO_PRESERVE) == NULL));
 #ifdef FEAT_SPELL
@@ -905,11 +887,11 @@ ml_close_all(del_file)
  * Only use just before exiting!
  */
     void
-ml_close_notmod()
+ml_close_notmod(void)
 {
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (!bufIsChanged(buf))
 	    ml_close(buf, TRUE);    /* close all not-modified buffers */
 }
@@ -919,8 +901,7 @@ ml_close_notmod()
  * Used when the file has been written.
  */
     void
-ml_timestamp(buf)
-    buf_T	*buf;
+ml_timestamp(buf_T *buf)
 {
     ml_upd_block0(buf, UB_FNAME);
 }
@@ -929,8 +910,7 @@ ml_timestamp(buf)
  * Return FAIL when the ID of "b0p" is wrong.
  */
     static int
-ml_check_b0_id(b0p)
-    ZERO_BL	*b0p;
+ml_check_b0_id(ZERO_BL *b0p)
 {
     if (b0p->b0_id[0] != BLOCK0_ID0
 	    || (b0p->b0_id[1] != BLOCK0_ID1
@@ -946,9 +926,7 @@ ml_check_b0_id(b0p)
  * Update the timestamp or the B0_SAME_DIR flag of the .swp file.
  */
     static void
-ml_upd_block0(buf, what)
-    buf_T	*buf;
-    upd_block0_T what;
+ml_upd_block0(buf_T *buf, upd_block0_T what)
 {
     memfile_T	*mfp;
     bhdr_T	*hp;
@@ -970,7 +948,7 @@ ml_upd_block0(buf, what)
 
     b0p = (ZERO_BL *)(hp->bh_data);
     if (ml_check_b0_id(b0p) == FAIL)
-	EMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));
+	IEMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));
     else
     {
 	if (what == UB_FNAME)
@@ -991,17 +969,15 @@ ml_upd_block0(buf, what)
  * Don't use NameBuff[]!!!
  */
     static void
-set_b0_fname(b0p, buf)
-    ZERO_BL	*b0p;
-    buf_T	*buf;
+set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 {
-    struct stat	st;
+    stat_T	st;
 
     if (buf->b_ffname == NULL)
 	b0p->b0_fname[0] = NUL;
     else
     {
-#if defined(MSDOS) || defined(MSWIN) || defined(AMIGA)
+#if defined(MSWIN) || defined(AMIGA)
 	/* Systems that cannot translate "~user" back into a path: copy the
 	 * file name unmodified.  Do use slashes instead of backslashes for
 	 * portability. */
@@ -1072,9 +1048,7 @@ set_b0_fname(b0p, buf)
  * not set.
  */
     static void
-set_b0_dir_flag(b0p, buf)
-    ZERO_BL	*b0p;
-    buf_T	*buf;
+set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf)
 {
     if (same_directory(buf->b_ml.ml_mfp->mf_fname, buf->b_ffname))
 	b0p->b0_flags |= B0_SAME_DIR;
@@ -1087,9 +1061,9 @@ set_b0_dir_flag(b0p, buf)
  * When there is room, add the 'fileencoding' to block zero.
  */
     static void
-add_b0_fenc(b0p, buf)
-    ZERO_BL	*b0p;
-    buf_T	*buf;
+add_b0_fenc(
+    ZERO_BL	*b0p,
+    buf_T	*buf)
 {
     int		n;
     int		size = B0_FNAME_SIZE_NOCRYPT;
@@ -1120,7 +1094,7 @@ add_b0_fenc(b0p, buf)
  * Try to recover curbuf from the .swp file.
  */
     void
-ml_recover()
+ml_recover(void)
 {
     buf_T	*buf = NULL;
     memfile_T	*mfp = NULL;
@@ -1138,7 +1112,7 @@ ml_recover()
     infoptr_T	*ip;
     blocknr_T	bnum;
     int		page_count;
-    struct stat	org_stat, swp_stat;
+    stat_T	org_stat, swp_stat;
     int		len;
     int		directly;
     linenr_T	lnum;
@@ -1151,7 +1125,7 @@ ml_recover()
     int		idx;
     int		top;
     int		txt_start;
-    off_t	size;
+    off_T	size;
     int		called_from_main;
     int		serious_error = TRUE;
     long	mtime;
@@ -1160,10 +1134,10 @@ ml_recover()
 
     recoverymode = TRUE;
     called_from_main = (curbuf->b_ml.ml_mfp == NULL);
-    attr = hl_attr(HLF_E);
+    attr = HL_ATTR(HLF_E);
 
     /*
-     * If the file name ends in ".s[uvw][a-z]" we assume this is the swap file.
+     * If the file name ends in ".s[a-w][a-z]" we assume this is the swap file.
      * Otherwise a search is done to find the swap file(s).
      */
     fname = curbuf->b_fname;
@@ -1172,12 +1146,13 @@ ml_recover()
     len = (int)STRLEN(fname);
     if (len >= 4 &&
 #if defined(VMS)
-	    STRNICMP(fname + len - 4, "_s" , 2)
+	    STRNICMP(fname + len - 4, "_s", 2)
 #else
-	    STRNICMP(fname + len - 4, ".s" , 2)
+	    STRNICMP(fname + len - 4, ".s", 2)
 #endif
-		== 0
-		&& vim_strchr((char_u *)"UVWuvw", fname[len - 2]) != NULL
+						== 0
+		&& vim_strchr((char_u *)"abcdefghijklmnopqrstuvw",
+					   TOLOWER_ASC(fname[len - 2])) != NULL
 		&& ASCII_ISALPHA(fname[len - 1]))
     {
 	directly = TRUE;
@@ -1297,7 +1272,7 @@ ml_recover()
     {
 	msg_start();
 	msg_outtrans_attr(mfp->mf_fname, attr | MSG_HIST);
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 	if (STRNCMP(b0p->b0_hname, "PC ", 3) == 0)
 	    MSG_PUTS_ATTR(_(" cannot be used with this version of Vim.\n"),
 							     attr | MSG_HIST);
@@ -1347,7 +1322,7 @@ ml_recover()
 	    msg_end();
 	    goto theend;
 	}
-	if ((size = lseek(mfp->mf_fd, (off_t)0L, SEEK_END)) <= 0)
+	if ((size = vim_lseek(mfp->mf_fd, (off_T)0L, SEEK_END)) <= 0)
 	    mfp->mf_blocknr_max = 0;	    /* no file or empty file */
 	else
 	    mfp->mf_blocknr_max = (blocknr_T)(size / mfp->mf_page_size);
@@ -1543,7 +1518,7 @@ ml_recover()
 			    line_count = pp->pb_pointer[idx].pe_line_count;
 			    if (readfile(curbuf->b_ffname, NULL, lnum,
 					pp->pb_pointer[idx].pe_old_lnum - 1,
-					line_count, NULL, 0) == FAIL)
+					line_count, NULL, 0) != OK)
 				cannot_open = TRUE;
 			    else
 				lnum += line_count;
@@ -1673,7 +1648,7 @@ ml_recover()
 	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
 	{
 	    changed_int();
-	    ++curbuf->b_changedtick;
+	    ++CHANGEDTICK(curbuf);
 	}
     }
     else
@@ -1687,7 +1662,7 @@ ml_recover()
 	    if (i != 0)
 	    {
 		changed_int();
-		++curbuf->b_changedtick;
+		++CHANGEDTICK(curbuf);
 		break;
 	    }
 	}
@@ -1757,13 +1732,11 @@ theend:
     }
     if (serious_error && called_from_main)
 	ml_close(curbuf, TRUE);
-#ifdef FEAT_AUTOCMD
     else
     {
 	apply_autocmds(EVENT_BUFREADPOST, NULL, curbuf->b_fname, FALSE, curbuf);
 	apply_autocmds(EVENT_BUFWINENTER, NULL, curbuf->b_fname, FALSE, curbuf);
     }
-#endif
     return;
 }
 
@@ -1778,11 +1751,11 @@ theend:
  * - find the name of the n'th swap file when recovering
  */
     int
-recover_names(fname, list, nr, fname_out)
-    char_u	*fname;		/* base for swap file name */
-    int		list;		/* when TRUE, list the swap file names */
-    int		nr;		/* when non-zero, return nr'th swap file name */
-    char_u	**fname_out;	/* result when "nr" > 0 */
+recover_names(
+    char_u	*fname,		/* base for swap file name */
+    int		list,		/* when TRUE, list the swap file names */
+    int		nr,		/* when non-zero, return nr'th swap file name */
+    char_u	**fname_out)	/* result when "nr" > 0 */
 {
     int		num_names;
     char_u	*(names[6]);
@@ -1887,8 +1860,10 @@ recover_names(fname, list, nr, fname_out)
 	    else
 	    {
 #if defined(UNIX) || defined(WIN3264)
-		p = dir_name + STRLEN(dir_name);
-		if (after_pathsep(dir_name, p) && p[-1] == p[-2])
+		int	len = (int)STRLEN(dir_name);
+
+		p = dir_name + len;
+		if (after_pathsep(dir_name, p) && len > 1 && p[-1] == p[-2])
 		{
 		    /* Ends with '//', Use Full path for swap name */
 		    tail = make_percent_swname(dir_name, fname_res);
@@ -1932,7 +1907,7 @@ recover_names(fname, list, nr, fname_out)
 	 */
 	if (*dirp == NUL && file_count + num_files == 0 && fname != NULL)
 	{
-	    struct stat	    st;
+	    stat_T	    st;
 	    char_u	    *swapname;
 
 	    swapname = modname(fname_res,
@@ -2038,9 +2013,7 @@ recover_names(fname, list, nr, fname_out)
  * signs, to dir. An unnamed buffer is handled as "" (<currentdir>/"")
  */
     static char_u *
-make_percent_swname(dir, name)
-    char_u	*dir;
-    char_u	*name;
+make_percent_swname(char_u *dir, char_u *name)
 {
     char_u *d, *s, *f;
 
@@ -2052,7 +2025,7 @@ make_percent_swname(dir, name)
 	if (s != NULL)
 	{
 	    STRCPY(s, f);
-	    for (d = s; *d != NUL; mb_ptr_adv(d))
+	    for (d = s; *d != NUL; MB_PTR_ADV(d))
 		if (vim_ispathsep(*d))
 		    *d = '%';
 	    d = concat_fnames(dir, s, TRUE);
@@ -2064,7 +2037,7 @@ make_percent_swname(dir, name)
 }
 #endif
 
-#if (defined(UNIX) || defined(__EMX__) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 static int process_still_running;
 #endif
 
@@ -2073,10 +2046,9 @@ static int process_still_running;
  * Returns timestamp (0 when unknown).
  */
     static time_t
-swapfile_info(fname)
-    char_u	*fname;
+swapfile_info(char_u *fname)
 {
-    struct stat	    st;
+    stat_T	    st;
     int		    fd;
     struct block0   b0;
     time_t	    x = (time_t)0;
@@ -2153,7 +2125,7 @@ swapfile_info(fname)
 		{
 		    MSG_PUTS(_("\n        process ID: "));
 		    msg_outnum(char_to_long(b0.b0_pid));
-#if defined(UNIX) || defined(__EMX__)
+#if defined(UNIX)
 		    /* EMX kill() not working correctly, it seems */
 		    if (kill((pid_t)char_to_long(b0.b0_pid), 0) == 0)
 		    {
@@ -2167,7 +2139,7 @@ swapfile_info(fname)
 
 		if (b0_magic_wrong(&b0))
 		{
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSWIN)
 		    if (STRNCMP(b0.b0_hname, "PC ", 3) == 0)
 			MSG_PUTS(_("\n         [not usable with this version of Vim]"));
 		    else
@@ -2188,20 +2160,10 @@ swapfile_info(fname)
 }
 
     static int
-recov_file_names(names, path, prepend_dot)
-    char_u	**names;
-    char_u	*path;
-    int		prepend_dot;
+recov_file_names(char_u **names, char_u *path, int prepend_dot)
 {
     int		num_names;
 
-#ifdef SHORT_FNAME
-    /*
-     * (MS-DOS) always short names
-     */
-    names[0] = modname(path, (char_u *)".sw?", FALSE);
-    num_names = 1;
-#else /* !SHORT_FNAME */
     /*
      * (Win32 and Win64) never short names, but do prepend a dot.
      * (Not MS-DOS or Win32 or Win64) maybe short name, maybe not: Try both.
@@ -2285,8 +2247,6 @@ end:
     curbuf->b_shortname = shortname;
 # endif
 
-#endif /* !SHORT_FNAME */
-
     return num_names;
 }
 
@@ -2298,14 +2258,12 @@ end:
  * always sync at least one block.
  */
     void
-ml_sync_all(check_file, check_char)
-    int	    check_file;
-    int	    check_char;
+ml_sync_all(int check_file, int check_char)
 {
     buf_T		*buf;
-    struct stat		st;
+    stat_T		st;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (buf->b_ml.ml_mfp == NULL || buf->b_ml.ml_mfp->mf_fname == NULL)
 	    continue;			    /* no file */
@@ -2350,9 +2308,7 @@ ml_sync_all(check_file, check_char)
  * when message is TRUE the success of preserving is reported
  */
     void
-ml_preserve(buf, message)
-    buf_T	*buf;
-    int		message;
+ml_preserve(buf_T *buf, int message)
 {
     bhdr_T	*hp;
     linenr_T	lnum;
@@ -2436,8 +2392,7 @@ theend:
  * having to check for error everywhere).
  */
     char_u  *
-ml_get(lnum)
-    linenr_T	lnum;
+ml_get(linenr_T lnum)
 {
     return ml_get_buf(curbuf, lnum, FALSE);
 }
@@ -2446,8 +2401,7 @@ ml_get(lnum)
  * Return pointer to position "pos".
  */
     char_u *
-ml_get_pos(pos)
-    pos_T	*pos;
+ml_get_pos(pos_T *pos)
 {
     return (ml_get_buf(curbuf, pos->lnum, FALSE) + pos->col);
 }
@@ -2456,7 +2410,7 @@ ml_get_pos(pos)
  * Return pointer to cursor line.
  */
     char_u *
-ml_get_curline()
+ml_get_curline(void)
 {
     return ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE);
 }
@@ -2465,7 +2419,7 @@ ml_get_curline()
  * Return pointer to cursor position.
  */
     char_u *
-ml_get_cursor()
+ml_get_cursor(void)
 {
     return (ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE) +
 							curwin->w_cursor.col);
@@ -2478,10 +2432,10 @@ ml_get_cursor()
  * changed)
  */
     char_u  *
-ml_get_buf(buf, lnum, will_change)
-    buf_T	*buf;
-    linenr_T	lnum;
-    int		will_change;		/* line will be changed */
+ml_get_buf(
+    buf_T	*buf,
+    linenr_T	lnum,
+    int		will_change)		/* line will be changed */
 {
     bhdr_T	*hp;
     DATA_BL	*dp;
@@ -2495,7 +2449,7 @@ ml_get_buf(buf, lnum, will_change)
 	    /* Avoid giving this message for a recursive call, may happen when
 	     * the GUI redraws part of the text. */
 	    ++recursive;
-	    EMSGN(_("E315: ml_get: invalid lnum: %ld"), lnum);
+	    IEMSGN(_("E315: ml_get: invalid lnum: %ld"), lnum);
 	    --recursive;
 	}
 errorret:
@@ -2530,7 +2484,7 @@ errorret:
 		/* Avoid giving this message for a recursive call, may happen
 		 * when the GUI redraws part of the text. */
 		++recursive;
-		EMSGN(_("E316: ml_get: cannot find line %ld"), lnum);
+		IEMSGN(_("E316: ml_get: cannot find line %ld"), lnum);
 		--recursive;
 	    }
 	    goto errorret;
@@ -2554,7 +2508,7 @@ errorret:
  * is in allocated memory.
  */
     int
-ml_line_alloced()
+ml_line_alloced(void)
 {
     return (curbuf->b_ml.ml_flags & ML_LINE_DIRTY);
 }
@@ -2572,11 +2526,11 @@ ml_line_alloced()
  * return FAIL for failure, OK otherwise
  */
     int
-ml_append(lnum, line, len, newfile)
-    linenr_T	lnum;		/* append after this line (can be 0) */
-    char_u	*line;		/* text of the new line */
-    colnr_T	len;		/* length of new line, including NUL, or 0 */
-    int		newfile;	/* flag, see above */
+ml_append(
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of new line, including NUL, or 0 */
+    int		newfile)	/* flag, see above */
 {
     /* When starting up, we might still need to create the memfile */
     if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
@@ -2587,18 +2541,18 @@ ml_append(lnum, line, len, newfile)
     return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
  */
     int
-ml_append_buf(buf, lnum, line, len, newfile)
-    buf_T	*buf;
-    linenr_T	lnum;		/* append after this line (can be 0) */
-    char_u	*line;		/* text of the new line */
-    colnr_T	len;		/* length of new line, including NUL, or 0 */
-    int		newfile;	/* flag, see above */
+ml_append_buf(
+    buf_T	*buf,
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of new line, including NUL, or 0 */
+    int		newfile)	/* flag, see above */
 {
     if (buf->b_ml.ml_mfp == NULL)
 	return FAIL;
@@ -2610,13 +2564,13 @@ ml_append_buf(buf, lnum, line, len, newfile)
 #endif
 
     static int
-ml_append_int(buf, lnum, line, len, newfile, mark)
-    buf_T	*buf;
-    linenr_T	lnum;		/* append after this line (can be 0) */
-    char_u	*line;		/* text of the new line */
-    colnr_T	len;		/* length of line, including NUL, or 0 */
-    int		newfile;	/* flag, see above */
-    int		mark;		/* mark the new line */
+ml_append_int(
+    buf_T	*buf,
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of line, including NUL, or 0 */
+    int		newfile,	/* flag, see above */
+    int		mark)		/* mark the new line */
 {
     int		i;
     int		line_count;	/* number of indexes in current block */
@@ -2944,7 +2898,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
 	    pp = (PTR_BL *)(hp->bh_data);   /* must be pointer block */
 	    if (pp->pb_id != PTR_ID)
 	    {
-		EMSG(_("E317: pointer block id wrong 3"));
+		IEMSG(_("E317: pointer block id wrong 3"));
 		mf_put(mfp, hp, FALSE, FALSE);
 		return FAIL;
 	    }
@@ -3086,7 +3040,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
 	 */
 	if (stack_idx < 0)
 	{
-	    EMSG(_("E318: Updated too many blocks?"));
+	    IEMSG(_("E318: Updated too many blocks?"));
 	    buf->b_ml.ml_stack_top = 0;	/* invalidate stack */
 	}
     }
@@ -3104,6 +3058,11 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
 							   (char_u *)"\n", 1);
     }
 #endif
+#ifdef FEAT_JOB_CHANNEL
+    if (buf->b_write_to_channel)
+	channel_write_new_lines(buf);
+#endif
+
     return OK;
 }
 
@@ -3119,10 +3078,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
  * return FAIL for failure, OK otherwise
  */
     int
-ml_replace(lnum, line, copy)
-    linenr_T	lnum;
-    char_u	*line;
-    int		copy;
+ml_replace(linenr_T lnum, char_u *line, int copy)
 {
     if (line == NULL)		/* just checking... */
 	return FAIL;
@@ -3152,7 +3108,8 @@ ml_replace(lnum, line, copy)
 }
 
 /*
- * Delete line 'lnum' in the current buffer.
+ * Delete line "lnum" in the current buffer.
+ * When "message" is TRUE may give a "No lines in buffer" message.
  *
  * Check: The caller of this function should probably also call
  * deleted_lines() after this.
@@ -3160,19 +3117,14 @@ ml_replace(lnum, line, copy)
  * return FAIL for failure, OK otherwise
  */
     int
-ml_delete(lnum, message)
-    linenr_T	lnum;
-    int		message;
+ml_delete(linenr_T lnum, int message)
 {
     ml_flush_line(curbuf);
     return ml_delete_int(curbuf, lnum, message);
 }
 
     static int
-ml_delete_int(buf, lnum, message)
-    buf_T	*buf;
-    linenr_T	lnum;
-    int		message;
+ml_delete_int(buf_T *buf, linenr_T lnum, int message)
 {
     bhdr_T	*hp;
     memfile_T	*mfp;
@@ -3267,7 +3219,7 @@ ml_delete_int(buf, lnum, message)
 	    pp = (PTR_BL *)(hp->bh_data);   /* must be pointer block */
 	    if (pp->pb_id != PTR_ID)
 	    {
-		EMSG(_("E317: pointer block id wrong 4"));
+		IEMSG(_("E317: pointer block id wrong 4"));
 		mf_put(mfp, hp, FALSE, FALSE);
 		return FAIL;
 	    }
@@ -3332,8 +3284,7 @@ ml_delete_int(buf, lnum, message)
  * set the B_MARKED flag for line 'lnum'
  */
     void
-ml_setmarked(lnum)
-    linenr_T lnum;
+ml_setmarked(linenr_T lnum)
 {
     bhdr_T    *hp;
     DATA_BL *dp;
@@ -3362,7 +3313,7 @@ ml_setmarked(lnum)
  * find the first line with its B_MARKED flag set
  */
     linenr_T
-ml_firstmarked()
+ml_firstmarked(void)
 {
     bhdr_T	*hp;
     DATA_BL	*dp;
@@ -3406,7 +3357,7 @@ ml_firstmarked()
  * clear all DB_MARKED flags
  */
     void
-ml_clearmarked()
+ml_clearmarked(void)
 {
     bhdr_T	*hp;
     DATA_BL	*dp;
@@ -3448,8 +3399,7 @@ ml_clearmarked()
  * flush ml_line if necessary
  */
     static void
-ml_flush_line(buf)
-    buf_T	*buf;
+ml_flush_line(buf_T *buf)
 {
     bhdr_T	*hp;
     DATA_BL	*dp;
@@ -3481,7 +3431,7 @@ ml_flush_line(buf)
 
 	hp = ml_find_line(buf, lnum, ML_FIND);
 	if (hp == NULL)
-	    EMSGN(_("E320: Cannot find line %ld"), lnum);
+	    IEMSGN(_("E320: Cannot find line %ld"), lnum);
 	else
 	{
 	    dp = (DATA_BL *)(hp->bh_data);
@@ -3554,10 +3504,7 @@ ml_flush_line(buf)
  * create a new, empty, data block
  */
     static bhdr_T *
-ml_new_data(mfp, negative, page_count)
-    memfile_T	*mfp;
-    int		negative;
-    int		page_count;
+ml_new_data(memfile_T *mfp, int negative, int page_count)
 {
     bhdr_T	*hp;
     DATA_BL	*dp;
@@ -3578,8 +3525,7 @@ ml_new_data(mfp, negative, page_count)
  * create a new, empty, pointer block
  */
     static bhdr_T *
-ml_new_ptr(mfp)
-    memfile_T	*mfp;
+ml_new_ptr(memfile_T *mfp)
 {
     bhdr_T	*hp;
     PTR_BL	*pp;
@@ -3612,10 +3558,7 @@ ml_new_ptr(mfp)
  * return: NULL for failure, pointer to block header otherwise
  */
     static bhdr_T *
-ml_find_line(buf, lnum, action)
-    buf_T	*buf;
-    linenr_T	lnum;
-    int		action;
+ml_find_line(buf_T *buf, linenr_T lnum, int action)
 {
     DATA_BL	*dp;
     PTR_BL	*pp;
@@ -3730,7 +3673,7 @@ ml_find_line(buf, lnum, action)
 	pp = (PTR_BL *)(dp);		/* must be pointer block */
 	if (pp->pb_id != PTR_ID)
 	{
-	    EMSG(_("E317: pointer block id wrong"));
+	    IEMSG(_("E317: pointer block id wrong"));
 	    goto error_block;
 	}
 
@@ -3775,11 +3718,11 @@ ml_find_line(buf, lnum, action)
 	if (idx >= (int)pp->pb_count)	    /* past the end: something wrong! */
 	{
 	    if (lnum > buf->b_ml.ml_line_count)
-		EMSGN(_("E322: line number out of range: %ld past the end"),
+		IEMSGN(_("E322: line number out of range: %ld past the end"),
 					      lnum - buf->b_ml.ml_line_count);
 
 	    else
-		EMSGN(_("E323: line count wrong in block %ld"), bnum);
+		IEMSGN(_("E323: line count wrong in block %ld"), bnum);
 	    goto error_block;
 	}
 	if (action == ML_DELETE)
@@ -3817,8 +3760,7 @@ error_noblock:
  * return -1 for failure, number of the new entry otherwise
  */
     static int
-ml_add_stack(buf)
-    buf_T	*buf;
+ml_add_stack(buf_T *buf)
 {
     int		top;
     infoptr_T	*newstack;
@@ -3857,9 +3799,7 @@ ml_add_stack(buf)
  * Count is the number of lines added, negative if lines have been deleted.
  */
     static void
-ml_lineadd(buf, count)
-    buf_T	*buf;
-    int		count;
+ml_lineadd(buf_T *buf, int count)
 {
     int		idx;
     infoptr_T	*ip;
@@ -3876,7 +3816,7 @@ ml_lineadd(buf, count)
 	if (pp->pb_id != PTR_ID)
 	{
 	    mf_put(mfp, hp, FALSE, FALSE);
-	    EMSG(_("E317: pointer block id wrong 2"));
+	    IEMSG(_("E317: pointer block id wrong 2"));
 	    break;
 	}
 	pp->pb_pointer[ip->ip_index].pe_line_count += count;
@@ -3894,9 +3834,7 @@ ml_lineadd(buf, count)
  * Otherwise returns FAIL.
  */
     int
-resolve_symlink(fname, buf)
-    char_u	*fname;
-    char_u	*buf;
+resolve_symlink(char_u *fname, char_u *buf)
 {
     char_u	tmp[MAXPATHL];
     int		ret;
@@ -3970,11 +3908,11 @@ resolve_symlink(fname, buf)
  * Returns pointer to allocated memory or NULL.
  */
     char_u *
-makeswapname(fname, ffname, buf, dir_name)
-    char_u	*fname;
-    char_u	*ffname UNUSED;
-    buf_T	*buf;
-    char_u	*dir_name;
+makeswapname(
+    char_u	*fname,
+    char_u	*ffname UNUSED,
+    buf_T	*buf,
+    char_u	*dir_name)
 {
     char_u	*r, *s;
     char_u	*fname_res = fname;
@@ -3983,8 +3921,10 @@ makeswapname(fname, ffname, buf, dir_name)
 #endif
 
 #if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
-    s = dir_name + STRLEN(dir_name);
-    if (after_pathsep(dir_name, s) && s[-1] == s[-2])
+    int		len = (int)STRLEN(dir_name);
+
+    s = dir_name + len;
+    if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
     {			       /* Ends with '//', Use Full path */
 	r = NULL;
 	if ((s = make_percent_swname(dir_name, fname)) != NULL)
@@ -4004,11 +3944,7 @@ makeswapname(fname, ffname, buf, dir_name)
 #endif
 
     r = buf_modname(
-#ifdef SHORT_FNAME
-	    TRUE,
-#else
 	    (buf->b_p_sn || buf->b_shortname),
-#endif
 	    fname_res,
 	    (char_u *)
 #if defined(VMS)
@@ -4016,13 +3952,8 @@ makeswapname(fname, ffname, buf, dir_name)
 #else
 	    ".swp",
 #endif
-#ifdef SHORT_FNAME		/* always 8.3 file name */
-	    FALSE
-#else
 	    /* Prepend a '.' to the swap file name for the current directory. */
-	    dir_name[0] == '.' && dir_name[1] == NUL
-#endif
-	       );
+	    dir_name[0] == '.' && dir_name[1] == NUL);
     if (r == NULL)	    /* out of memory */
 	return NULL;
 
@@ -4044,9 +3975,9 @@ makeswapname(fname, ffname, buf, dir_name)
  * The return value is an allocated string and can be NULL.
  */
     char_u *
-get_file_in_dir(fname, dname)
-    char_u  *fname;
-    char_u  *dname;	/* don't use "dirname", it is a global for Alpha */
+get_file_in_dir(
+    char_u  *fname,
+    char_u  *dname)	/* don't use "dirname", it is a global for Alpha */
 {
     char_u	*t;
     char_u	*tail;
@@ -4081,7 +4012,7 @@ get_file_in_dir(fname, dname)
 
 #ifdef WIN3264
     if (retval != NULL)
-	for (t = gettail(retval); *t != NUL; mb_ptr_adv(t))
+	for (t = gettail(retval); *t != NUL; MB_PTR_ADV(t))
 	    if (*t == ':')
 		*t = '%';
 #endif
@@ -4089,17 +4020,17 @@ get_file_in_dir(fname, dname)
     return retval;
 }
 
-static void attention_message __ARGS((buf_T *buf, char_u *fname));
+static void attention_message(buf_T *buf, char_u *fname);
 
 /*
  * Print the ATTENTION message: info about an existing swap file.
  */
     static void
-attention_message(buf, fname)
-    buf_T   *buf;	/* buffer being edited */
-    char_u  *fname;	/* swap file name */
+attention_message(
+    buf_T   *buf,	/* buffer being edited */
+    char_u  *fname)	/* swap file name */
 {
-    struct stat st;
+    stat_T	st;
     time_t	x, sx;
     char	*p;
 
@@ -4126,8 +4057,7 @@ attention_message(buf, fname)
     }
     /* Some of these messages are long to allow translation to
      * other languages. */
-    MSG_PUTS(_("\n(1) Another program may be editing the same file.  If this is the case,\n    be careful not to end up with two different instances of the same\n    file when making changes."));
-    MSG_PUTS(_("  Quit, or continue with caution.\n"));
+    MSG_PUTS(_("\n(1) Another program may be editing the same file.  If this is the case,\n    be careful not to end up with two different instances of the same\n    file when making changes.  Quit, or continue with caution.\n"));
     MSG_PUTS(_("(2) An edit session for this file crashed.\n"));
     MSG_PUTS(_("    If this is the case, use \":recover\" or \"vim -r "));
     msg_outtrans(buf->b_fname);
@@ -4139,8 +4069,8 @@ attention_message(buf, fname)
     --no_wait_return;
 }
 
-#ifdef FEAT_AUTOCMD
-static int do_swapexists __ARGS((buf_T *buf, char_u *fname));
+#if defined(FEAT_EVAL)
+static int do_swapexists(buf_T *buf, char_u *fname);
 
 /*
  * Trigger the SwapExists autocommands.
@@ -4154,9 +4084,7 @@ static int do_swapexists __ARGS((buf_T *buf, char_u *fname));
  * 6: abort
  */
     static int
-do_swapexists(buf, fname)
-    buf_T	*buf;
-    char_u	*fname;
+do_swapexists(buf_T *buf, char_u *fname)
 {
     set_vim_var_string(VV_SWAPNAME, fname, -1);
     set_vim_var_string(VV_SWAPCHOICE, NULL, -1);
@@ -4195,10 +4123,10 @@ do_swapexists(buf, fname)
  * Note: May trigger SwapExists autocmd, pointers may change!
  */
     static char_u *
-findswapname(buf, dirp, old_fname)
-    buf_T	*buf;
-    char_u	**dirp;		/* pointer to list of directories */
-    char_u	*old_fname;	/* don't give warning for this file name */
+findswapname(
+    buf_T	*buf,
+    char_u	**dirp,		/* pointer to list of directories */
+    char_u	*old_fname)	/* don't give warning for this file name */
 {
     char_u	*fname;
     int		n;
@@ -4206,13 +4134,10 @@ findswapname(buf, dirp, old_fname)
 #ifdef AMIGA
     BPTR	fh;
 #endif
-#ifndef SHORT_FNAME
     int		r;
-#endif
     char_u	*buf_fname = buf->b_fname;
 
-#if !defined(SHORT_FNAME) \
-		&& ((!defined(UNIX) && !defined(OS2)) || defined(ARCHIE))
+#if !defined(UNIX)
 # define CREATE_DUMMY_FILE
     FILE	*dummyfd = NULL;
 
@@ -4226,7 +4151,7 @@ findswapname(buf, dirp, old_fname)
 	if (buf_fname == NULL)
 	    buf_fname = buf->b_fname;
 	else
-	    for (t = gettail(buf_fname); *t != NUL; mb_ptr_adv(t))
+	    for (t = gettail(buf_fname); *t != NUL; MB_PTR_ADV(t))
 		if (*t == ':')
 		    *t = '%';
     }
@@ -4268,11 +4193,10 @@ findswapname(buf, dirp, old_fname)
 	    break;
 	if ((n = (int)STRLEN(fname)) == 0)	/* safety check */
 	{
-	    vim_free(fname);
-	    fname = NULL;
+	    VIM_CLEAR(fname);
 	    break;
 	}
-#if (defined(UNIX) || defined(OS2)) && !defined(ARCHIE) && !defined(SHORT_FNAME)
+#if defined(UNIX)
 /*
  * Some systems have a MS-DOS compatible filesystem that use 8.3 character
  * file names. If this is the first try and the swap file name does not fit in
@@ -4283,7 +4207,7 @@ findswapname(buf, dirp, old_fname)
 	{
 	    char_u	    *tail;
 	    char_u	    *fname2;
-	    struct stat	    s1, s2;
+	    stat_T	    s1, s2;
 	    int		    f1, f2;
 	    int		    created1 = FALSE, created2 = FALSE;
 	    int		    same = FALSE;
@@ -4323,10 +4247,6 @@ findswapname(buf, dirp, old_fname)
 		    {
 			f1 = mch_open_rw((char *)fname,
 					       O_RDWR|O_CREAT|O_EXCL|O_EXTRA);
-#if defined(OS2)
-			if (f1 < 0 && errno == ENOENT)
-			    same = TRUE;
-#endif
 			created1 = TRUE;
 		    }
 		    if (f1 >= 0)
@@ -4376,7 +4296,7 @@ findswapname(buf, dirp, old_fname)
 	if (mch_getperm(fname) < 0)	/* it does not exist */
 	{
 #ifdef HAVE_LSTAT
-	    struct stat sb;
+	    stat_T	sb;
 
 	    /*
 	     * Extra security check: When a swap file is a symbolic link, this
@@ -4415,7 +4335,6 @@ findswapname(buf, dirp, old_fname)
 	 */
 	if (fname[n - 2] == 'w' && fname[n - 1] == 'p')	/* first try */
 	{
-#ifndef SHORT_FNAME
 	    /*
 	     * on MS-DOS compatible filesystems (e.g. messydos) file.doc.swp
 	     * and file.doc are the same file. To guess if this problem is
@@ -4438,7 +4357,6 @@ findswapname(buf, dirp, old_fname)
 		    continue;	    /* try again with '.' replaced with '_' */
 		}
 	    }
-#endif
 	    /*
 	     * If we get here the ".swp" file really exists.
 	     * Give an error message, unless recovering, no file name, we are
@@ -4527,10 +4445,10 @@ findswapname(buf, dirp, old_fname)
 		    }
 #endif
 
-#if (defined(UNIX) || defined(__EMX__) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 		    process_still_running = FALSE;
 #endif
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 		    /*
 		     * If there is an SwapExists autocommand and we can handle
 		     * the response, trigger it.  It may return 0 to ask the
@@ -4579,13 +4497,13 @@ findswapname(buf, dirp, old_fname)
 				    name == NULL
 					?  (char_u *)_("Swap file already exists!")
 					: name,
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 				    process_still_running
 					? (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort") :
 # endif
 					(char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Delete it\n&Quit\n&Abort"), 1, NULL, FALSE);
 
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 			if (process_still_running && choice >= 4)
 			    choice++;	/* Skip missing "Delete it" button */
 # endif
@@ -4655,8 +4573,7 @@ findswapname(buf, dirp, old_fname)
 	    if (fname[n - 2] == 'a')    /* ".saa": tried enough, give up */
 	    {
 		EMSG(_("E326: Too many swap files found"));
-		vim_free(fname);
-		fname = NULL;
+		VIM_CLEAR(fname);
 		break;
 	    }
 	    --fname[n - 2];		/* ".svz", ".suz", etc. */
@@ -4681,8 +4598,7 @@ findswapname(buf, dirp, old_fname)
 }
 
     static int
-b0_magic_wrong(b0p)
-    ZERO_BL *b0p;
+b0_magic_wrong(ZERO_BL *b0p)
 {
     return (b0p->b0_magic_long != (long)B0_MAGIC_LONG
 	    || b0p->b0_magic_int != (int)B0_MAGIC_INT
@@ -4732,8 +4648,8 @@ b0_magic_wrong(b0p)
  *		== 0   == 0	OK	FAIL	TRUE
  *
  * current file doesn't exist, inode for swap unknown, both file names not
- * available -> probably same file
- *		== 0   == 0    FAIL	FAIL	FALSE
+ * available -> compare file names
+ *		== 0   == 0    FAIL	FAIL	fname_c != fname_s
  *
  * Note that when the ino_t is 64 bits, only the last 32 will be used.  This
  * can't be changed without making the block 0 incompatible with 32 bit
@@ -4741,12 +4657,12 @@ b0_magic_wrong(b0p)
  */
 
     static int
-fnamecmp_ino(fname_c, fname_s, ino_block0)
-    char_u	*fname_c;	    /* current file name */
-    char_u	*fname_s;	    /* file name from swap file */
-    long	ino_block0;
+fnamecmp_ino(
+    char_u	*fname_c,	    /* current file name */
+    char_u	*fname_s,	    /* file name from swap file */
+    long	ino_block0)
 {
-    struct stat	st;
+    stat_T	st;
     ino_t	ino_c = 0;	    /* ino of current file */
     ino_t	ino_s;		    /* ino of file from swap file */
     char_u	buf_c[MAXPATHL];    /* full path of fname_c */
@@ -4777,14 +4693,15 @@ fnamecmp_ino(fname_c, fname_s, ino_block0)
     retval_c = vim_FullName(fname_c, buf_c, MAXPATHL, TRUE);
     retval_s = vim_FullName(fname_s, buf_s, MAXPATHL, TRUE);
     if (retval_c == OK && retval_s == OK)
-	return (STRCMP(buf_c, buf_s) != 0);
+	return STRCMP(buf_c, buf_s) != 0;
 
     /*
      * Can't compare inodes or file names, guess that the files are different,
-     * unless both appear not to exist at all.
+     * unless both appear not to exist at all, then compare with the file name
+     * in the swap file.
      */
     if (ino_s == 0 && ino_c == 0 && retval_c == FAIL && retval_s == FAIL)
-	return FALSE;
+	return STRCMP(fname_c, fname_s) != 0;
     return TRUE;
 }
 #endif /* CHECK_INODE */
@@ -4794,9 +4711,7 @@ fnamecmp_ino(fname_c, fname_s, ino_block0)
  * Used for machine independency in block zero.
  */
     static void
-long_to_char(n, s)
-    long    n;
-    char_u  *s;
+long_to_char(long n, char_u *s)
 {
     s[0] = (char_u)(n & 0xff);
     n = (unsigned)n >> 8;
@@ -4808,8 +4723,7 @@ long_to_char(n, s)
 }
 
     static long
-char_to_long(s)
-    char_u  *s;
+char_to_long(char_u *s)
 {
     long    retval;
 
@@ -4831,8 +4745,7 @@ char_to_long(s)
  * - 'fileencoding'
  */
     void
-ml_setflags(buf)
-    buf_T	*buf;
+ml_setflags(buf_T *buf)
 {
     bhdr_T	*hp;
     ZERO_BL	*b0p;
@@ -4864,11 +4777,11 @@ ml_setflags(buf)
  * Otherwise return "data".
  */
     char_u *
-ml_encrypt_data(mfp, data, offset, size)
-    memfile_T	*mfp;
-    char_u	*data;
-    off_t	offset;
-    unsigned	size;
+ml_encrypt_data(
+    memfile_T	*mfp,
+    char_u	*data,
+    off_T	offset,
+    unsigned	size)
 {
     DATA_BL	*dp = (DATA_BL *)data;
     char_u	*head_end;
@@ -4909,11 +4822,11 @@ ml_encrypt_data(mfp, data, offset, size)
  * Decrypt the text in "data" if it points to an encrypted data block.
  */
     void
-ml_decrypt_data(mfp, data, offset, size)
-    memfile_T	*mfp;
-    char_u	*data;
-    off_t	offset;
-    unsigned	size;
+ml_decrypt_data(
+    memfile_T	*mfp,
+    char_u	*data,
+    off_T	offset,
+    unsigned	size)
 {
     DATA_BL	*dp = (DATA_BL *)data;
     char_u	*head_end;
@@ -4946,10 +4859,7 @@ ml_decrypt_data(mfp, data, offset, size)
  * Return an allocated cryptstate_T *.
  */
     static cryptstate_T *
-ml_crypt_prepare(mfp, offset, reading)
-    memfile_T	*mfp;
-    off_t	offset;
-    int		reading;
+ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 {
     buf_T	*buf = mfp->mf_buffer;
     char_u	salt[50];
@@ -5004,11 +4914,11 @@ ml_crypt_prepare(mfp, offset, reading)
  * ML_CHNK_UPDLINE: Add len to parent chunk, as a signed entity.
  */
     static void
-ml_updatechunk(buf, line, len, updtype)
-    buf_T	*buf;
-    linenr_T	line;
-    long	len;
-    int		updtype;
+ml_updatechunk(
+    buf_T	*buf,
+    linenr_T	line,
+    long	len,
+    int		updtype)
 {
     static buf_T	*ml_upd_lastbuf = NULL;
     static linenr_T	ml_upd_lastline;
@@ -5246,10 +5156,7 @@ ml_updatechunk(buf, line, len, updtype)
  * return -1 if information is not available
  */
     long
-ml_find_line_or_offset(buf, lnum, offp)
-    buf_T	*buf;
-    linenr_T	lnum;
-    long	*offp;
+ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 {
     linenr_T	curline;
     int		curix;
@@ -5376,8 +5283,7 @@ ml_find_line_or_offset(buf, lnum, offp)
  * Goto byte in buffer with offset 'cnt'.
  */
     void
-goto_byte(cnt)
-    long	cnt;
+goto_byte(long cnt)
 {
     long	boff = cnt;
     linenr_T	lnum;

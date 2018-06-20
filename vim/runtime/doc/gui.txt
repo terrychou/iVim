@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.4.  Last change: 2014 Mar 08
+*gui.txt*       For Vim version 8.1.  Last change: 2018 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,7 +25,7 @@ Other GUI documentation:
 
 First you must make sure you actually have a version of Vim with the GUI code
 included.  You can check this with the ":version" command, it says "with xxx
-GUI", where "xxx" is X11-Motif, X11-Athena, Photon, GTK, GTK2, etc., or
+GUI", where "xxx" is X11-Motif, X11-Athena, Photon, GTK2, GTK3, etc., or
 "MS-Windows 32 bit GUI version".
 
 How to start the GUI depends on the system used.  Mostly you can run the
@@ -67,7 +67,7 @@ When the GUI starts up initializations are carried out, in this order:
     executed as an Ex command.
   - If the user gvimrc file exists, it is sourced.  The name of this file is
     normally "$HOME/.gvimrc".  You can check this with ":version".
-  - For Win32, when $HOME is not set, "$VIM\_gvimrc" is used.
+  - For Win32, $HOME is set by Vim if needed, see |$HOME-windows|.
   - When a "_gvimrc" file is not found, ".gvimrc" is tried too.  And vice
     versa.
   The name of the first file found is stored in $MYGVIMRC, unless it was
@@ -79,7 +79,8 @@ When the GUI starts up initializations are carried out, in this order:
   and DOS/Win32 "_gvimrc" is tried first.
 
 NOTE: All but the first one are not carried out if Vim was started with
-"-u NONE" and no "-U" argument was given, or when started with "-U NONE".
+"-u NONE" or "-u DEFAULTS" and no "-U" argument was given, or when started
+with "-U NONE".
 
 All this happens AFTER the normal Vim initializations, like reading your
 .vimrc file.  See |initialization|.
@@ -133,7 +134,7 @@ task bar with the 'guiheadroom' option.
 :winp[os]
 		Display current position of the top left corner of the GUI vim
 		window in pixels.  Does not work in all versions.
-		Also see |getwinposx()| and |getwinposy()|.
+		Also see |getwinpos()|, |getwinposx()| and |getwinposy()|.
 
 :winp[os] {X} {Y}							*E466*
 		Put the GUI vim window at the given {X} and {Y} coordinates.
@@ -161,7 +162,7 @@ window Vim is running in with these commands: >
 							*gui-IME* *iBus*
 Input methods for international characters in X that rely on the XIM
 framework, most notably iBus, have been known to produce undesirable results
-in gVim. These may include an inability to enter spaces, or long delays
+in gvim. These may include an inability to enter spaces, or long delays
 between typing a character and it being recognized by the application.
 
 One workaround that has been successful, for unknown reasons, is to prevent
@@ -481,6 +482,7 @@ menus and menu items.  They are most useful for things that you can't remember
 what the key sequence was.
 
 For creating menus in a different language, see |:menutrans|.
+If you don't want to use menus at all, see |'go-M'|.
 
 							*menu.vim*
 The default menus are read from the file "$VIMRUNTIME/menu.vim".  See
@@ -497,7 +499,22 @@ in the menu (which can take a bit of time to load).  If you want to have all
 filetypes already present at startup, add: >
 	:let do_syntax_sel_menu = 1
 
-<
+The following menuitems show all available color schemes, keymaps and compiler
+settings:
+	Edit > Color Scheme ~
+	Edit > Keymap ~
+	Tools > Set Compiler ~
+However, they can also take a bit of time to load, because they search all
+related files from the directories in 'runtimepath'.  Therefore they are
+loaded lazily (by the |CursorHold| event), or you can also load them manually.
+If you want to have all these items already present at startup, add: >
+	:let do_no_lazyload_menus = 1
+
+Note that the menu.vim is sourced when `:syntax on` or `:filetype on` is
+executed or after your .vimrc file is sourced.  This means that the 'encoding'
+option and the language of messages (`:language messages`) must be set before
+that (if you want to change them).
+
 							*console-menus*
 Although this documentation is in the GUI section, you can actually use menus
 in console mode too.  You will have to load |menu.vim| explicitly then, it is
@@ -514,10 +531,13 @@ a menu entry.  Hit <Enter> to execute it.  Hit <Esc> if you want to cancel.
 This does require the |+menu| feature enabled at compile time.
 
 							*tear-off-menus*
-GTK+ and Motif support Tear-off menus.  These are sort of sticky menus or
+GTK+ 2 and Motif support Tear-off menus.  These are sort of sticky menus or
 pop-up menus that are present all the time.  If the resizing does not work
 correctly, this may be caused by using something like "Vim*geometry" in the
 defaults.  Use "Vim.geometry" instead.
+
+As to GTK+ 3, tear-off menus have been deprecated since GTK+ 3.4.
+Accordingly, they are disabled if gvim is linked against GTK+ 3.4 or later.
 
 The Win32 GUI version emulates Motif's tear-off menus.  Actually, a Motif user
 will spot the differences easily, but hopefully they're just as useful.  You
@@ -650,8 +670,8 @@ When no or zero priority is given, 500 is used.
 The priority for the PopUp menu is not used.
 
 The Help menu will be placed on the far right side of the menu bar on systems
-which support this (Motif and GTK+).  For GTK+ 2, this is not done anymore
-because right-aligning the Help menu is now discouraged UI design.
+which support this (Motif and GTK+).  For GTK+ 2 and 3, this is not done
+anymore because right-aligning the Help menu is now discouraged UI design.
 
 You can use a priority higher than 9999, to make it go after the Help menu,
 but that is non-standard and is discouraged.  The highest possible priority is
@@ -780,10 +800,40 @@ In the Win32 and GTK+ GUI, starting a menu name with ']' excludes that menu
 from the main menu bar.  You must then use the |:popup| or |:tearoff| command
 to display it.
 
+					*window-toolbar* *WinBar*
+Each window can have a local toolbar.  This uses the first line of the window,
+thus reduces the space for the text by one line.  The items in the toolbar
+must start with "WinBar".
+
+Only text can be used.  When using Unicode, special characters can be used to
+make the items look like icons.
+
+If the items do not fit then the last ones cannot be used.  The toolbar does
+not wrap.
+
+Note that Vim may be in any mode when executing these commands.  The menu
+should be defined for Normal mode and will be executed without changing the
+current mode. Thus if the current window is in Visual mode and the menu
+command does not intentionally change the mode, Vim will remain in Visual
+mode.  Best is to use `:nnoremenu` to avoid side effects.
+
+Example for debugger tools: >
+	nnoremenu 1.10 WinBar.Step :Step<CR>
+	nnoremenu 1.20 WinBar.Next :Next<CR>
+	nnoremenu 1.30 WinBar.Finish :Finish<CR>
+	nnoremenu 1.40 WinBar.Cont :Continue<CR>
+<
+The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
+
+When splitting the window the window toolbar is not copied to the new window.
+
 							*popup-menu*
 In the Win32, GTK+, Motif, Athena and Photon GUI, you can define the
 special menu "PopUp".  This is the menu that is displayed when the right mouse
 button is pressed, if 'mousemodel' is set to popup or popup_setpos.
+Example: >
+    nnoremenu 1.40 PopUp.&Paste	"+gP
+    menu PopUp
 
 
 5.3 Showing What Menus Are Mapped To			*showing-menus*
@@ -942,10 +992,14 @@ it behaves in a strange way.
 :popu[p] {name}			Popup the menu {name}.  The menu named must
 				have at least one subentry, but need not
 				appear on the menu-bar (see |hidden-menus|).
-				{only available for Win32 and GTK GUI}
+				{only available for Win32 and GTK GUI or in
+				the terminal when compiled with +insert_expand}
 
 :popu[p]! {name}		Like above, but use the position of the mouse
 				pointer instead of the cursor.
+				In the terminal this is the last known
+				position, which is usually at the last click
+				or release (mouse movement is irrelevant).
 
 Example: >
 	:popup File
@@ -955,6 +1009,10 @@ pointer if ! was used). >
 	:amenu ]Toolbar.Make	:make<CR>
 	:popup ]Toolbar
 This creates a popup menu that doesn't exist on the main menu-bar.
+
+Note that in the GUI the :popup command will return immediately, before a
+selection has been made.  In the terminal the commands waits for the user to
+make a selection.
 
 Note that a menu that starts with ']' will not be displayed.
 

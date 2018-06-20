@@ -43,6 +43,15 @@
 # undef _DEBUG
 #endif
 
+#ifdef HAVE_STRFTIME
+# undef HAVE_STRFTIME
+#endif
+#ifdef HAVE_STRING_H
+# undef HAVE_STRING_H
+#endif
+#ifdef HAVE_PUTENV
+# undef HAVE_PUTENV
+#endif
 #ifdef HAVE_STDARG_H
 # undef HAVE_STDARG_H	/* Python's config.h defines it as well. */
 #endif
@@ -61,15 +70,11 @@
 # undef PY_SSIZE_T_CLEAN
 #endif
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-# include "macglue.h"
-# include <CodeFragments.h>
-#endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
 #define PyBytes_FromString      PyString_FromString
-#define PyBytes_Check           PyString_Check
+#define PyBytes_Check		PyString_Check
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
@@ -242,6 +247,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PySys_GetObject dll_PySys_GetObject
 # define PySys_SetArgv dll_PySys_SetArgv
 # define PyType_Type (*dll_PyType_Type)
+# define PyFile_Type (*dll_PyFile_Type)
 # define PySlice_Type (*dll_PySlice_Type)
 # define PyType_Ready (*dll_PyType_Ready)
 # define PyType_GenericAlloc dll_PyType_GenericAlloc
@@ -390,6 +396,7 @@ static int(*dll_PySys_SetObject)(char *, PyObject *);
 static PyObject *(*dll_PySys_GetObject)(char *);
 static int(*dll_PySys_SetArgv)(int, char **);
 static PyTypeObject* dll_PyType_Type;
+static PyTypeObject* dll_PyFile_Type;
 static PyTypeObject* dll_PySlice_Type;
 static int (*dll_PyType_Ready)(PyTypeObject *type);
 static PyObject* (*dll_PyType_GenericAlloc)(PyTypeObject *type, PyInt nitems);
@@ -575,6 +582,7 @@ static struct
     {"PySys_GetObject", (PYTHON_PROC*)&dll_PySys_GetObject},
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
+    {"PyFile_Type", (PYTHON_PROC*)&dll_PyFile_Type},
     {"PySlice_Type", (PYTHON_PROC*)&dll_PySlice_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&dll_PyType_GenericAlloc},
@@ -667,7 +675,8 @@ end_dynamic_python(void)
 python_runtime_link_init(char *libname, int verbose)
 {
     int i;
-    void *ucs_as_encoded_string;
+    PYTHON_PROC *ucs_as_encoded_string =
+				   (PYTHON_PROC*)&py_PyUnicode_AsEncodedString;
 
 #if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     /* Can't have Python and Python3 loaded at the same time.
@@ -706,14 +715,12 @@ python_runtime_link_init(char *libname, int verbose)
 
     /* Load unicode functions separately as only the ucs2 or the ucs4 functions
      * will be present in the library. */
-    ucs_as_encoded_string = symbol_from_dll(hinstPython,
+    *ucs_as_encoded_string = symbol_from_dll(hinstPython,
 					     "PyUnicodeUCS2_AsEncodedString");
-    if (ucs_as_encoded_string == NULL)
-	ucs_as_encoded_string = symbol_from_dll(hinstPython,
+    if (*ucs_as_encoded_string == NULL)
+	*ucs_as_encoded_string = symbol_from_dll(hinstPython,
 					     "PyUnicodeUCS4_AsEncodedString");
-    if (ucs_as_encoded_string != NULL)
-	py_PyUnicode_AsEncodedString = ucs_as_encoded_string;
-    else
+    if (*ucs_as_encoded_string == NULL)
     {
 	close_dll(hinstPython);
 	hinstPython = 0;
@@ -732,7 +739,7 @@ python_runtime_link_init(char *libname, int verbose)
     int
 python_enabled(int verbose)
 {
-    return python_runtime_link_init(DYNAMIC_PYTHON_DLL, verbose) == OK;
+    return python_runtime_link_init((char *)p_pydll, verbose) == OK;
 }
 
 /*
@@ -770,6 +777,7 @@ get_exceptions(void)
 
 static int initialised = 0;
 #define PYINITIALISED initialised
+static int python_end_called = FALSE;
 
 #define DESTRUCTOR_FINISH(self) self->ob_type->tp_free((PyObject*)self);
 
@@ -861,7 +869,7 @@ Python_RestoreThread(void)
 #endif
 
     void
-python_end()
+python_end(void)
 {
     static int recurse = 0;
 
@@ -869,6 +877,7 @@ python_end()
     if (recurse != 0)
 	return;
 
+    python_end_called = TRUE;
     ++recurse;
 
 #ifdef DYNAMIC_PYTHON
@@ -899,11 +908,13 @@ python_end()
 
 #if (defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
     int
-python_loaded()
+python_loaded(void)
 {
     return (hinstPython != 0);
 }
 #endif
+
+static char *py_home_buf = NULL;
 
     static int
 Python_Init(void)
@@ -922,8 +933,16 @@ Python_Init(void)
 	}
 #endif
 
+	if (*p_pyhome != NUL)
+	{
+	    /* The string must not change later, make a copy in static memory. */
+	    py_home_buf = (char *)vim_strsave(p_pyhome);
+	    if (py_home_buf != NULL)
+		Py_SetPythonHome(py_home_buf);
+	}
 #ifdef PYTHON_HOME
-	Py_SetPythonHome(PYTHON_HOME);
+	else if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
+	    Py_SetPythonHome(PYTHON_HOME);
 #endif
 
 	init_structs();
@@ -934,11 +953,7 @@ Python_Init(void)
 	Py_NoSiteFlag++;
 #endif
 
-#if !defined(MACOS) || defined(MACOS_X_UNIX)
 	Py_Initialize();
-#else
-	PyMac_Initialize();
-#endif
 
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 	/* 'import site' explicitly. */
@@ -1010,9 +1025,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;
 #endif
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    GrafPtr		oldPort;
-#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     char		*saved_locale;
 #endif
@@ -1028,13 +1040,9 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     }
     ++recursive;
 #endif
+    if (python_end_called)
+	return;
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    GetPort(&oldPort);
-    /* Check if the Python library is available */
-    if ((Ptr)PyMac_Initialize == (Ptr)kUnresolvedCFragSymbolAddress)
-	goto theend;
-#endif
     if (Python_Init())
 	goto theend;
 
@@ -1083,9 +1091,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 
     Python_Lock_Vim();		    /* enter vim */
     PythonIO_Flush();
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    SetPort(oldPort);
-#endif
 
 theend:
 #ifndef PY_CAN_RECURSE
@@ -1101,6 +1106,9 @@ theend:
 ex_python(exarg_T *eap)
 {
     char_u *script;
+
+    if (p_pyx == 0)
+	p_pyx = 2;
 
     script = script_get(eap, eap->arg);
     if (!eap->skip)
@@ -1124,6 +1132,9 @@ ex_pyfile(exarg_T *eap)
     static char buffer[BUFFER_SIZE];
     const char *file = (char *)eap->arg;
     char *p;
+
+    if (p_pyx == 0)
+	p_pyx = 2;
 
     /* Have to do it like this. PyRun_SimpleFile requires you to pass a
      * stdio file pointer, but Vim and the Python DLL are compiled with
@@ -1163,6 +1174,9 @@ ex_pyfile(exarg_T *eap)
     void
 ex_pydo(exarg_T *eap)
 {
+    if (p_pyx == 0)
+	p_pyx = 2;
+
     DoPyCommand((char *)eap->arg,
 	    (rangeinitializer) init_range_cmd,
 	    (runner)run_do,
@@ -1183,7 +1197,10 @@ OutputGetattr(PyObject *self, char *name)
 	return PyInt_FromLong(((OutputObject *)(self))->softspace);
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, OutputAttrs);
-
+    else if (strcmp(name, "errors") == 0)
+	return PyString_FromString("strict");
+    else if (strcmp(name, "encoding") == 0)
+	return PyString_FromString(ENC_OPT);
     return Py_FindMethod(OutputMethods, self, name);
 }
 
@@ -1410,7 +1427,6 @@ python_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 python_window_free(win_T *win)
 {
@@ -1432,7 +1448,6 @@ python_tabpage_free(tabpage_T *tab)
 	TAB_PYTHON_REF(tab) = NULL;
     }
 }
-#endif
 
     static int
 PythonMod_Init(void)
@@ -1527,12 +1542,12 @@ ListGetattr(PyObject *self, char *name)
     static PyObject *
 FunctionGetattr(PyObject *self, char *name)
 {
-    FunctionObject	*this = (FunctionObject *)(self);
+    PyObject	*r;
 
-    if (strcmp(name, "name") == 0)
-	return PyString_FromString((char *)(this->name));
-    else if (strcmp(name, "__members__") == 0)
-	return ObjectDir(NULL, FunctionAttrs);
+    r = FunctionAttr((FunctionObject *)(self), name);
+
+    if (r || PyErr_Occurred())
+	return r;
     else
 	return Py_FindMethod(FunctionMethods, self, name);
 }
@@ -1544,14 +1559,22 @@ do_pyeval (char_u *str, typval_T *rettv)
 	    (rangeinitializer) init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
-    switch(rettv->v_type)
+    switch (rettv->v_type)
     {
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
 	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
 	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
+	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
 	case VAR_UNKNOWN:
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = 0;
+	    break;
+	case VAR_NUMBER:
+	case VAR_STRING:
+	case VAR_FLOAT:
+	case VAR_SPECIAL:
+	case VAR_JOB:
+	case VAR_CHANNEL:
 	    break;
     }
 }

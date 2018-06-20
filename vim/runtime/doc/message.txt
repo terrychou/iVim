@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.4.  Last change: 2013 Feb 23
+*message.txt*   For Vim version 8.1.  Last change: 2018 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,6 +19,15 @@ The ":messages" command can be used to view previously given messages.  This
 is especially useful when messages have been overwritten or truncated.  This
 depends on the 'shortmess' option.
 
+	:messages		Show all messages.
+
+	:{count}messages	Show the {count} most recent messages.
+
+	:messages clear		Clear all messages.
+
+	:{count}messages clear	Clear messages, keeping only the {count} most
+				recent ones.
+
 The number of remembered messages is fixed at 20 for the tiny version and 200
 for other versions.
 
@@ -30,6 +39,7 @@ back.
 Note: If the output has been stopped with "q" at the more prompt, it will only
 be displayed up to this point.
 The previous command output is cleared when another command produces output.
+The "g<" output is not redirected.
 
 If you are using translated messages, the first printed line tells who
 maintains the messages or the translations.  You can use this to contact the
@@ -58,14 +68,15 @@ If you are lazy, it also works without the shift key: >
 When an error message is displayed, but it is removed before you could read
 it, you can see it again with: >
   :echo errmsg
-or view a list of recent messages with: >
+Or view a list of recent messages with: >
   :messages
+See `:messages` above.
 
 
 LIST OF MESSAGES
 			*E222* *E228* *E232* *E256* *E293* *E298* *E304* *E317*
 			*E318* *E356* *E438* *E439* *E440* *E316* *E320* *E322*
-			*E323* *E341* *E473* *E570* *E685*  >
+			*E323* *E341* *E473* *E570* *E685* *E950*  >
   Add to read buffer
   makemap: Illegal mode
   Cannot create BalloonEval with both message and callback
@@ -86,6 +97,7 @@ LIST OF MESSAGES
   Internal error
   Internal error: {function}
   fatal error in cs_manage_matches
+  Invalid count for del_bytes(): {N}
 
 This is an internal error.  If you can reproduce it, please send in a bug
 report. |bugs|
@@ -118,8 +130,9 @@ closed properly.  Mostly harmless.
   Command too recursive
 
 This happens when an Ex command executes an Ex command that executes an Ex
-command, etc.  This is only allowed 200 times.  When it's more there probably
-is an endless loop.  Probably a |:execute| or |:source| command is involved.
+command, etc.  The limit is 200 or the value of 'maxfuncdepth', whatever is
+larger.  When it's more there probably is an endless loop.  Probably a
+|:execute| or |:source| command is involved.
 
 							*E254*  >
   Cannot allocate color {name}
@@ -451,12 +464,6 @@ changed.  To avoid the message reset the 'warn' option.
 Something inside Vim went wrong and resulted in a NULL pointer.  If you know
 how to reproduce this problem, please report it. |bugs|
 
-							*E172*  >
-  Only one file name allowed
-
-The ":edit" command only accepts one file name.  When you want to specify
-several files for editing use ":next" |:next|.
-
 						*E41* *E82* *E83* *E342*  >
   Out of memory!
   Out of memory!  (allocating {number} bytes)
@@ -475,8 +482,6 @@ in memory, you can reduce that with these options:
 - 'undolevels'  Set to a low value, or to -1 to disable undo completely.  This
   helps for a change that affects all lines.
 - 'undoreload' Set to zero to disable.
-
-Also see |msdos-limitations|.
 
 							*E339*  >
   Pattern too long
@@ -635,6 +640,9 @@ starts.  It can be fixed in one of these ways:
 - Just write the file again the next day.  Or set your clock to the next day,
   write the file twice and set the clock back.
 
+If you get W11 all the time, you may need to disable "Acronis Active
+Protection" or register Vim as a trusted service/application.
+
 							*W12*  >
   Warning: File "{filename}" has changed and the buffer was changed in Vim as well
 
@@ -664,6 +672,12 @@ changes.  This message is not given when 'buftype' is not empty.
 You must be using an awful lot of buffers.  It's now possible that two buffers
 have the same number, which causes various problems.  You might want to exit
 Vim and restart it.
+
+							*E931*  >
+  Buffer cannot be registered
+
+Out of memory or a duplicate buffer number.  May happen after W14.  Looking up
+a buffer will not always work, better restart Vim.
 
 							*E296* *E297*  >
   Seek error in swap file write
@@ -751,6 +765,13 @@ Example: >
 
 You tried to execute a command that is neither an Ex command nor
 a user-defined command.
+
+							*E943*  >
+  Command table needs to be updated, run 'make cmdidxs'
+
+This can only happen when changing the source code, when adding a command in
+src/ex_cmds.h.  The lookup table then needs to be updated, by running: >
+	make cmdidxs
 
 ==============================================================================
 3. Messages						*messages*

@@ -80,14 +80,7 @@
 #else
 # include <fcntl.h>
 #endif
-#ifdef __TSC__
-# define MSDOS
-#endif
-#if !defined(OS2) && defined(__EMX__)
-# define OS2
-#endif
-#if defined(MSDOS) || defined(WIN32) || defined(OS2) || defined(__BORLANDC__) \
-  || defined(CYGWIN)
+#if defined(WIN32) || defined(__BORLANDC__) || defined(CYGWIN)
 # include <io.h>	/* for setmode() */
 #else
 # ifdef UNIX
@@ -149,18 +142,10 @@ char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
-# ifdef DJGPP
-char osver[] = " (dos 32 bit)";
-# else
-#  ifdef MSDOS
-char osver[] = " (dos 16 bit)";
-#  else
 char osver[] = "";
-#  endif
-# endif
 #endif
 
-#if defined(MSDOS) || defined(WIN32) || defined(OS2)
+#if defined(WIN32)
 # define BIN_READ(yes)  ((yes) ? "rb" : "rt")
 # define BIN_WRITE(yes) ((yes) ? "wb" : "wt")
 # define BIN_CREAT(yes) ((yes) ? (O_CREAT|O_BINARY) : O_CREAT)
@@ -203,8 +188,7 @@ char osver[] = "";
 #endif
 
 #ifndef __P
-# if defined(__STDC__) || defined(MSDOS) || defined(WIN32) || defined(OS2) \
-		|| defined(__BORLANDC__)
+# if defined(__STDC__) || defined(WIN32) || defined(__BORLANDC__)
 #  define __P(a) a
 # else
 #  define __P(a) ()
@@ -231,16 +215,19 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
 #define HEX_LITTLEENDIAN 4
 
+#define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((int)c) : c)
+
 static char *pname;
 
   static void
-exit_with_usage()
+exit_with_usage(void)
 {
   fprintf(stderr, "Usage:\n       %s [options] [infile [outfile]]\n", pname);
   fprintf(stderr, "    or\n       %s -r [-s [-]offset] [-c cols] [-ps] [infile [outfile]]\n", pname);
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "    -a          toggle autoskip: A single '*' replaces nul-lines. Default off.\n");
   fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i,-r). Default hex.\n");
+  fprintf(stderr, "    -C          capitalize variable names in C include file style (-i).\n");
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
   fprintf(stderr, "    -e          little-endian dump (incompatible with -ps,-i,-r).\n");
@@ -264,8 +251,7 @@ exit_with_usage()
 }
 
   static void
-die(ret)
-  int ret;
+die(int ret)
 {
   fprintf(stderr, "%s: ", pname);
   perror(NULL);
@@ -280,10 +266,13 @@ die(ret)
  * The name is historic and came from 'undo type opt h'.
  */
   static int
-huntype(fpi, fpo, fperr, cols, hextype, base_off)
-  FILE *fpi, *fpo, *fperr;
-  int cols, hextype;
-  long base_off;
+huntype(
+  FILE *fpi,
+  FILE *fpo,
+  FILE *fperr,
+  int cols,
+  int hextype,
+  long base_off)
 {
   int c, ign_garb = 1, n1 = -1, n2 = 0, n3, p = cols;
   long have_off = 0, want_off = 0;
@@ -409,10 +398,7 @@ huntype(fpi, fpo, fperr, cols, hextype, base_off)
  * If nz is always positive, lines are never suppressed.
  */
   static void
-xxdline(fp, l, nz)
-  FILE *fp;
-  char *l;
-  int nz;
+xxdline(FILE *fp, char *l, int nz)
 {
   static char z[LLEN+1];
   static int zero_seen = 0;
@@ -472,13 +458,11 @@ static unsigned char etoa64[] =
 };
 
   int
-main(argc, argv)
-  int argc;
-  char *argv[];
+main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
   int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
-  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
+  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL, capitalize = 0;
   int ebcdic = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
   int grplen;		/* total chars per octet group */
@@ -514,6 +498,7 @@ main(argc, argv)
       else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
       else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
       else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
+      else if (!STRNCMP(pp, "-C", 2)) capitalize = 1;
       else if (!STRNCMP(pp, "-r", 2)) revert++;
       else if (!STRNCMP(pp, "-E", 2)) ebcdic++;
       else if (!STRNCMP(pp, "-v", 2))
@@ -525,6 +510,8 @@ main(argc, argv)
 	{
 	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
 	    cols = (int)strtol(pp + 2, NULL, 0);
+	  else if (pp[2] && STRNCMP("apitalize", pp + 2, 9))
+	    capitalize = 1;
 	  else
 	    {
 	      if (!argv[2])
@@ -741,7 +728,7 @@ main(argc, argv)
 	  if (fprintf(fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
 	    die(3);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', fpo) == EOF)
+          if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
 	      die(3);
 	  if (fputs("[] = {\n", fpo) == EOF)
 	    die(3);
@@ -769,9 +756,9 @@ main(argc, argv)
 	  if (fprintf(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
 	    die(3);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', fpo) == EOF)
+        if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
 	      die(3);
-	  if (fprintf(fpo, "_len = %d;\n", p) < 0)
+	  if (fprintf(fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p) < 0)
 	    die(3);
 	}
 
@@ -846,6 +833,8 @@ main(argc, argv)
 	  for (i = 7; i >= 0; i--)
 	    l[++c] = (e & (1 << i)) ? '1' : '0';
 	}
+      if (e)
+	nonzero++;
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
@@ -856,8 +845,6 @@ main(argc, argv)
 	  (e > 31 && e < 127)
 #endif
 	  ? e : '.';
-      if (e)
-	nonzero++;
       n++;
       if (++p == cols)
 	{

@@ -1,6 +1,6 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Nov 07, 2014
+" Date:		Feb 08, 2016
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -20,19 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v153"
-if v:version < 702
- echohl WarningMsg
- echo "***warning*** you need vim version 7.2 for this version of netrw"
- echohl None
- finish
-endif
-if v:version < 703 || (v:version == 703 && !has("patch465"))
- echohl WarningMsg
- echo "***warning*** this version of netrw needs vim 7.3.465 or later"
- echohl Normal
- finish
-endif
+let g:loaded_netrwPlugin = "v156"
 let s:keepcpo = &cpo
 set cpo&vim
 "DechoRemOn
@@ -67,10 +55,10 @@ augroup Network
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
-com! -count=1 -nargs=*	Nread		call netrw#SavePosn()<bar>call netrw#NetRead(<count>,<f-args>)<bar>call netrw#RestorePosn()
-com! -range=% -nargs=*	Nwrite		call netrw#SavePosn()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call netrw#RestorePosn()
+com! -count=1 -nargs=*	Nread		let s:svpos= winsaveview()<bar>call netrw#NetRead(<count>,<f-args>)<bar>call winrestview(s:svpos)
+com! -range=% -nargs=*	Nwrite		let s:svpos= winsaveview()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call winrestview(s:svpos)
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
-com! -nargs=*	        Nsource		call netrw#SavePosn()<bar>call netrw#NetSource(<f-args>)<bar>call netrw#RestorePosn()
+com! -nargs=*	        Nsource		let s:svpos= winsaveview()<bar>call netrw#NetSource(<f-args>)<bar>call winrestview(s:svpos)
 com! -nargs=?		Ntree		call netrw#SetTreetop(<q-args>)
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore, Lexplore {{{2
@@ -101,6 +89,12 @@ if !exists("g:netrw_nogx")
   endif
   vno <silent> <Plug>NetrwBrowseXVis :<c-u>call netrw#BrowseXVis()<cr>
  endif
+endif
+if exists("g:netrw_usetab") && g:netrw_usetab
+ if maparg('<c-tab>','n') == ""
+  nmap <unique> <c-tab> <Plug>NetrwShrink
+ endif
+ nno <silent> <Plug>NetrwShrink :call netrw#Shrink()<cr>
 endif
 
 " ---------------------------------------------------------------------
@@ -135,15 +129,19 @@ fun! s:LocalBrowse(dirname)
   elseif isdirectory(a:dirname)
 "   call Decho("(LocalBrowse) dirname<".a:dirname."> ft=".&ft."  (isdirectory, not amiga)")
 "   call Dredir("LocalBrowse ft last set: ","verbose set ft")
+"   call Decho("(s:LocalBrowse) COMBAK#23: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    sil! call netrw#LocalBrowseCheck(a:dirname)
+"   call Decho("(s:LocalBrowse) COMBAK#24: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
     exe w:netrw_bannercnt
+"    call Decho("(s:LocalBrowse) COMBAK#25: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    endif
 
   else
    " not a directory, ignore it
 "   call Decho("(LocalBrowse) dirname<".a:dirname."> not a directory, ignoring...")
   endif
+"  call Decho("(s:LocalBrowse) COMBAK#26: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
 
 "  call Dret("s:LocalBrowse")
 endfun

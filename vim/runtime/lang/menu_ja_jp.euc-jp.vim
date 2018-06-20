@@ -1,10 +1,12 @@
 " vi:set ts=8 sts=8 sw=8 tw=0:
 "
 " Menu Translations:	Japanese (EUC-JP)
-" Translated By:	MURAOKA Taro  <koron.kaoriya@gmail.com>
-" Last Change:		12-May-2013.
+" Last Translator:	MURAOKA Taro  <koron.kaoriya@gmail.com>
+" Last Change:		28-Jan-2016.
 "
-" Copyright (C) 2001-13 MURAOKA Taro <koron.kaoriya@gmail.com>
+" Copyright (C) 2001-2016 MURAOKA Taro <koron.kaoriya@gmail.com>,
+"			  vim-jp (http://vim-jp.org/)
+"
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 
 " Quit when menu translations have already been done.
@@ -20,7 +22,7 @@ scriptencoding euc-jp
 " Help menu
 menutrans &Help			ヘルプ(&H)
 menutrans &Overview<Tab><F1>	概略(&O)<Tab><F1>
-menutrans &User\ Manual		ユーザマニュアル(&U)
+menutrans &User\ Manual		ユーザーマニュアル(&U)
 menutrans &How-to\ links	&How-toリンク
 menutrans &Credits		クレジット(&C)
 menutrans Co&pying		著作権情報(&P)
@@ -71,9 +73,9 @@ menutrans Startup\ &Settings		起動時の設定(&S)
 menutrans &Global\ Settings		全体設定(&G)
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!
 	\	パターン強調切替(&H)<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!
 	\	大小文字区別切替(&I)<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!
 	\	マッチ表示切替(&S)<Tab>:set\ sm!
 menutrans &Context\ lines		カーソル周辺行数(&C)
 menutrans &Virtual\ Edit		仮想編集(&V)
@@ -84,7 +86,7 @@ menutrans Block\ and\ Insert		ブロック/挿入モード時
 menutrans Always			常時
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!
 	\	挿入(初心者)モード切替(&M)<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!
 	\	Vi互換モード切替(&O)<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		検索パス(&P)\.\.\.
 menutrans Ta&g\ Files\.\.\.		タグファイル(&G)\.\.\.
@@ -104,19 +106,19 @@ let g:menutrans_tags_dialog = "タグファイルの名前を入力してください:\n名前はカン
 menutrans F&ile\ Settings		ファイル設定(&I)
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!
 	\	行番号表示切替(&N)<Tab>:set\ nu!
-menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!
 	\	相対行番号表示切替(&V)<Tab>:set\ rnu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!
 	\ リストモード切替(&L)<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!
 	\	行折返し切替(&W)<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!
 	\	単語折返し切替(&R)<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!
 	\	タブ展開切替(&E)<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!
 	\	自動字下げ切替(&A)<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!
 	\	C言語字下げ切替(&C)<Tab>:set\ cin!
 
 " other options
@@ -129,7 +131,9 @@ let g:menutrans_textwidth_dialog = "テキストの幅('textwidth')を設定してください 
 let g:menutrans_fileformat_dialog = "ファイル出力の際の改行記号の形式を選んでください."
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\nキャンセル(&C)"
 
+menutrans Show\ C&olor\ Schemes\ in\ Menu	色テーマをメニューに表示(&O)
 menutrans C&olor\ Scheme		色テーマ選択(&O)
+menutrans Show\ &Keymaps\ in\ Menu	キーマップをメニューに表示(&K)
 menutrans &Keymap			キーマップ(&K)
 menutrans None				なし
 
@@ -138,7 +142,7 @@ menutrans &Tools			ツール(&T)
 menutrans &Jump\ to\ this\ tag<Tab>g^]	タグジャンプ(&J)<Tab>g^]
 menutrans Jump\ &back<Tab>^T		戻る(&B)<Tab>^T
 menutrans Build\ &Tags\ File		タグファイル作成(&T)
-menutrans &Make<Tab>:make		メイク(&M)<Tab>:make
+menutrans &Make<Tab>:make		ビルド(&M)<Tab>:make
 menutrans &List\ Errors<Tab>:cl		エラーリスト(&L)<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	メッセージリスト(&I)<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		次のエラーへ(&N)<Tab>:cn
@@ -151,7 +155,8 @@ menutrans &Open<Tab>:copen		開く(&O)<Tab>:copen
 menutrans &Close<Tab>:cclose		閉じる(&C)<Tab>:cclose
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	HEXへ変換(&C)<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	HEXから逆変換(&R)<Tab>%!xxd\ -r
-menutrans Se&T\ Compiler		コンパイラ設定(&T)
+menutrans Show\ Compiler\ Se&ttings\ in\ Menu	コンパイラ設定をメニューに表示(&T)
+menutrans Se&t\ Compiler		コンパイラ設定(&T)
 
 " Tools.Spelling Menu
 menutrans &Spelling			スペリング(&S)
@@ -287,7 +292,7 @@ endif
 
 " Syntax menu
 menutrans &Syntax		シンタックス(&S)
-menutrans &Show\ filetypes\ in\ menu	対応形式をメニューに表示(&S)
+menutrans &Show\ File\ Types\ in\ Menu	対応形式をメニューに表示(&S)
 menutrans Set\ '&syntax'\ only	'syntax'だけ設定(&S)
 menutrans Set\ '&filetype'\ too	'filetype'も設定(&F)
 menutrans &Off			無効化(&O)

@@ -2718,7 +2718,7 @@ msgstr "-f\t\t\tNebude pouíva newcli pre otvorenie okna"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <zariadenie>\t\tPoui <zariadenie> pre I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tspusti v Arabic móde"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -3203,6 +3203,7 @@ msgid ""
 "Delete the .swp file afterwards.\n"
 "\n"
 msgstr "Potom vymate odkladací súbor s príponou .swp.\n"
+"\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -3673,7 +3674,7 @@ msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
 msgstr ""
-"E343: Chybná cesta: '**[èíslo] musí by buï na konci cesty, alebo musí by\n"
+"E343: Chybná cesta: '**[èíslo] musí by buï na konci cesty, alebo musí by "
 "nasledované '%s. Viï :help path."
 
 #, c-format
@@ -4538,8 +4539,8 @@ msgid "Warning: region %s not supported"
 msgstr "Varovanie: región %s nie je podporovanı"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Naèítavam súbor s príponami %s ..."
+msgid "Reading affix file %s..."
+msgstr "Naèítavam súbor s príponami %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -4652,8 +4653,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "Hodnota %s sa odlišuje od hodnoty pouitej v inom .aff súbore"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Naèítavam slovník %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Naèítavam slovník %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -4680,8 +4681,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ignorovanıch %d slov s nepísmennımi znakmi v %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Naèítavam súbor so slovami %s ..."
+msgid "Reading word file %s..."
+msgstr "Naèítavam súbor so slovami %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -4733,8 +4734,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Varovanie: špecifikované spájanie a nezalamovanie"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Ukládám slovníkovı súbor %s ..."
+msgid "Writing spell file %s..."
+msgstr "Ukládám slovníkovı súbor %s..."
 
 msgid "Done!"
 msgstr "Hotovo!"
@@ -5359,8 +5360,8 @@ msgstr "zadajte  :q<Enter>                  pre ukonèenie programu "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "zadajte  :help<Enter>  alebo  <F1>  pre pomocníka          "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "zadajte  :help version7<Enter>      pre informácie o verzii"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "zadajte  :help version8<Enter>      pre informácie o verzii"
 
 msgid "Running in Vi compatible mode"
 msgstr "Pracujem v reime kompatibility s Vi"

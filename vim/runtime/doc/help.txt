@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.4.  Last change: 2015 Jun 21
+*help.txt*	For Vim version 8.1.  Last change: 2017 Oct 28
 
 			VIM - main help file
 									 k
@@ -10,14 +10,14 @@ Close this window:  Use ":q<Enter>".
 Jump to a subject:  Position the cursor on a tag (e.g. |bars|) and hit CTRL-].
    With the mouse:  ":set mouse=a" to enable the mouse (in xterm or GUI).
 		    Double-click the left mouse button on a tag, e.g. |bars|.
-	Jump back:  Type CTRL-T or CTRL-O (repeat to go further back).
+	Jump back:  Type CTRL-T or CTRL-O.  Repeat to go further back.
 
 Get specific help:  It is possible to go directly to whatever you want help
 		    on, by giving an argument to the |:help| command.
-		    It is possible to further specify the context:
-							*help-context*
+		    Prepend something to specify the context:  *help-context*
+
 			  WHAT			PREPEND    EXAMPLE	~
-		      Normal mode command      (nothing)   :help x
+		      Normal mode command		   :help x
 		      Visual mode command	  v_	   :help v_u
 		      Insert mode command	  i_	   :help i_<Esc>
 		      Command-line command	  :	   :help :quit
@@ -25,11 +25,13 @@ Get specific help:  It is possible to go directly to whatever you want help
 		      Vim command argument	  -	   :help -r
 		      Option			  '	   :help 'textwidth'
 		      Regular expression	  /	   :help /[
+		    See |help-summary| for more contexts and an explanation.
+
   Search for help:  Type ":help word", then hit CTRL-D to see matching
 		    help entries for "word".
 		    Or use ":helpgrep word". |:helpgrep|
 
-VIM stands for Vi IMproved.  Most of VIM was made by Bram Moolenaar, but only
+Vim stands for Vi IMproved.  Most of Vim was made by Bram Moolenaar, but only
 through the help of many others.  See |credits|.
 ------------------------------------------------------------------------------
 						*doc-file-list* *Q_ct*
@@ -133,12 +135,14 @@ Advanced editing ~
 |autocmd.txt|	automatically executing commands on an event
 |filetype.txt|	settings done specifically for a type of file
 |eval.txt|	expression evaluation, conditional commands
+|channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
 
 Special issues ~
 |print.txt|	printing
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice
+|terminal.txt|	Terminal window support
 |digraph.txt|	list of available digraphs
 |mbyte.txt|	multi-byte text support
 |mlang.txt|	non-English language support
@@ -147,13 +151,13 @@ Special issues ~
 |hebrew.txt|	Hebrew language support and editing
 |russian.txt|	Russian language support and editing
 |ft_ada.txt|	Ada (the programming language) support
+|ft_rust.txt|	Filetype plugin for Rust
 |ft_sql.txt|	about the SQL filetype plugin
 |hangulin.txt|	Hangul (Korean) input mode
 |rileft.txt|	right-to-left editing mode
 
 GUI ~
 |gui.txt|	Graphical User Interface (GUI)
-|gui_w16.txt|	Windows 3.1 GUI
 |gui_w32.txt|	Win32 GUI
 |gui_x11.txt|	X11 GUI
 
@@ -163,7 +167,6 @@ Interfaces ~
 |if_mzsch.txt|	MzScheme interface
 |if_perl.txt|	Perl interface
 |if_pyth.txt|	Python interface
-|if_sniff.txt|	SNiFF+ interface
 |if_tcl.txt|	Tcl interface
 |if_ole.txt|	OLE automation interface for Win32
 |if_ruby.txt|	Ruby interface
@@ -178,6 +181,7 @@ Versions ~
 |version5.txt|	Differences between Vim version 4.6 and 5.x
 |version6.txt|	Differences between Vim version 5.7 and 6.x
 |version7.txt|	Differences between Vim version 6.4 and 7.x
+|version8.txt|	Differences between Vim version 7.4 and 8.x
 						*sys-file-list*
 Remarks about specific systems ~
 |os_390.txt|	OS/390 Unix
@@ -200,6 +204,7 @@ Standard plugins ~
 |pi_logipat.txt|   Logical operators on patterns
 |pi_netrw.txt|     Reading and writing files over a network
 |pi_paren.txt|     Highlight matching parens
+|pi_spec.txt|      Filetype plugin to work with rpm spec files
 |pi_tar.txt|       Tar file explorer
 |pi_vimball.txt|   Create a self-installing Vim script
 |pi_zip.txt|       Zip archive explorer

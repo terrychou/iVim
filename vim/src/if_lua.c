@@ -398,14 +398,15 @@ lua_link_init(char *libname, int verbose)
     }
     return OK;
 }
+#endif /* DYNAMIC_LUA */
 
+#if defined(DYNAMIC_LUA) || defined(PROTO)
     int
 lua_enabled(int verbose)
 {
-    return lua_link_init(DYNAMIC_LUA_DLL, verbose) == OK;
+    return lua_link_init((char *)p_luadll, verbose) == OK;
 }
-
-#endif /* DYNAMIC_LUA */
+#endif
 
 #if LUA_VERSION_NUM > 501
     static int
@@ -499,6 +500,12 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_DICT:
 	    luaV_pushdict(L, tv->vval.v_dict);
 	    break;
+	case VAR_SPECIAL:
+	    if (tv->vval.v_number <= VVAL_TRUE)
+		lua_pushinteger(L, (int) tv->vval.v_number);
+	    else
+		lua_pushnil(L);
+	    break;
 	default:
 	    lua_pushnil(L);
     }
@@ -510,7 +517,7 @@ luaV_totypval (lua_State *L, int pos, typval_T *tv)
 {
     switch(lua_type(L, pos)) {
 	case LUA_TBOOLEAN:
-	    tv->v_type = VAR_NUMBER;
+	    tv->v_type = VAR_SPECIAL;
 	    tv->vval.v_number = (varnumber_T) lua_toboolean(L, pos);
 	    break;
 	case LUA_TSTRING:
@@ -1171,10 +1178,8 @@ luaV_window_index(lua_State *L)
 	lua_pushinteger(L, w->w_cursor.lnum);
     else if (strncmp(s, "col", 3) == 0)
 	lua_pushinteger(L, w->w_cursor.col + 1);
-#ifdef FEAT_VERTSPLIT
     else if (strncmp(s, "width", 5) == 0)
-	lua_pushinteger(L, W_WIDTH(w));
-#endif
+	lua_pushinteger(L, w->w_width);
     else if (strncmp(s, "height", 6) == 0)
 	lua_pushinteger(L, w->w_height);
     /* methods */
@@ -1214,7 +1219,6 @@ luaV_window_newindex (lua_State *L)
 	w->w_cursor.col = v - 1;
 	update_screen(VALID);
     }
-#ifdef FEAT_VERTSPLIT
     else if (strncmp(s, "width", 5) == 0)
     {
 	win_T *win = curwin;
@@ -1225,7 +1229,6 @@ luaV_window_newindex (lua_State *L)
 	win_setwidth(v);
 	curwin = win;
     }
-#endif
     else if (strncmp(s, "height", 6) == 0)
     {
 	win_T *win = curwin;
@@ -1396,13 +1399,13 @@ luaV_buffer(lua_State *L)
 	if (lua_isnumber(L, 1)) /* by number? */
 	{
 	    int n = lua_tointeger(L, 1);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fnum == n) break;
 	}
 	else { /* by name */
 	    size_t l;
 	    const char *s = lua_tolstring(L, 1, &l);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (buf->b_ffname == NULL || buf->b_sfname == NULL)
 		{
@@ -1556,14 +1559,15 @@ luaV_setref (lua_State *L)
 	{
 	    tv.v_type = VAR_LIST;
 	    tv.vval.v_list = (list_T *) lua_touserdata(L, 4); /* key */
+	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
 	else if (lua_rawequal(L, -1, 3)) /* dict? */
 	{
 	    tv.v_type = VAR_DICT;
 	    tv.vval.v_dict = (dict_T *) lua_touserdata(L, 4); /* key */
+	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
 	lua_pop(L, 2); /* metatable and value */
-	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
     }
     lua_pushinteger(L, abort);
     return 1;
@@ -1708,6 +1712,8 @@ ex_luado(exarg_T *eap)
     const char *s = (const char *) eap->arg;
     luaL_Buffer b;
     size_t len;
+    buf_T *was_curbuf = curbuf;
+
     if (lua_init() == FAIL) return;
     if (u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)
     {
@@ -1731,6 +1737,10 @@ ex_luado(exarg_T *eap)
     lua_replace(L, -2); /* function -> body */
     for (l = eap->line1; l <= eap->line2; l++)
     {
+	/* Check the line number, the command my have deleted lines. */
+	if (l > curbuf->b_ml.ml_line_count)
+	    break;
+
 	lua_pushvalue(L, -1); /* function */
 	luaV_pushline(L, curbuf, l); /* current line as arg */
 	lua_pushinteger(L, l); /* current line number as arg */
@@ -1739,6 +1749,9 @@ ex_luado(exarg_T *eap)
 	    luaV_emsg(L);
 	    break;
 	}
+	/* Catch the command switching to another buffer. */
+	if (curbuf != was_curbuf)
+	    break;
 	if (lua_isstring(L, -1)) /* update line? */
 	{
 #ifdef HAVE_SANDBOX

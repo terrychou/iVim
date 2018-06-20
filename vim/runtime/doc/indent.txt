@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.4.  Last change: 2014 Dec 06
+*indent.txt*    For Vim version 8.1.  Last change: 2018 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -325,6 +325,21 @@ The examples below assume a 'shiftwidth' of 4.
 		      void function();       void function();
 		  }                          }
 <
+							*cino-E*
+	EN    Indent inside C++ linkage specifications (extern "C" or
+	      extern "C++") N characters extra compared to a normal block.
+	      (default 0).
+
+		cino=			   cino=E-s >
+		  extern "C" {               extern "C" {
+		      void function();       void function();
+		  }                          }
+
+		  extern "C"                 extern "C"
+		  {                          {
+		      void function();       void function();
+		  }                          }
+<
 							*cino-p*
 	pN    Parameter declarations for K&R-style function declarations will
 	      be indented N characters from the margin.  (default
@@ -399,10 +414,10 @@ The examples below assume a 'shiftwidth' of 4.
 							*cino-(*
 	(N    When in unclosed parentheses, indent N characters from the line
 	      with the unclosed parentheses.  Add a 'shiftwidth' for every
-	      unclosed parentheses.  When N is 0 or the unclosed parentheses
-	      is the first non-white character in its line, line up with the
-	      next non-white character after the unclosed parentheses.
-	      (default 'shiftwidth' * 2).
+	      extra unclosed parentheses.  When N is 0 or the unclosed
+	      parentheses is the first non-white character in its line, line
+	      up with the next non-white character after the unclosed
+	      parentheses.  (default 'shiftwidth' * 2).
 
 		cino=			  cino=(0 >
 		  if (c1 && (c2 ||	    if (c1 && (c2 ||
@@ -413,7 +428,8 @@ The examples below assume a 'shiftwidth' of 4.
 		     {			       {
 <
 							*cino-u*
-	uN    Same as (N, but for one level deeper.  (default 'shiftwidth').
+	uN    Same as (N, but for one nesting level deeper.
+	      (default 'shiftwidth').
 
 		cino=			  cino=u2 >
 		  if (c123456789	    if (c123456789
@@ -554,7 +570,7 @@ The examples below assume a 'shiftwidth' of 4.
 
 
 The defaults, spelled out in full, are:
-	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,ps,ts,is,+s,
+	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,E0,ps,ts,is,+s,
 			c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
 
 Vim puts a line in column 1 if:
@@ -813,7 +829,7 @@ PHP indenting can be altered in several ways by modifying the values of some
 global variables:
 
 					*php-comment* *PHP_autoformatcomment*
-To not enable auto-formating of comments by default (if you want to use your
+To not enable auto-formatting of comments by default (if you want to use your
 own 'formatoptions'): >
     :let g:PHP_autoformatcomment = 0
 
@@ -891,6 +907,25 @@ In PHP braces are not required inside 'case/default' blocks therefore 'case:'
 and 'default:' are indented at the same level than the 'switch()' to avoid
 meaningless indentation. You can use the above option to return to the
 traditional way.
+-------------
+
+							*PHP_noArrowMatching*
+By default the indent script will indent multi-line chained calls by matching
+the position of the '->': >
+
+    $user_name_very_long->name()
+                        ->age()
+                        ->info();
+
+You can revert to the classic way of indenting by setting this option to 1: >
+    :let g:PHP_noArrowMatching = 1
+
+You will obtain the following result: >
+
+    $user_name_very_long->name()
+        ->age()
+        ->info();
+
 
 
 PYTHON							*ft-python-indent*

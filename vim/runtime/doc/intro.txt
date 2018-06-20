@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.4.  Last change: 2015 Jan 20
+*intro.txt*     For Vim version 8.1.  Last change: 2018 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,8 +84,8 @@ The Vim pages contain the most recent information about Vim.  They also
 contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.
 
-	VIM home page:	  http://www.vim.org/
-	VIM FAQ:	  http://vimdoc.sf.net/
+	Vim home page:	  http://www.vim.org/
+	Vim FAQ:	  http://vimdoc.sf.net/
 	Downloading:	  ftp://ftp.vim.org/pub/vim/MIRRORS
 
 
@@ -96,21 +96,18 @@ mention that.
 
 						*mail-list* *maillist*
 There are several mailing lists for Vim:
-<vim@vim.org>
+<vim@vim.org>					*vim-use* *vim_use*
 	For discussions about using existing versions of Vim: Useful mappings,
 	questions, answers, where to get a specific version, etc.  There are
 	quite a few people watching this list and answering questions, also
 	for beginners.  Don't hesitate to ask your question here.
-<vim-dev@vim.org>				*vim-dev* *vimdev*
+<vim-dev@vim.org>				*vim-dev* *vim_dev* *vimdev*
 	For discussions about changing Vim: New features, porting, patches,
 	beta-test versions, etc.
-<vim-announce@vim.org>				*vim-announce*
+<vim-announce@vim.org>				*vim-announce* *vim_announce*
 	Announcements about new versions of Vim; also for beta-test versions
 	and ports to different systems.  This is a read-only list.
-<vim-multibyte@vim.org>				*vim-multibyte*
-	For discussions about using and improving the multi-byte aspects of
-	Vim.
-<vim-mac@vim.org>				*vim-mac*
+<vim-mac@vim.org>				*vim-mac* *vim_mac*
 	For discussions about using and improving the Macintosh version of
 	Vim.
 
@@ -135,16 +132,25 @@ http://www.vim.org/maillist.php
 
 Bug reports:				*bugs* *bug-reports* *bugreport.vim*
 
-Send bug reports to: Vim Developers <vim-dev@vim.org>
-This is a maillist, you need to become a member first and many people will see
-the message.  If you don't want that, e.g. because it is a security issue,
-send it to <bugs@vim.org>, this only goes to the Vim maintainer (that's Bram).
+There are two ways to report bugs, both work:
+1. Send bug reports to: Vim Developers <vim-dev@vim.org>
+   This is a maillist, you need to become a member first and many people will
+   see the message.  If you don't want that, e.g. because it is a security
+   issue, send it to <bugs@vim.org>, this only goes to the Vim maintainer
+   (that's Bram).
+2. Open an issue on GitHub: https://github.com/vim/vim/issues
+   The text will be forwarded to the vim-dev maillist.
 
 Please be brief; all the time that is spent on answering mail is subtracted
 from the time that is spent on improving Vim!  Always give a reproducible
-example and try to find out which settings or other things influence the
-appearance of the bug.  Try different machines, if possible.  Send me patches
-if you can!
+example and try to find out which settings or other things trigger the bug.
+
+Preferably start Vim with: >
+	vim --clean -u reproduce.vim
+Where reproduce.vim is a script that reproduces the problem.  Try different
+machines, if relevant (is this an MS-Windows specific bug perhaps?).
+
+Send me patches if you can!
 
 It will help to include information about the version of Vim you are using and
 your setup.  You can get the information with this command: >
@@ -258,6 +264,10 @@ Vim would never have become what it is now, without the help of these people!
 	Juergen Weigert		Lattice version, AUX improvements, UNIX and
 				MS-DOS ports, autoconf
 	Stefan 'Sec' Zehl	Maintainer of vim.org
+	Yasuhiro Matsumoto	many MS-Windows improvements
+	Ken Takata		fixes and features
+	Kazunobu Kuriyama	GTK 3
+	Christian Brabandt	many fixes, features, user support, etc.
 
 I wish to thank all the people that sent me bug reports and suggestions.  The
 list is too long to mention them all here.  Vim would not be the same without
@@ -524,7 +534,7 @@ examples and use them directly.  Or type them literally, including the '<' and
 ==============================================================================
 5. Modes, introduction				*vim-modes-intro* *vim-modes*
 
-Vim has six BASIC modes:
+Vim has seven BASIC modes:
 
 					*Normal* *Normal-mode* *command-mode*
 Normal mode		In Normal mode you can enter all the normal editor
@@ -560,7 +570,12 @@ Ex mode			Like Command-line mode, but after entering a command
 			you remain in Ex mode.  Very limited editing of the
 			command line.  |Ex-mode|
 
-There are six ADDITIONAL modes.  These are variants of the BASIC modes:
+Terminal-Job mode	Interacting with a job in a terminal window.  Typed
+			keys go to the job and the job output is displayed in
+			the terminal window.  See |terminal| about how to
+			switch to other modes.
+
+There are seven ADDITIONAL modes.  These are variants of the BASIC modes:
 
 				*Operator-pending* *Operator-pending-mode*
 Operator-pending mode	This is like Normal mode, but after an operator
@@ -585,6 +600,10 @@ Insert Normal mode	Entered when CTRL-O given in Insert mode.  This is
 			returns to Insert mode.
 			If the 'showmode' option is on "-- (insert) --" is
 			shown at the bottom of the window.
+
+Terminal-Normal mode	Using Normal mode in a terminal window.  Making
+			changes is impossible.  Use an insert command, such as
+			"a" or "i", to return to Terminal-Job mode.
 
 Insert Visual mode	Entered when starting a Visual selection from Insert
 			mode, e.g., by using CTRL-O and then "v", "V" or
@@ -660,6 +679,8 @@ Normal mode from any other mode.  This can be used to make sure Vim is in
 Normal mode, without causing a beep like <Esc> would.  However, this does not
 work in Ex mode.  When used after a command that takes an argument, such as
 |f| or |m|, the timeout set with 'ttimeoutlen' applies.
+When focus is in a terminal window, CTRL-\ CTRL-N goes to Normal mode for only
+one command, see |t_CTRL-\_CTRL-N|.
 
 	*CTRL-\_CTRL-G* *i_CTRL-\_CTRL-G* *c_CTRL-\_CTRL-G* *v_CTRL-\_CTRL-G*
 The command CTRL-\ CTRL-G or <C-\><C-G> can be used to go to Insert mode when
@@ -822,10 +843,12 @@ by Vim.  {Vi: not ok}
 ==============================================================================
 8. Definitions						*definitions*
 
+  buffer		Contains lines of text, usually read from a file.
   screen		The whole area that Vim uses to work in.  This can be
 			a terminal emulator window.  Also called "the Vim
 			window".
-  window		A view on a buffer.
+  window		A view on a buffer.  There can be multiple windows for
+			one buffer.
 
 A screen contains one or more windows, separated by status lines and with the
 command line at the bottom.

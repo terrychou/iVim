@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -19,9 +19,6 @@
 #ifndef HAVE_CONFIG_H
 # if defined(AZTEC_C) || defined(__amigaos4__)
 #  define HAVE_STAT_H
-# endif
-# ifdef __amigaos4__
-#  define HAVE_STDARG_H
 # endif
 # define HAVE_STDLIB_H
 # define HAVE_STRING_H
@@ -45,6 +42,9 @@
 
 #ifndef	DFLT_RUNTIMEPATH
 # define DFLT_RUNTIMEPATH "home:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,home:vimfiles/after"
+#endif
+#ifndef	CLEAN_RUNTIMEPATH
+# define CLEAN_RUNTIMEPATH "$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 #endif
 
 #ifndef	BASENAMELEN
@@ -162,6 +162,9 @@ typedef long off_t;
 #endif
 #ifndef USR_VIMRC_FILE4
 # define USR_VIMRC_FILE4 "$VIM/.vimrc"
+#endif
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
 #ifndef EVIM_FILE
 # define EVIM_FILE	"$VIMRUNTIME/evim.vim"
