@@ -235,9 +235,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     @objc func waitForChars(_ wtime: Int) -> Bool {
         if input_available() > 0 { return true }
-        let expirationDate = wtime > -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
+        let expirationDate = wtime != -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
+        let runloop = RunLoop.current
         repeat {
-            RunLoop.current.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
+            runloop.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
+//            NSLog("gogogo \(wtime)")// \(runloop)")
             if input_available() > 0 {
                 return true
             }

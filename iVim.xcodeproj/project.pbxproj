@@ -11,6 +11,7 @@
 		DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */; };
 		DE1ADB792099549200B21E9E /* ExtendedKeyboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */; };
 		DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */; };
+		DE33BF87214F724B009A5D5F /* VimViewBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE33BF86214F724A009A5D5F /* VimViewBackend.swift */; };
 		DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3B043B205B7087009F81E8 /* URLOpener.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
@@ -205,6 +206,7 @@
 		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLRealizer.swift; sourceTree = "<group>"; };
 		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
 		DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardEditingHistory.swift; sourceTree = "<group>"; };
+		DE33BF86214F724A009A5D5F /* VimViewBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimViewBackend.swift; sourceTree = "<group>"; };
 		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLOpener.swift; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
@@ -6660,6 +6662,7 @@
 				DE7BA7AA1F21DC8700705E67 /* ios_prefix.h */,
 				DE7BA7E31F21F74000705E67 /* vimrc */,
 				DEF17D8520B3BD1E00FE0693 /* Data Model */,
+				DE33BF86214F724A009A5D5F /* VimViewBackend.swift */,
 			);
 			path = iVim;
 			sourceTree = "<group>";
@@ -7134,6 +7137,7 @@
 				DE7BA7BB1F21EB7C00705E67 /* term.c in Sources */,
 				DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */,
 				DE7BA7AD1F21E63400705E67 /* misc1.c in Sources */,
+				DE33BF87214F724B009A5D5F /* VimViewBackend.swift in Sources */,
 				DE5C51B61F6E170500373B92 /* html.c in Sources */,
 				DE7BA7951F21A75400705E67 /* URLSchemeWorker.swift in Sources */,
 				DE5C519F1F6E162800373B92 /* tcl.c in Sources */,
@@ -7337,7 +7341,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -7388,7 +7392,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -7407,7 +7411,7 @@
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
 				INFOPLIST_FILE = iVim/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7432,7 +7436,7 @@
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
 				INFOPLIST_FILE = iVim/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -7511,7 +7515,7 @@
 				CODE_SIGN_ENTITLEMENTS = iVimShare/iVimShare.entitlements;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				INFOPLIST_FILE = iVimShare/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -7527,7 +7531,7 @@
 				CODE_SIGN_ENTITLEMENTS = iVimShare/iVimShare.entitlements;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				INFOPLIST_FILE = iVimShare/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
