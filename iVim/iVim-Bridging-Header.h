@@ -9,7 +9,7 @@
 #ifndef iVim_Bridging_Header_h
 #define iVim_Bridging_Header_h
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 int const keyCAR;
 int const keyESC;
