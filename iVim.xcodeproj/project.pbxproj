@@ -34,7 +34,6 @@
 		22CA870620C1DEFF00A4E25B /* awk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86E620C1DEB600A4E25B /* awk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22CA870720C1DEFF00A4E25B /* curl_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86E520C1DEB600A4E25B /* curl_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22CA870820C1DEFF00A4E25B /* files.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86E720C1DEB600A4E25B /* files.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		22CA870A20C1E03100A4E25B /* vimproc_ios.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA870920C1E02D00A4E25B /* vimproc_ios.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22D364031FC37D95008A8A76 /* if_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC271F209A93007AFD63 /* if_lua.c */; settings = {COMPILER_FLAGS = "-I ../lua_ios/lua-5.3.4/src/"; }; };
 		DE0D2EC8205A1797004C29F8 /* ArgumentToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */; };
 		DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */; };
@@ -226,7 +225,6 @@
 				229F09D92186197900A05CAE /* lua_ios.framework in Embed Frameworks */,
 				229F09D72186196900A05CAE /* Python_ios.framework in Embed Frameworks */,
 				229F09D52186194A00A05CAE /* ios_system.framework in Embed Frameworks */,
-				22CA870A20C1E03100A4E25B /* vimproc_ios.dylib in Embed Frameworks */,
 				22CA86F720C1DEFF00A4E25B /* shell.framework in Embed Frameworks */,
 				22CA86F820C1DEFF00A4E25B /* ssh_cmd.framework in Embed Frameworks */,
 				22CA86F920C1DEFF00A4E25B /* tar.framework in Embed Frameworks */,
@@ -289,7 +287,6 @@
 		22CA86F420C1DEF000A4E25B /* text.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = text.framework; path = Frameworks/text.framework; sourceTree = "<group>"; };
 		22CA86F520C1DEF000A4E25B /* tar.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = tar.framework; path = Frameworks/tar.framework; sourceTree = "<group>"; };
 		22CA86F620C1DEF000A4E25B /* shell.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = shell.framework; path = Frameworks/shell.framework; sourceTree = "<group>"; };
-		22CA870920C1E02D00A4E25B /* vimproc_ios.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = vimproc_ios.dylib; path = ../vimproc.vim/vimproc_ios.dylib; sourceTree = "<group>"; };
 		DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArgumentToken.swift; path = iVim/ArgumentToken.swift; sourceTree = "<group>"; };
 		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = URLRealizer.swift; path = iVim/URLRealizer.swift; sourceTree = "<group>"; };
 		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
@@ -3137,7 +3134,6 @@
 		22D4BE5D1FC076F4007EDB4B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				22CA870920C1E02D00A4E25B /* vimproc_ios.dylib */,
 				22CA86F620C1DEF000A4E25B /* shell.framework */,
 				22CA86F320C1DEEF00A4E25B /* ssh_cmd.framework */,
 				22CA86F520C1DEF000A4E25B /* tar.framework */,
