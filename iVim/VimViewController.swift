@@ -235,9 +235,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     @objc func waitForChars(_ wtime: Int) -> Bool {
         if input_available() > 0 { return true }
-        let expirationDate = wtime > -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
+        let expirationDate = wtime != -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
+        let runloop = RunLoop.current
         repeat {
-            RunLoop.current.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
+            runloop.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
+//            NSLog("gogogo \(wtime)")// \(runloop)")
             if input_available() > 0 {
                 return true
             }
@@ -301,9 +303,12 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
 }
 
 extension VimViewController {
-    @objc func setBackgroundColor(_ color: CGColor, isInit: Bool) {
+    @objc func setBackgroundColor(_ color: VimColor, isInit: Bool) {
         guard #available(iOS 11, *), self.view.safeAreaInsets != .zero else { return }
-        let c = UIColor(cgColor: color)
+        let c = UIColor(red: color.red,
+                        green: color.green,
+                        blue: color.blue,
+                        alpha: color.alpha)
         self.view.backgroundColor = c
         if isInit {
             self.vimView?.backgroundColor = c

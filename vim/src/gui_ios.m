@@ -307,16 +307,16 @@ char_u * gui_version_info(void) {
     return info;
 }
 
-CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    int red = (color & 0xFF0000) >> 16;
-    int green = (color & 0x00FF00) >> 8;
-    int blue = color & 0x0000FF;
-    CGFloat rgb[4] = {(float)red/0xFF, (float)green/0xFF, (float)blue/0xFF, 1.0f};
-    CGColorRef cgColor = CGColorCreate(colorSpace, rgb);
-    CGColorSpaceRelease(colorSpace);
-    return cgColor;
-}
+//CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
+//    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+//    int red = (color & 0xFF0000) >> 16;
+//    int green = (color & 0x00FF00) >> 8;
+//    int blue = color & 0x0000FF;
+//    CGFloat rgb[4] = {(float)red/0xFF, (float)green/0xFF, (float)blue/0xFF, 1.0f};
+//    CGColorRef cgColor = CGColorCreate(colorSpace, rgb);
+//    CGColorSpaceRelease(colorSpace);
+//    return cgColor;
+//}
 
 #pragma mark -
 #pragma mark Vim C functions
@@ -876,8 +876,9 @@ gui_mch_init_check(void)
 static BOOL bg_color_ready = NO;
 
 static void gui_ios_sync_bg_color(BOOL is_init) {
-    CGColorRef color = CGColorCreateFromVimColor(gui.def_back_pixel);
-    [shellViewController() setBackgroundColor:color isInit: is_init];
+//    CGColorRef color = CGColorCreateFromVimColor(gui.def_back_pixel);
+    [shellViewController() setBackgroundColor:(uint32_t)gui.def_back_pixel
+                                       isInit:is_init];
 }
 
 /*
@@ -1014,7 +1015,7 @@ void
 gui_mch_clear_all(void)
 {
 //    printf("%s\n",__func__);
-    [shellView() fillAllWith:CGColorCreateFromVimColor(gui.back_pixel)];
+    [shellView() fillAllWith:(uint32_t)gui.back_pixel];
 }
 
 
@@ -1030,7 +1031,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
                              FILL_Y(row1),
                              FILL_X(col2+1)-FILL_X(col1),
                              FILL_Y(row2+1)-FILL_Y(row1));
-    [shellView() fillRect:rect with:CGColorCreateFromVimColor(gui.back_pixel)];
+    [shellView() fillRect:rect with:(uint32_t)gui.back_pixel];
 }
 
 
@@ -1057,15 +1058,14 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
     }
     
     [shellView() drawString: string
-                     font: gui.norm_font
-                    pos_x: TEXT_X(col)
-                    pos_y: TEXT_Y(row)
-                     rect: rect
-              p_antialias: true
-              transparent: flags & DRAW_TRANSP
-                underline: flags & DRAW_UNDERL
-                undercurl: flags & DRAW_UNDERC
-                   cursor: flags & DRAW_CURSOR];
+                      pos_x: TEXT_X(col)
+                      pos_y: TEXT_Y(row)
+                       rect: rect
+                p_antialias: true
+                transparent: flags & DRAW_TRANSP
+                  underline: flags & DRAW_UNDERL
+                  undercurl: flags & DRAW_UNDERC
+                     cursor: flags & DRAW_CURSOR];
 }
 
 
@@ -1127,7 +1127,8 @@ gui_mch_insert_lines(int row, int num_lines)
     void
 gui_mch_set_fg_color(guicolor_T color)
 {
-   shellView().fgcolor = CGColorCreateFromVimColor(color);
+    [shellView() setFgColor:(uint32_t)color];
+//    shellView().fgcolor = CGColorCreateFromVimColor(color);
 }
 
 
@@ -1137,7 +1138,8 @@ gui_mch_set_fg_color(guicolor_T color)
     void
 gui_mch_set_bg_color(guicolor_T color)
 {
-    shellView().bgcolor = CGColorCreateFromVimColor(color);
+    [shellView() setBgColor:(uint32_t)color];
+//    shellView().bgcolor = CGColorCreateFromVimColor(color);
 }
 
 /*
@@ -1147,7 +1149,8 @@ gui_mch_set_bg_color(guicolor_T color)
 gui_mch_set_sp_color(guicolor_T color)
 {
     //    printf("%s\n",__func__);
-    shellView().spcolor = CGColorCreateFromVimColor(color);
+    [shellView() setSpecialColor:(uint32_t)color];
+//    shellView().spcolor = CGColorCreateFromVimColor(color);
 }
 
 
@@ -1441,12 +1444,12 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     }
 #endif
     CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), cw * gui.char_width, gui.char_height);
-    CGColorRef cgColor = CGColorCreateFromVimColor(color);
+//    CGColorRef cgColor = CGColorCreateFromVimColor(color);
 //    rect.size.width += 1;
 //    rect.size.height += 1;
 //    rect.origin.x -= 0.5;
 //    rect.origin.y -= 0.5;
-    [shellView() strokeRect:rect with:cgColor];
+    [shellView() strokeRect:rect with:(uint32_t)color];
 }
 
 
@@ -1470,7 +1473,7 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
         left = FILL_X(gui.col);
     
     CGRect rect = CGRectMake(left, FILL_Y(gui.row), (CGFloat)w, (CGFloat)h);
-    [shellView() fillRect:rect with:CGColorCreateFromVimColor(color)];
+    [shellView() fillRect:rect with:(uint32_t)color];
 }
 
 
