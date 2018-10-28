@@ -25,7 +25,6 @@
 		22CA86FF20C1DEFF00A4E25B /* libssh2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86EF20C1DED800A4E25B /* libssh2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22CA870020C1DEFF00A4E25B /* libtexlua52.5.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86EE20C1DED800A4E25B /* libtexlua52.5.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22CA870120C1DEFF00A4E25B /* libbibtex.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86E820C1DEC500A4E25B /* libbibtex.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		22CA870220C1DEFF00A4E25B /* libcrypto.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86EA20C1DEC500A4E25B /* libcrypto.a */; };
 		22CA870320C1DEFF00A4E25B /* libctags.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86E920C1DEC500A4E25B /* libctags.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22CA870420C1DEFF00A4E25B /* libkpathsea.6.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86EB20C1DEC500A4E25B /* libkpathsea.6.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		22CA870520C1DEFF00A4E25B /* libluatex.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86EC20C1DEC500A4E25B /* libluatex.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -234,7 +233,6 @@
 				22CA86FF20C1DEFF00A4E25B /* libssh2.framework in Embed Frameworks */,
 				22CA870020C1DEFF00A4E25B /* libtexlua52.5.dylib in Embed Frameworks */,
 				22CA870120C1DEFF00A4E25B /* libbibtex.dylib in Embed Frameworks */,
-				22CA870220C1DEFF00A4E25B /* libcrypto.a in Embed Frameworks */,
 				22CA870320C1DEFF00A4E25B /* libctags.dylib in Embed Frameworks */,
 				22CA870420C1DEFF00A4E25B /* libkpathsea.6.dylib in Embed Frameworks */,
 				22CA870520C1DEFF00A4E25B /* libluatex.dylib in Embed Frameworks */,
