@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		229F09D52186194A00A05CAE /* ios_system.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 229F09D42186194A00A05CAE /* ios_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		229F09D72186196900A05CAE /* Python_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 229F09D62186196900A05CAE /* Python_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		229F09D92186197900A05CAE /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 229F09D82186197900A05CAE /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22C06C70204F28910008D0CE /* if_python.c in Sources */ = {isa = PBXBuildFile; fileRef = DE44DC301F209A93007AFD63 /* if_python.c */; settings = {COMPILER_FLAGS = "-I ../python_ios/Python-2.7.13/Include -I ../python_ios/"; }; };
 		22CA86DC20C1DE2B00A4E25B /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86DB20C1DE2A00A4E25B /* lua_ios.framework */; };
 		22CA86DE20C1DE3700A4E25B /* Python_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22CA86DD20C1DE3700A4E25B /* Python_ios.framework */; };
@@ -220,6 +223,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				229F09D92186197900A05CAE /* lua_ios.framework in Embed Frameworks */,
+				229F09D72186196900A05CAE /* Python_ios.framework in Embed Frameworks */,
+				229F09D52186194A00A05CAE /* ios_system.framework in Embed Frameworks */,
 				22CA870A20C1E03100A4E25B /* vimproc_ios.dylib in Embed Frameworks */,
 				22CA86F720C1DEFF00A4E25B /* shell.framework in Embed Frameworks */,
 				22CA86F820C1DEFF00A4E25B /* ssh_cmd.framework in Embed Frameworks */,
@@ -257,6 +263,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		229F09D42186194A00A05CAE /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
+		229F09D62186196900A05CAE /* Python_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python_ios.framework; path = Frameworks/Python_ios.framework; sourceTree = "<group>"; };
+		229F09D82186197900A05CAE /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua_ios.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
 		22CA86DB20C1DE2A00A4E25B /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua_ios.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
 		22CA86DD20C1DE3700A4E25B /* Python_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python_ios.framework; path = Frameworks/Python_ios.framework; sourceTree = "<group>"; };
 		22CA86DF20C1DE4700A4E25B /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
@@ -286,7 +295,7 @@
 		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
 		DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardEditingHistory.swift; sourceTree = "<group>"; };
 		DE33BF86214F724A009A5D5F /* VimViewBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimViewBackend.swift; sourceTree = "<group>"; };
-		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLOpener.swift; sourceTree = "<group>"; };
+		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = URLOpener.swift; path = iVim/URLOpener.swift; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
 		DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UIDocumentPickerDelegate.swift"; sourceTree = "<group>"; };
@@ -6729,6 +6738,9 @@
 		DE531AE91F20941100D71DB3 = {
 			isa = PBXGroup;
 			children = (
+				229F09D82186197900A05CAE /* lua_ios.framework */,
+				229F09D62186196900A05CAE /* Python_ios.framework */,
+				229F09D42186194A00A05CAE /* ios_system.framework */,
 				DE5C50C41F6E13CD00373B92 /* ctags58 */,
 				DE44D42D1F209A89007AFD63 /* vim */,
 				DE531AF41F20941100D71DB3 /* iVim */,
