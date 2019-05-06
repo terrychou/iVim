@@ -114,7 +114,7 @@ extension OptionalButton {
         l.foregroundColor = color.cgColor
         l.anchorPoint = anchorPoint
         l.position = self.position(for: anchorPoint)
-        l.alignmentMode = kCAAlignmentCenter
+        l.alignmentMode = CATextLayerAlignmentMode.center
         self.setFontSize(fontSize, of: l)
         self.layer.addSublayer(l)
         let oi = KeyInfo(layer: l, action: option.action, isSticky: option.isSticky)

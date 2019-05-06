@@ -165,7 +165,7 @@ extension VimFontsManager {
     }
     
     private func deleteFont(with info: FontInfo) {
-        guard let i = self.fonts.index(where: { $0 == info }),
+        guard let i = self.fonts.firstIndex(where: { $0 == info }),
             let path = userFontsURL?.appendingPathComponent(info.name)
             else { return }
         do {

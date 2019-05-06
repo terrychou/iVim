@@ -49,7 +49,7 @@ extension VimViewController {
         return self.markedInfo?.range
     }
     
-    var markedTextStyle: [AnyHashable : Any]? {
+    var markedTextStyle: [NSAttributedString.Key : Any]? {
         get { return nil }
         set { return }
     }
@@ -208,7 +208,7 @@ extension VimViewController {
         return nil
     }
     
-    func selectionRects(for range: UITextRange) -> [Any] {
+    func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
         //print(#function)
         return []
     }

@@ -13,20 +13,33 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        self.logToFile()
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),
             with: nil,
             waitUntilDone: false)
-        self.cleanMirrors()
+//        self.cleanMirrors()
 
         return true
     }
     
-    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey: Any]) -> Bool {
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
         return VimURLHandler(url: url)?.open() ?? false
+    }
+    
+    func applicationWillResignActive(_ application: UIApplication) {
+        scenes_keeper_stash();
+        gPIM.willResignActive()
+    }
+    
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        DispatchQueue.main.async {
+            if !scenes_keeper_restore_post() {
+                gPIM.didBecomeActive()
+            }
+        }
     }
     
 //    private func logToFile() {
@@ -49,7 +62,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let workingDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         vim_setenv("HOME", workingDir)
         FileManager.default.changeCurrentDirectoryPath(workingDir)
-        let args = ["vim"] + LaunchArgumentsParser().parse()
+        scenes_keeper_restore_prepare();
+        var args = ["vim"] + LaunchArgumentsParser().parse()
+        if let spath = scene_keeper_valid_session_file_path() {
+            args += ["-S", spath];
+        }
         var argv = args.map { strdup($0) }
         VimMain(Int32(args.count), &argv)
         argv.forEach { free($0) }

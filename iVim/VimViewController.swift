@@ -41,8 +41,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     private func registerNotifications() {
         let nfc = NotificationCenter.default
-        nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: .UIKeyboardWillChangeFrame, object: nil)
-        nfc.addObserver(self, selector: #selector(self.keyboardDidChangeFrame(_:)), name: .UIKeyboardDidChangeFrame, object: nil)
+        nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        nfc.addObserver(self, selector: #selector(self.keyboardDidChangeFrame(_:)), name: UIResponder.keyboardDidChangeFrameNotification, object: nil)
         self.registerExternalKeyboardNotifications(to: nfc)
     }
     
@@ -214,7 +214,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     //MARK: OnScreen Keyboard Handling
     private func tuneFrameAccordingToKeyboard(_ notification: Notification) {
         guard self.shouldTuneFrame,
-            let frame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? CGRect,
+            let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
             let v = self.view,
             let window = v.window
             else { return }
@@ -238,7 +238,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         let expirationDate = wtime != -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
         let runloop = RunLoop.current
         repeat {
-            runloop.acceptInput(forMode: .defaultRunLoopMode, before: expirationDate)
+            runloop.acceptInput(forMode: .default, before: expirationDate)
 //            NSLog("gogogo \(wtime)")// \(runloop)")
             if input_available() > 0 {
                 return true

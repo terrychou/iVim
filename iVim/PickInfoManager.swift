@@ -12,40 +12,17 @@ let gPIM = PickInfoManager.shared
 
 final class PickInfoManager: NSObject {
     @objc static let shared = PickInfoManager()
-    static let serialQ = DispatchQueue(label: "com.terrychou.ivim.pickinfomanager",
-                                       qos: .background)
-    private override init() {
-        super.init()
-        self.setup()
-    }
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+    private override init() {}
+    static let serialQ = DispatchQueue(
+        label: "com.terrychou.ivim.pickinfomanager",
+        qos: .background)
     
     private var localTable = [String: PickInfo]()
     private var table = [URL: PickInfo]()
 }
 
 extension PickInfoManager {
-    private func setup() {
-        self.registerNotifications()
-    }
-    
-    private func registerNotifications() {
-        let nfc = NotificationCenter.default
-        nfc.addObserver(self,
-                        selector: #selector(self.didBecomeActive),
-                        name: .UIApplicationDidBecomeActive,
-                        object: nil)
-        nfc.addObserver(self,
-                        selector: #selector(self.willResignActive),
-                        name: .UIApplicationWillResignActive,
-                        object: nil)
-    }
-}
-
-extension PickInfoManager {
-    @objc func didBecomeActive() {
+    func didBecomeActive() {
         NSLog("become active")
         self.table.values.forEach {
             NSFileCoordinator.addFilePresenter($0)
@@ -53,7 +30,7 @@ extension PickInfoManager {
         }
     }
     
-    @objc func willResignActive() {
+    func willResignActive() {
         NSLog("resign active")
         self.wrapUp()
     }
@@ -68,15 +45,32 @@ extension PickInfoManager {
 private let mirrorDirectoryPath = FileManager.default.mirrorDirectoryURL.path
 
 extension PickInfoManager {
+    private func addPickInfo(_ pi: PickInfo) {
+        self.localTable[pi.ticket] = pi
+        self.table[pi.origin] = pi
+        NSFileCoordinator.addFilePresenter(pi)
+    }
+    
     func addPickInfo(for url: URL, task: MirrorReadyTask?) {
         if let existing = self.table[url] {
             existing.addTask(task)
         } else {
             let pi = PickInfo(origin: url)
             pi.addTask(task)
-            self.localTable[pi.ticket] = pi
-            self.table[url] = pi
-            NSFileCoordinator.addFilePresenter(pi)
+            self.addPickInfo(pi)
+        }
+    }
+    
+    @objc func addPickInfo(at path: String, update: Bool) {
+        guard let spath = FileManager.default.mirrorSubpath(for: path),
+            let ticket = self.ticket(for: spath),
+            self.localTable[ticket] == nil,
+            let pi = PickInfo(ticket: ticket) else {
+                return
+        }
+        self.addPickInfo(pi)
+        if update && pi.updateMirror() {
+            NSLog("updated mirror \(ticket)")
         }
     }
     

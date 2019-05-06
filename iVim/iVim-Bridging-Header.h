@@ -67,4 +67,11 @@ void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL 
 
 void gui_ios_init_bg_color(void);
 
+// scenes keeper
+NSString *path_relative_to_cwd(NSString *path);
+void scenes_keeper_stash(void);
+NSString *scene_keeper_valid_session_file_path(void);
+void scenes_keeper_restore_prepare(void);
+BOOL scenes_keeper_restore_post(void);
+
 #endif /* iVim_Bridging_Header_h */

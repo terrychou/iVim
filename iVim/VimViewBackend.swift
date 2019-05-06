@@ -98,9 +98,9 @@ extension VimView {
     }
     
     private func attributedString(from string: String) -> NSAttributedString {
-        let attributes: [NSAttributedStringKey: Any] = [
+        let attributes: [NSAttributedString.Key: Any] = [
             .font: self.font!,
-            NSAttributedStringKey(kCTForegroundColorFromContextAttributeName as String): true]
+            NSAttributedString.Key(kCTForegroundColorFromContextAttributeName as String): true]
         
         return NSAttributedString(string: string, attributes: attributes)
     }

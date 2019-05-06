@@ -12,7 +12,7 @@ private let alphabetaKeys = "abcdefghijklmnopqrstuvwxyz"
 private let numericKeys = "1234567890"
 private let symbolKeys = "`-=~!@#$%^&*()_+[]\\{}|;':\",./<>?"
 private let escapedKeys = "\t\r"
-private let specialKeys = [UIKeyInputEscape, UIKeyInputUpArrow, UIKeyInputDownArrow, UIKeyInputLeftArrow, UIKeyInputRightArrow]
+private let specialKeys = [UIKeyCommand.inputEscape, UIKeyCommand.inputUpArrow, UIKeyCommand.inputDownArrow, UIKeyCommand.inputLeftArrow, UIKeyCommand.inputRightArrow]
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
 private let kUDOptionMapping = "kUDOptionMapping"
 
@@ -35,8 +35,8 @@ extension VimViewController {
     }
     
     func registerExternalKeyboardNotifications(to nfc: NotificationCenter) {
-        nfc.addObserver(self, selector: #selector(self.keyboardDidChange(_:)), name: .UITextInputCurrentInputModeDidChange, object: nil)
-        nfc.addObserver(self, selector: #selector(self.appDidBecomeActive(_:)), name: .UIApplicationDidBecomeActive, object: nil)
+        nfc.addObserver(self, selector: #selector(self.keyboardDidChange(_:)), name: UITextInputMode.currentInputModeDidChangeNotification, object: nil)
+        nfc.addObserver(self, selector: #selector(self.appDidBecomeActive(_:)), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     @objc func appDidBecomeActive(_ notification: Notification) {
@@ -139,11 +139,11 @@ extension VimViewController {
         if flags.rawValue == 0 {
             guard let input = command.input else { return }
             switch input {
-            case UIKeyInputEscape: self.pressESC()
-            case UIKeyInputUpArrow: self.pressArrow(keyUP)
-            case UIKeyInputDownArrow: self.pressArrow(keyDOWN)
-            case UIKeyInputLeftArrow: self.pressArrow(keyLEFT)
-            case UIKeyInputRightArrow: self.pressArrow(keyRIGHT)
+            case UIKeyCommand.inputEscape: self.pressESC()
+            case UIKeyCommand.inputUpArrow: self.pressArrow(keyUP)
+            case UIKeyCommand.inputDownArrow: self.pressArrow(keyDOWN)
+            case UIKeyCommand.inputLeftArrow: self.pressArrow(keyLEFT)
+            case UIKeyCommand.inputRightArrow: self.pressArrow(keyRIGHT)
             default: self.insertText(input)
             }
         } else if flags.contains(.alphaShift) {
@@ -167,11 +167,11 @@ extension VimViewController {
             //combine with modifiers from the extended keyboard
             var keys = gEKM.modifiersString(byCombining: modifiers)
             switch command.input {
-            case UIKeyInputEscape?: keys.append("Esc")
-            case UIKeyInputUpArrow?: keys.append("Up")
-            case UIKeyInputDownArrow?: keys.append("Down")
-            case UIKeyInputLeftArrow?: keys.append("Left")
-            case UIKeyInputRightArrow?: keys.append("Right")
+            case UIKeyCommand.inputEscape?: keys.append("Esc")
+            case UIKeyCommand.inputUpArrow?: keys.append("Up")
+            case UIKeyCommand.inputDownArrow?: keys.append("Down")
+            case UIKeyCommand.inputLeftArrow?: keys.append("Left")
+            case UIKeyCommand.inputRightArrow?: keys.append("Right")
             case "\t"?: keys.append("Tab")
             case "\r"?: keys.append("CR")
             case "2"? where flags == [.control]: keys.append("@")
@@ -205,7 +205,7 @@ extension VimViewController {
         var newModifierFlags = command.modifierFlags
         newModifierFlags.remove(.alphaShift)
         if dst == .esc {
-            newInput = UIKeyInputEscape
+            newInput = UIKeyCommand.inputEscape
         } else {
             if newInput.isEmpty { return }
             newModifierFlags.formUnion(.control)

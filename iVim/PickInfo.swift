@@ -9,7 +9,7 @@
 import Foundation
 
 extension FileManager {
-    private static let mirrorMark = UUID().uuidString
+    private static let mirrorMark = "com.terrychou.ivim.mirrormark"
     
     private static let cachedMirrorDirectoryURL = URL(
         fileURLWithPath: NSTemporaryDirectory(),
@@ -17,11 +17,11 @@ extension FileManager {
         .appendingPathComponent("Openbox")
         .appendingPathComponent(FileManager.mirrorMark)
     
-    var mirrorDirectoryURL: URL {
+    @objc var mirrorDirectoryURL: URL {
         return FileManager.cachedMirrorDirectoryURL
     }
     
-    func cleanMirrorFiles() {
+    @objc func cleanMirrorFiles() {
         let unmarked = self.mirrorDirectoryURL.deletingLastPathComponent()
         guard self.fileExists(atPath: unmarked.path) else { return }
         do {
@@ -40,6 +40,24 @@ extension FileManager {
         let start = path.index(after: range.upperBound)
         
         return String(path[start...])
+    }
+    
+    func mirrorBookmarkURL(for ticket: String) -> URL {
+        return self.mirrorDirectoryURL
+            .appendingPathComponent(ticket)
+            .appendingPathComponent(".bookmark")
+    }
+    
+    func mirrorBookmark(for ticket: String) -> Data? {
+        let url = self.mirrorBookmarkURL(for: ticket)
+        do {
+            return try Data.init(contentsOf: url)
+        } catch (let err) {
+            NSLog("failed to read bookmark" +
+                "for mirror \(ticket):" +
+                "\(err.localizedDescription)")
+            return nil
+        }
     }
 }
 
@@ -64,12 +82,39 @@ final class PickInfo: NSObject {
         self.updateUpdatedDate()
     }
     
+    init?(ticket: String) {
+        guard let bookmark = FileManager.default.mirrorBookmark(for: ticket),
+            let origin = bookmark.resolvedURL else {
+                return nil
+        }
+        self.origin = origin
+        self.bookmark = bookmark
+        self.ticket = ticket
+        self.subRootPath = self.ticket + "/" +
+            self.origin.lastPathComponent
+        super.init()
+        self.updateUpdatedDate()
+    }
+    
     deinit {
         self.deleteMirror()
     }
 }
 
-extension PickInfo {    
+extension PickInfo {
+    private func storeMirrorBookmark() {
+        guard let bm = self.bookmark else { return }
+        do {
+            try bm.write(
+                to: FileManager.default.mirrorBookmarkURL(for: self.ticket),
+                options: .atomic)
+        } catch (let err) {
+            NSLog("failed to store bookmark " +
+                "for mirror \(self.ticket):" +
+                "\(err.localizedDescription)")
+        }
+    }
+    
     private func createMirror() {
         self.origin.coordinatedRead(for: self) { [unowned self] url, err in
             guard let oURL = url else {
@@ -91,6 +136,7 @@ extension PickInfo {
                 NSLog("Failed to create mirror: \(error)")
             }
         }
+        self.storeMirrorBookmark()
     }
     
     func updateMirror() -> Bool {

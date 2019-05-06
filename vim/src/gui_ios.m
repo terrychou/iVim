@@ -641,9 +641,13 @@ static void ex_isetekbd(exarg_T * eap) {
 /*
  * Get current working directory
  */
-char_u * get_working_directory(void) {
-    char_u * re = alloc(MAXPATHL);
-    mch_dirname(re, MAXPATHL);
+NSString * get_working_directory(void) {
+    char_u *cwd = alloc(MAXPATHL);
+    NSString *re = nil;
+    if (mch_dirname(cwd, MAXPATHL)) {
+        re = TONSSTRING(cwd);
+    }
+    free(cwd);
     
     return re;
 }
@@ -694,9 +698,9 @@ static void ex_ishare(exarg_T * eap) {
     } else {
         NSString * path = arg;
         if (![path hasPrefix:@"/"]) {
-            char_u * cwd = get_working_directory();
-            if (cwd != NULL) {
-                path = [TONSSTRING(cwd) stringByAppendingPathComponent:path];
+            NSString * cwd = get_working_directory();
+            if (cwd) {
+                path = [cwd stringByAppendingPathComponent:path];
             }
         }
         share_file(path);
