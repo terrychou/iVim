@@ -96,8 +96,10 @@ final class PickInfo: NSObject {
     var origin: URL
     var bookmark: Data?
     let ticket: String
-    let subRootPath: String
-    lazy var mirrorURL: URL = FileManager.default.mirrorURL(for: self.subRootPath)
+    let mirrorURL: URL
+    private lazy var mirrorWatcher: FilesystemItemWatcher = FilesystemItemWatcher(url: self.mirrorURL, delegate: self)
+    private lazy var mirrorTrasher: MirrorTrasher = MirrorTrasher(mirror: self.mirrorURL, presenter: self)
+    private var _updatedDate: Date?
     lazy var lastUpdatedURL: URL = self.mirrorURL
         .deletingLastPathComponent()
         .appendingPathComponent(".lastupdated")
@@ -106,7 +108,8 @@ final class PickInfo: NSObject {
         self.origin = origin
         self.bookmark = bookmark
         self.ticket = ticket
-        self.subRootPath = ticket + "/" + origin.lastPathComponent
+        self.mirrorURL = FileManager.default.mirrorURL(
+            for: ticket + "/" + origin.lastPathComponent)
         super.init()
     }
     
@@ -115,6 +118,8 @@ final class PickInfo: NSObject {
                   bookmark: origin.bookmark,
                   ticket: UUID().uuidString)
         self.createMirror()
+        self.initUpdatedDate()
+        self.startWatchingMirror()
         self.addTask(task)
     }
     
@@ -122,9 +127,93 @@ final class PickInfo: NSObject {
         if let bm = FileManager.default.mirrorBookmark(for: ticket),
             let ori = bm.resolvedURL {
             self.init(origin: ori, bookmark: bm, ticket: ticket)
+            self.initUpdatedDate()
+            self.startWatchingMirror()
         } else {
             return nil
         }
+    }
+    
+    deinit {
+        self.stopWatchingMirror()
+    }
+}
+
+private let pathSeparator = CharacterSet(charactersIn: "/")
+
+private extension StringProtocol {
+    var trimmingPathSeparator: String {
+        return self.trimmingCharacters(in: pathSeparator)
+    }
+}
+
+extension PickInfo: FilesystemItemWatcherDelegate {
+    func startWatchingMirror() {
+        self.mirrorWatcher.start()
+    }
+    
+    func stopWatchingMirror() {
+        self.mirrorWatcher.stop()
+    }
+    
+    private func subpathFromMirrorURL(_ url: URL) -> String? {
+        let mPath = self.mirrorURL.path
+        let path = url.path
+        var result: String?
+        if let mr = mPath.range(of: self.ticket),
+            let ur = path.range(of: mPath[mr.lowerBound...]) {
+            result = path[ur.upperBound...].trimmingPathSeparator
+        }
+        
+        return result
+    }
+    
+    private func itemIsNewerThanLastUpdate(at url: URL) -> Bool {
+        return url.contentModifiedDate().map {
+            $0 > self.updatedDate
+        } ?? false
+    }
+    
+    func itemDidChange() {
+        if self.itemIsNewerThanLastUpdate(at: self.mirrorURL) {
+            // this change may be caused by a former update
+            self.write()
+        }
+    }
+    
+    func itemDidRename(to newURL: URL) {
+        // it does NOT make sense to rename the root
+        // of a mirror, in this case, rename it back
+        NSLog("attempt to rename mirror root to \(newURL)")
+        do {
+            self.mirrorWatcher.stop()
+            try FileManager.default.moveItem(at: newURL,
+                                             to: self.mirrorURL)
+            self.mirrorWatcher.start()
+        } catch {
+            NSLog("failed to restore mirror root name: \(error)")
+        }
+    }
+    
+    func subitemDidChange(at url: URL) {
+        guard self.itemIsNewerThanLastUpdate(at: url),
+            let sp = self.subpathFromMirrorURL(url) else { return }
+        var shouldUpdate = true
+        if !url.isDirectory {
+            let mURL = self.mirrorURL.appendingPathComponent(sp)
+            if !file_is_in_buffer_list(mURL.path) {
+                // ignore files not in buffer list, e.g. swap files
+                shouldUpdate = false
+            }
+        }
+        if shouldUpdate {
+            self.write(for: sp)
+        }
+    }
+    
+    func subitemWasDeleted(at url: URL) {
+        guard let sp = self.subpathFromMirrorURL(url) else { return }
+        self.remove(for: sp)
     }
 }
 
@@ -140,6 +229,10 @@ extension PickInfo {
                 "for mirror \(self.ticket):" +
                 "\(err.localizedDescription)")
         }
+    }
+    
+    private func initUpdatedDate() {
+        _ = self.updatedDate
     }
     
     private var lastUpdatedDate: Date? {
@@ -161,7 +254,9 @@ extension PickInfo {
     
     private var updatedDate: Date {
         get {
-            return self.lastUpdatedDate ?? self.guessLastUpdatedDate()
+            return self._updatedDate ??
+                self.lastUpdatedDate ??
+                self.guessLastUpdatedDate()
         }
         set {
             do {
@@ -169,6 +264,7 @@ extension PickInfo {
                     to: self.lastUpdatedURL,
                     atomically: true,
                     encoding: .utf8)
+                self._updatedDate = newValue
             } catch {
                 NSLog("failed to write last updated time: \(error)")
             }
@@ -243,13 +339,9 @@ extension PickInfo {
 }
 
 extension PickInfo {
-    private func update(from src: URL, to dst: URL) {
-        do {
-            try Data(contentsOf: src).write(to: dst)
-            self.updateUpdatedDate()
-        } catch {
-            NSLog("Failed to write file: \(error)")
-        }
+    private func update(from src: URL, to dst: URL) throws {
+        try Data(contentsOf: src).write(to: dst)
+        self.updateUpdatedDate()
     }
     
     private func updateUpdatedDate() {
@@ -261,121 +353,109 @@ extension PickInfo {
         self.origin.coordinatedRead(for: self, onError: {
             NSLog("failed to read: \($0)")
         }) { [unowned self] url in
+            NSLog("read")
             var oURL = url
             var mURL = self.mirrorURL
             if let sp = subpath {
-                oURL = oURL.appendingPathComponent(sp)
-                mURL = mURL.appendingPathComponent(sp)
+                oURL.appendPathComponent(sp)
+                mURL.appendPathComponent(sp)
             }
             let fm = FileManager.default
             do {
-                if mURL.isDirectory {
+                let mirrorExists = fm.fileExists(atPath: mURL.path)
+                let isDir = (mirrorExists ? mURL : oURL).isDirectory
+                if isDir {
                     let oldCwd = fm.currentDirectoryPath
                     // the dir to be removed could be the currnt directory
                     // in that case, it needs to be restored manually
                     // afterwards, otherwise vim would work incorrectly
-                    if mURL.isReachable() {
+                    if mirrorExists {
                         try fm.removeItem(at: mURL)
                     }
                     try fm.copyItem(at: oURL, to: mURL)
                     fm.changeCurrentDirectoryPath(oldCwd)
                     self.updateUpdatedDate()
                 } else {
-                    self.update(from: oURL, to: mURL)
+                    try self.update(from: oURL, to: mURL)
                 }
             } catch {
-                NSLog("Failed to read file: \(error)")
+                NSLog("failed to read file: \(error)")
             }
             completion?()
         }
     }
     
-    private func subitem(for subpath: String) -> String {
-        return String(subpath.dropFirst(self.subRootPath.count))
-    }
-    
-    func write(for subpath: String) {
+    private func write(for subpath: String? = nil) {
         self.origin.coordinatedWrite(for: self, onError: {
-            NSLog("failed to write for subpath \(subpath): \($0)")
+            NSLog("failed to write: \($0)")
         }) { [unowned self] url in
             NSLog("write")
-            let si = self.subitem(for: subpath)
-            let src = self.mirrorURL.appendingPathComponent(si)
-            var dst = url.appendingPathComponent(si)
-            self.update(from: src, to: dst)
-            // sync mtime
+            var src = self.mirrorURL
+            var dst = url
+            if let sp = subpath {
+                src.appendPathComponent(sp)
+                dst.appendPathComponent(sp)
+            }
             do {
-                try dst.setResourceValues(
-                    src.resourceValues(forKeys: [.contentModificationDateKey]))
-//                NSLog("src cmd: \(String(describing: src.contentModifiedDate()?.timeIntervalSince1970))")
+                if src.isDirectory {
+                    let fm = FileManager.default
+                    if subpath == nil {
+                        // need to remove the existing dir
+                        // only when it is for the root dir
+                        // which actually may never happen
+                        //
+                        // the write operation would trigger
+                        // sometimes when the dst is an existing
+                        // subdirectory. In this case, not update
+                        // and the following copying would fail
+                        // as a good error
+                        try fm.removeItem(at: dst)
+                        NSLog("removed root mirror dir: \(dst)")
+                    }
+                    try fm.copyItem(at: src, to: dst)
+                    self.updateUpdatedDate()
+                } else {
+                    try self.update(from: src, to: dst)
+                }
             } catch {
-                NSLog("failed to sync mtime: \(error)")
+                NSLog("error during writing: \(error)")
             }
-//            NSLog("after write: \(self.updatedDate.timeIntervalSince1970)")
         }
     }
     
-    private func removeSubitem(in url: URL, for name: String) {
-        let t = url.appendingPathComponent(name)
-        do {
-            try FileManager.default.removeItem(at: t)
-            self.updateUpdatedDate()
-        } catch {
-            NSLog("Failed to remove item: \(error)")
-        }
-    }
-    
-    func removeItem(for subpath: String) {
-        self.origin.coordinatedWrite(for: self, onError: {
-            NSLog("failed to remove item for subpath \(subpath): \($0)")
-        }) { [unowned self] url in
-            let si = self.subitem(for: subpath)
-            self.removeSubitem(in: url, for: si)
-        }
-    }
-    
-    private func renameSubitem(in url: URL, from old: String, to new: String) {
-        let ou = url.appendingPathComponent(old)
-        let nu = url.appendingPathComponent(new)
-        do {
-            try FileManager.default.moveItem(at: ou, to: nu)
-            self.updateUpdatedDate()
-        } catch {
-            NSLog("Failed to rename item: \(error)")
-        }
-    }
-    
-    func rename(from old: String, to new: String) {
-        self.origin.coordinatedWrite(for: self, onError: {
-            NSLog("failed to rename item from \(old) to \(new): \($0)")
-        }) { [unowned self] url in
-            let osi = self.subitem(for: old)
-            let nsi = self.subitem(for: new)
-            self.renameSubitem(in: url, from: osi, to: nsi)
-        }
-    }
-    
-    private func addSubitem(in url: URL, for name: String) {
-        let src = self.mirrorURL.appendingPathComponent(name)
-        let dst = url.appendingPathComponent(name)
-        do {
-            let fm = FileManager.default
-            if dst.isReachable() { //will overwrite the item if it already exists
-                try fm.removeItem(at: dst)
+    private func remove(for subpath: String? = nil) {
+        // backup to trash before deleting on the external app
+        let dfm = FileManager.default
+        self.origin.coordinatedRead(for: self, onError: {
+            NSLog("failed to read to trash: \($0)")
+        }) { url in
+            var src = url
+            if let sp = subpath {
+                src.appendPathComponent(sp)
             }
-            try fm.copyItem(at: src, to: dst)
-            self.updateUpdatedDate()
-        } catch {
-            NSLog("Failed to add item: \(error)")
-        }
-    }
-    
-    func addItem(for subpath: String) {
-        self.origin.coordinatedWrite(for: self, onError: {
-            NSLog("failed to add item at subpath \(subpath): \($0)")
-        }) { [unowned self] url in
-            let si = self.subitem(for: subpath)
-            self.addSubitem(in: url, for: si)
+            if !src.fileExists() {
+                return
+            }
+            do {
+                try self.trash(itemAt: src, subpath: subpath)
+                // now try the deleting
+                self.origin.coordinatedWrite(for: self, onError: {
+                    NSLog("failed to remove: \($0)")
+                }) { url in
+                    var target = url
+                    if let sp = subpath {
+                        target.appendPathComponent(sp)
+                    }
+                    do {
+                        try dfm.removeItem(at: target)
+                        self.updateUpdatedDate()
+                    } catch let err as NSError {
+                        NSLog("failed to remove: \(err.localizedDescription)")
+                    }
+                }
+            } catch {
+                NSLog("failed to backup before removing: \(error)")
+            }
         }
     }
 }
@@ -396,8 +476,7 @@ extension PickInfo: NSFilePresenter {
         gPIM.updateURL(self.origin, for: newURL)
     }
     
-    private func tryUpdate(subpath: String? = nil,
-                           completion: () -> Void) {
+    private func tryUpdate(subpath: String? = nil) {
         self.origin.coordinatedRead(for: self, onError: {
             NSLog("failed to read while trying to update: \($0)")
         }) { [unowned self] url in
@@ -407,25 +486,49 @@ extension PickInfo: NSFilePresenter {
                 mURL.appendPathComponent(sp)
                 oURL.appendPathComponent(sp)
             }
-            if let od = oURL.contentModifiedDate(),
-                let md = mURL.contentModifiedDate() {
-//                NSLog("od: \(od.timeIntervalSince1970), md: \(md.timeIntervalSince1970)")
-                if od > md {
-                    completion()
+            let fm = FileManager.default
+            var shouldRead = true
+            let mirrorExists = mURL.fileExists()
+            var reloadURL = mURL.deletingLastPathComponent()
+            if !oURL.fileExists() { // deleted
+                do {
+                    if mirrorExists {
+                        if mURL.isDirectory &&
+                            fm.currentDirectoryPath.hasPrefix(
+                                mURL.appendingPathComponent("").path) {
+                            // if it is the parent of cwd, change
+                            // cwd to its parent first
+                            fm.changeCurrentDirectoryPath(
+                                mURL.deletingLastPathComponent().path)
+                        }
+                        try fm.removeItem(at: mURL) // cwd???
+                        self.updateUpdatedDate()
+                        gPIM.reloadBufferForMirror(at: reloadURL)
+                    }
+                } catch {
+                    NSLog("failed to remove: \(error.localizedDescription)")
+                }
+                shouldRead = false
+            } else if mirrorExists { // update
+                if let od = oURL.contentModifiedDate(),
+                    let md = mURL.contentModifiedDate() {
+                    if od <= md {
+                        shouldRead = false
+                    }
+                }
+                reloadURL = mURL
+            } // else new
+            if shouldRead {
+                self.read(subpath: subpath) {
+                    gPIM.reloadBufferForMirror(at: reloadURL)
                 }
             }
         }
-        
     }
     
     func presentedItemDidChange() {
         NSLog("presented did change")
-        // the content modification date not updated yet
-        // when entering this, may be due to the fact that
-        // this is called before the writing is done?
-        self.read {
-            gPIM.reloadBufferForMirror(at: self.mirrorURL)
-        }
+        self.tryUpdate()
     }
     
     private func subpathFrom(externalURL url: URL) -> String? {
@@ -441,8 +544,7 @@ extension PickInfo: NSFilePresenter {
         }
         var result: String?
         if let r = range {
-            result = url.path[r.upperBound...]
-                .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            result = url.path[r.upperBound...].trimmingPathSeparator
         } else {
             NSLog("failed to get mirror path for \(url.path)")
         }
@@ -450,22 +552,77 @@ extension PickInfo: NSFilePresenter {
         return result
     }
     
+    private func tryUpdateChange(at url: URL) {
+        guard let sp = self.subpathFrom(externalURL: url) else { return }
+        self.tryUpdate(subpath: sp)
+    }
+    
     func presentedSubitemDidChange(at url: URL) {
         NSLog("presented subitem did change \(url.path)")
-        if let sp = self.subpathFrom(externalURL: url) {
-            self.tryUpdate(subpath: sp) {
-                self.read(subpath: sp) {
-                    let mURL = self.mirrorURL.appendingPathComponent(sp)
-                    gPIM.reloadBufferForMirror(at: mURL)
-                    NSLog("reloaded \(mURL.path)")
-                }
-            }
-        }
+        self.tryUpdateChange(at: url)
+    }
+    
+    func presentedSubitemDidAppear(at url: URL) {
+        NSLog("presented subitem did appear \(url.path)")
+        self.tryUpdateChange(at: url)
+    }
+    
+    func accommodatePresentedSubitemDeletion(at url: URL, completionHandler: @escaping (Error?) -> Void) {
+        NSLog("\(#function)")
+        defer { completionHandler(nil) }
+        self.tryUpdateChange(at: url)
     }
     
     func accommodatePresentedItemDeletion(completionHandler: @escaping (Error?) -> Void) {
+        NSLog("\(#function)")
         defer { completionHandler(nil) }
         gPIM.removePickInfo(for: self.origin, updateUI: true)
+    }
+}
+
+extension PickInfo {
+    private static let trashSerialQ = DispatchQueue(label: "com.terrychou.ivim.mirrortrash.serial")
+    
+    private func trashIndexes(from args: [String]) -> [Int]? {
+        let (indexes, invalid) = self.mirrorTrasher.indexes(from: args)
+        guard invalid.isEmpty else {
+            gSVO.showError("invalid trash indexes: \(invalid.joined(separator: ", ").escaping("\""))")
+            return nil
+        }
+        
+        return indexes
+    }
+    
+    private func trash(itemAt src: URL, subpath: String?) throws {
+        var err: Error?
+        PickInfo.trashSerialQ.sync {
+            do {
+                try self.mirrorTrasher.trash(itemAt: src,
+                                             subpath: subpath)
+            } catch {
+                err = error
+            }
+        }
+        try err.map { throw $0 }
+    }
+    
+    func listTrashContents(with args: [String]) {
+        PickInfo.trashSerialQ.sync {
+            guard let indexes = self.trashIndexes(from: args) else { return }
+            let cts = self.mirrorTrasher.contents(for: indexes)
+            gSVO.showContent(cts, withCommand: nil)
+        }
+    }
+    
+    func restoreTrash(with args: [String]) {
+        PickInfo.trashSerialQ.sync {
+            guard let indexes = self.trashIndexes(from: args) else { return }
+            self.origin.coordinatedWrite(for: self, onError: {
+                NSLog("failed to write to restore trash: \($0)")
+            }) { url in
+                self.mirrorTrasher.restore(itemsAt: indexes, for: url)
+            }
+        }
     }
 }
 
@@ -525,7 +682,7 @@ extension URL {
         }
     }
     
-    private func mapThrower<T>(_ thrower: () throws -> T,
+    private func mapThrower<T>(_ thrower: () throws -> T?,
                                secured: Bool,
                                name: String) -> T? {
         if secured && !self.startAccessingSecurityScopedResource() {
@@ -548,25 +705,34 @@ extension URL {
     
     func resourceValue(for key: URLResourceKey,
                        secured: Bool = false) -> URLResourceValues? {
-        return self.mapThrower({ try self.resourceValues(forKeys: [key]) },
-                               secured: secured,
-                               name: "get resource value for key '\(key)'")
+        return self.mapThrower(
+            { try self.resourceValues(forKeys: [key]) },
+            secured: secured,
+            name: "get resource value for key '\(key)'")
     }
     
     var isDirectory: Bool {
         return self.resourceValue(for: .isDirectoryKey)?.isDirectory ?? false
     }
     
-    func isReachable(secured: Bool = false) -> Bool {
-        return self.mapThrower({ try self.checkResourceIsReachable() },
-                               secured: secured,
-                               name: "check reachability") ?? false
+    func fileExists(secured: Bool = false) -> Bool {
+        return self.mapThrower(
+            { FileManager.default.fileExists(atPath: self.path) },
+            secured: secured,
+            name: "test file existance") ?? false
     }
     
+//    func isReachable(secured: Bool = false) -> Bool {
+//        return self.mapThrower(self.checkResourceIsReachable,
+//                               secured: secured,
+//                               name: "check reachability") ?? false
+//    }
+    
     func contentModifiedDate(secured: Bool = false) -> Date? {
-        return self.resourceValue(
-            for: .contentModificationDateKey,
-            secured: secured)?.contentModificationDate
+        return self.mapThrower(
+            { try FileManager.default.attributesOfItem(atPath: self.path)[.modificationDate] as? Date },
+            secured: secured,
+            name: "get content modification date")
     }
     
     var isInTrash: Bool {
@@ -586,3 +752,203 @@ extension Data {
     }
 }
 
+final class MirrorTrasher {
+    private let mirrorURL: URL
+    private weak var presenter: PickInfo?
+    private var items = [MirrorTrashItem]()
+    private lazy var url: URL = self.mirrorURL
+        .deletingLastPathComponent()
+        .appendingPathComponent(".trash")
+    private lazy var inventoryURL: URL = self.url
+        .appendingPathComponent(".inventory")
+    
+    init(mirror: URL, presenter: PickInfo?) {
+        self.mirrorURL = mirror
+        self.presenter = presenter
+        self.items = self.initItems()
+    }
+}
+
+private extension UnsafeMutablePointer where Pointee == CChar {
+    var trimmedNewline: String {
+        return String(cString: self).trimmingCharacters(in: .newlines)
+    }
+}
+
+extension MirrorTrasher {
+    private func openInventoryFile(
+        in mode: String) -> UnsafeMutablePointer<FILE>? {
+        let intpath = self.inventoryURL.path
+        let result = fopen(intpath, mode)
+        if result == nil {
+            NSLog("failed to open inventory file in mode '\(mode)': \(intpath)")
+        }
+        
+        return result
+    }
+    
+    private func initItems() -> [MirrorTrashItem] {
+        guard let fd = self.openInventoryFile(in: "r") else { return [] }
+        var line: UnsafeMutablePointer<CChar>?
+        var len: Int = 0
+        var items = [MirrorTrashItem]()
+        while getline(&line, &len, fd) > 0 {
+            let subpath = line!.trimmedNewline
+            free(line!)
+            line = nil
+            if getline(&line, &len, fd) > 0,
+                let ti = TimeInterval(line!.trimmedNewline) {
+                let date = Date(timeIntervalSince1970: ti)
+                items.append(MirrorTrashItem(subpath: subpath,
+                                             trashedAt: date))
+                free(line!)
+                line = nil
+            } else {
+                NSLog("broken trash inventory file: \(self.url.path)")
+                break
+            }
+        }
+        fclose(fd)
+        
+        return items
+    }
+    
+    private func write(item: MirrorTrashItem,
+                       to fd: UnsafeMutablePointer<FILE>) {
+        fputs(item.subpath + "\n", fd)
+        fputs("\(item.trashedAt.timeIntervalSince1970)\n", fd)
+    }
+    
+    private func addItem(_ item: MirrorTrashItem) {
+        guard let fd = self.openInventoryFile(in: "a") else { return }
+        self.write(item: item, to: fd)
+        fclose(fd)
+        self.items.append(item)
+    }
+    
+    private func updateInventory() {
+        guard let fd = self.openInventoryFile(in: "w") else { return }
+        for item in self.items {
+            self.write(item: item, to: fd)
+        }
+        fclose(fd)
+    }
+    
+    func indexes(from args: [String]) -> ([Int], [String]) {
+        var result = [Int]()
+        var invalid = [String]()
+        let count = self.items.count
+        let irange = 0..<count
+        for arg in args {
+            if let i = Int(arg),
+                irange.contains(count - i) {
+                result.append(count - i)
+            } else {
+                invalid.append(arg)
+            }
+        }
+        
+        return (result, invalid)
+    }
+    
+    private func safelyCopyItem(at src: URL, to dst: URL) throws {
+        let dfm = FileManager.default
+        try dfm.createDirectory(at: dst.deletingLastPathComponent(),
+                                withIntermediateDirectories: true)
+        try dfm.copyItem(at: src, to: dst)
+    }
+    
+    func trash(itemAt src: URL, subpath: String?) throws {
+        var tsp = UUID().uuidString + "/" + self.mirrorURL.lastPathComponent
+        if let sp = subpath {
+            tsp = tsp.nsstring.appendingPathComponent(sp)
+        }
+        let dst = self.url.appendingPathComponent(tsp)
+        try self.safelyCopyItem(at: src, to: dst)
+        let item = MirrorTrashItem(subpath: tsp, trashedAt: Date())
+        self.addItem(item)
+    }
+    
+    private func restore(item: MirrorTrashItem, for origin: URL) throws {
+        let src = self.url.appendingPathComponent(item.subpath)
+        let dst = origin.appendingPathComponent(
+            item.originalSubpath.deletingFirstPathComponent())
+        try self.safelyCopyItem(at: src, to: dst)
+        // notify presented subitem update manually
+        // because sometimes it won't do it automatically
+        self.presenter?.presentedSubitemDidChange(at: dst)
+    }
+    
+    func restore(itemsAt indexes: [Int], for origin: URL) {
+        var succeeded = Set<Int>()
+        for i in indexes {
+            let item = self.items[i]
+            do {
+                try self.restore(item: item, for: origin)
+                succeeded.insert(i)
+            } catch {
+                gSVO.showError("failed to restore item '\(item.originalSubpath)': \(error.localizedDescription.escaping("\""))")
+            }
+        }
+        if !succeeded.isEmpty {
+            // remove successfully restored items
+            for i in succeeded.sorted(by: >) {
+                self.items.remove(at: i)
+            }
+            self.updateInventory()
+        }
+    }
+    
+    func contents(for indexes: [Int]) -> String {
+        var result = ""
+        let count = self.items.count
+        let total = indexes.isEmpty ? count : indexes.count
+        result = "\(total) trash item(s) found" +
+            (total > 0 ? ":\n\n" : ".")
+        if !indexes.isEmpty {
+            for (i, item) in indexes.map({ (count - $0, self.items[$0]) }) {
+                result += "\(i)\t\(item.description)\n"
+            }
+        } else {
+            for (i, item) in self.items.reversed().enumerated() {
+                result += "\(i + 1)\t\(item.description)\n"
+            }
+        }
+        
+        return result
+    }
+}
+
+private extension String {
+    func deletingFirstPathComponent() -> String {
+        let comps = self.split(
+            separator: "/",
+            maxSplits: 1,
+            omittingEmptySubsequences: false)
+
+        return comps.count > 1 ? String(comps[1]) : ""
+    }
+}
+
+struct MirrorTrashItem {
+    let subpath: String
+    let trashedAt: Date
+}
+
+extension MirrorTrashItem {
+    private static let dateFormatter: DateFormatter = {
+        let result = DateFormatter()
+        result.dateStyle = .short
+        result.timeStyle = .medium
+        
+        return result
+    }()
+    
+    var originalSubpath: String {
+        return self.subpath.deletingFirstPathComponent()
+    }
+    
+    var description: String {
+        return "\(MirrorTrashItem.dateFormatter.string(from: self.trashedAt))\t\(self.originalSubpath)"
+    }
+}

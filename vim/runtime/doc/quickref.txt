@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.4.  Last change: 2015 Jul 21
+*quickref.txt*  For Vim version 8.1.  Last change: 2019 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -291,7 +291,7 @@ moving around:
 |i_CTRL-A|	CTRL-A		  insert previously inserted text
 |i_CTRL-@|	CTRL-@		  insert previously inserted text and stop
 				     Insert mode
-|i_CTRL-R|	CTRL-R {0-9a-z%#:.-="}  insert the contents of a register
+|i_CTRL-R|	CTRL-R {register} insert the contents of a register
 
 |i_CTRL-N|	CTRL-N		  insert next match of identifier before the
 				     cursor
@@ -600,7 +600,7 @@ In Insert or Command-line mode:
 Short explanation of each option:		*option-list*
 'aleph'		  'al'	    ASCII code of the letter Aleph (Hebrew)
 'allowrevins'	  'ari'     allow CTRL-_ in Insert and Command-line mode
-'altkeymap'	  'akm'     for default second language (Farsi/Hebrew)
+'altkeymap'	  'akm'	    obsolete option for Farsi
 'ambiwidth'	  'ambw'    what to do with Unicode chars of ambiguous width
 'antialias'	  'anti'    Mac OS X: use smooth, antialiased fonts
 'autochdir'	  'acd'     change directory to the file in the current window
@@ -618,7 +618,8 @@ Short explanation of each option:		*option-list*
 'backupext'	  'bex'     extension used for the backup file
 'backupskip'	  'bsk'     no backup for files that match these patterns
 'balloondelay'	  'bdlay'   delay in mS before a balloon may pop up
-'ballooneval'	  'beval'   switch on balloon evaluation
+'ballooneval'	  'beval'     switch on balloon evaluation in the GUI
+'balloonevalterm' 'bevalterm' switch on balloon evaluation in the terminal
 'balloonexpr'	  'bexpr'   expression to show in balloon
 'belloff'	  'bo'	    do not ring the bell for these reasons
 'binary'	  'bin'     read/write/edit file in binary mode
@@ -650,6 +651,8 @@ Short explanation of each option:		*option-list*
 'complete'	  'cpt'     specify how Insert mode completion works
 'completefunc'	  'cfu'     function to be used for Insert mode completion
 'completeopt'	  'cot'     options for Insert mode completion
+'completepopup'	  'cpp'     options for the Insert mode completion info popup
+'completeslash'	  'csl'	    like 'shellslash' for completion
 'concealcursor'	  'cocu'    whether concealable text is hidden in cursor line
 'conceallevel'	  'cole'    whether concealable text is shown or hidden
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files
@@ -667,6 +670,7 @@ Short explanation of each option:		*option-list*
 'cursorbind'	  'crb'     move cursor in window as it moves in other windows
 'cursorcolumn'	  'cuc'	    highlight the screen column of the cursor
 'cursorline'	  'cul'	    highlight the screen line of the cursor
+'cursorlineopt'	  'culopt'  settings for 'cursorline'
 'debug'			    set to "msg" to see all error messages
 'define'	  'def'     pattern to be used to find a macro definition
 'delcombine'	  'deco'    delete combining characters on their own
@@ -679,6 +683,7 @@ Short explanation of each option:		*option-list*
 'display'	  'dy'	    list of flags for how to display text
 'eadirection'	  'ead'     in which direction 'equalalways' works
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
+'emoji'		  'emo'	    emoji characters are considered full width
 'encoding'	  'enc'     encoding used internally
 'endofline'	  'eol'     write <EOL> for last line in file
 'equalalways'	  'ea'	    windows are automatically made the same size
@@ -698,7 +703,7 @@ Short explanation of each option:		*option-list*
 'filetype'	  'ft'	    type of file, used for autocommands
 'fillchars'	  'fcs'     characters to use for displaying special items
 'fixendofline'	  'fixeol'  make sure last line in file has <EOL>
-'fkmap'		  'fk'	    Farsi keyboard mapping
+'fkmap'		  'fk'	    obsolete option for Farsi
 'foldclose'	  'fcl'     close a fold when the cursor leaves it
 'foldcolumn'	  'fdc'     width of the column used to indicate folds
 'foldenable'	  'fen'     set to display all folds open
@@ -748,6 +753,7 @@ Short explanation of each option:		*option-list*
 'iminsert'	  'imi'     use :lmap or IM in Insert mode
 'imsearch'	  'ims'     use :lmap or IM when typing a search pattern
 'imstatusfunc'    'imsf'    function to obtain X input method status
+'imstyle'	  'imst'    specifies the input style of the input method
 'include'	  'inc'     pattern to be used to find an include file
 'includeexpr'	  'inex'    expression used to process an include line
 'incsearch'	  'is'	    highlight match while typing search pattern
@@ -767,6 +773,7 @@ Short explanation of each option:		*option-list*
 'langmap'	  'lmap'    alphabetic characters for other language mode
 'langmenu'	  'lm'	    language to be used for the menus
 'langnoremap'	  'lnr'	    do not apply 'langmap' to mapped characters
+'langremap'	  'lrm'	    do apply 'langmap' to mapped characters
 'laststatus'	  'ls'	    tells when last window has status lines
 'lazyredraw'	  'lz'	    don't redraw while executing macros
 'linebreak'	  'lbr'     wrap long lines at a blank
@@ -777,9 +784,11 @@ Short explanation of each option:		*option-list*
 'list'			    show <Tab> and <EOL>
 'listchars'	  'lcs'     characters for displaying in list mode
 'loadplugins'	  'lpl'     load plugin scripts when starting up
+'luadll'		    name of the Lua dynamic library
 'macatsui'		    Mac GUI: use ATSUI text drawing
 'magic'			    changes special characters in search patterns
 'makeef'	  'mef'     name of the errorfile for ":make"
+'makeencoding'	  'menc'    encoding of external make/grep commands
 'makeprg'	  'mp'	    program to use for the ":make" command
 'matchpairs'	  'mps'     pairs of characters that "%" can match
 'matchtime'	  'mat'     tenths of a second to show matching paren
@@ -792,6 +801,7 @@ Short explanation of each option:		*option-list*
 'menuitems'	  'mis'     maximum number of items in a menu
 'mkspellmem'	  'msm'     memory used before |:mkspell| compresses the tree
 'modeline'	  'ml'	    recognize modelines at start or end of file
+'modelineexpr'	  'mle'	    allow setting expression options from a modeline
 'modelines'	  'mls'     number of lines checked for modelines
 'modifiable'	  'ma'	    changes to the text are not possible
 'modified'	  'mod'     buffer has been modified
@@ -803,21 +813,26 @@ Short explanation of each option:		*option-list*
 'mouseshape'	  'mouses'  shape of the mouse pointer in different modes
 'mousetime'	  'mouset'  max time between mouse double-click
 'mzquantum'	  'mzq'     the interval between polls for MzScheme threads
+'mzschemedll'		    name of the MzScheme dynamic library
+'mzschemegcdll'		    name of the MzScheme dynamic library for GC
 'nrformats'	  'nf'	    number formats recognized for CTRL-A command
 'number'	  'nu'	    print the line number in front of each line
 'numberwidth'	  'nuw'     number of columns used for the line number
 'omnifunc'	  'ofu'     function for filetype-specific completion
 'opendevice'	  'odev'    allow reading/writing devices on MS-Windows
 'operatorfunc'	  'opfunc'  function to be called for |g@| operator
-'osfiletype' 	  'oft'     no longer supported
+'osfiletype'	  'oft'     no longer supported
+'packpath'	  'pp'      list of directories used for packages
 'paragraphs'	  'para'    nroff macros that separate paragraphs
 'paste'			    allow pasting text
 'pastetoggle'	  'pt'	    key code that causes 'paste' to toggle
 'patchexpr'	  'pex'     expression used to patch a file
 'patchmode'	  'pm'	    keep the oldest version of a file
 'path'		  'pa'	    list of directories searched with "gf" et.al.
+'perldll'		    name of the Perl dynamic library
 'preserveindent'  'pi'	    preserve the indent structure when reindenting
 'previewheight'   'pvh'     height of the preview window
+'previewpopup'    'pvp'     use popup window for preview
 'previewwindow'   'pvw'     identifies the preview window
 'printdevice'	  'pdev'    name of the printer to be used for :hardcopy
 'printencoding'   'penc'    encoding to be used for printing
@@ -827,7 +842,14 @@ Short explanation of each option:		*option-list*
 'printmbcharset'  'pmbcs'   CJK character set to be used for :hardcopy
 'printmbfont'	  'pmbfn'   font names to be used for CJK output of :hardcopy
 'printoptions'	  'popt'    controls the format of :hardcopy output
+'prompt'	  'prompt'  enable prompt in Ex mode
 'pumheight'	  'ph'	    maximum height of the popup menu
+'pumwidth'	  'pw'	    minimum width of the popup menu
+'pythondll'		    name of the Python 2 dynamic library
+'pythonhome'		    name of the Python 2 home directory
+'pythonthreedll'	    name of the Python 3 dynamic library
+'pythonthreehome'	    name of the Python 3 home directory
+'pyxversion'	  'pyx'	    Python version used for pyx* commands
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting
@@ -840,6 +862,7 @@ Short explanation of each option:		*option-list*
 'revins'	  'ri'	    inserting characters will work backwards
 'rightleft'	  'rl'	    window is right-to-left oriented
 'rightleftcmd'	  'rlc'     commands for which editing works right-to-left
+'rubydll'		    name of the Ruby dynamic library
 'ruler'		  'ru'	    show cursor line and column in the status line
 'rulerformat'	  'ruf'     custom format for the ruler
 'runtimepath'	  'rtp'     list of directories used for runtime files
@@ -875,6 +898,7 @@ Short explanation of each option:		*option-list*
 'showtabline'	  'stal'    tells when the tab pages line is displayed
 'sidescroll'	  'ss'	    minimum number of columns to scroll horizontal
 'sidescrolloff'   'siso'    min. nr. of columns to left and right of cursor
+'signcolumn'	  'scl'	    when to display the sign column
 'smartcase'	  'scs'     no ignore case when pattern has uppercase
 'smartindent'	  'si'	    smart autoindenting for C programs
 'smarttab'	  'sta'     use 'shiftwidth' when inserting <Tab>
@@ -899,13 +923,21 @@ Short explanation of each option:		*option-list*
 'tabpagemax'	  'tpm'     maximum number of tab pages for |-p| and "tab all"
 'tabstop'	  'ts'	    number of spaces that <Tab> in file uses
 'tagbsearch'	  'tbs'     use binary searching in tags files
+'tagcase'	  'tc'      how to handle case when searching in tags files
+'tagfunc'	  'tfu'	    function to get list of tag matches
 'taglength'	  'tl'	    number of significant characters for a tag
 'tagrelative'	  'tr'	    file names in tag file are relative
 'tags'		  'tag'     list of file names used by the tag command
 'tagstack'	  'tgst'    push tags onto the tag stack
+'tcldll'		    name of the Tcl dynamic library
 'term'			    name of the terminal
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
+'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termwinkey'	  'twk'	    key that precedes a Vim command in a terminal
+'termwinscroll'   'twsl'    max number of scrollback lines in a terminal window
+'termwinsize'	  'tws'	    size of a terminal window
+'termwintype'	  'twt'	    MS-Windows: type of pty to use for terminal window
 'terse'			    shorten some messages
 'textauto'	  'ta'	    obsolete, use 'fileformats'
 'textmode'	  'tx'	    obsolete, use 'fileformat'
@@ -933,11 +965,14 @@ Short explanation of each option:		*option-list*
 'undoreload'	  'ur'	    max nr of lines to save for undo on a buffer reload
 'updatecount'	  'uc'	    after this many characters flush swap file
 'updatetime'	  'ut'	    after this many milliseconds flush swap file
+'varsofttabstop'  'vsts'    a list of number of spaces when typing <Tab>
+'vartabstop'	  'vts'	    a list of number of spaces for <Tab>s
 'verbose'	  'vbs'     give informative messages
 'verbosefile'	  'vfile'   file to write messages in
 'viewdir'	  'vdir'    directory where to store files with :mkview
 'viewoptions'	  'vop'     specifies what to save for :mkview
 'viminfo'	  'vi'	    use .viminfo file upon startup and exiting
+'viminfofile'	  'vif'	    file name used for the viminfo file
 'virtualedit'	  've'	    when to use virtual editing
 'visualbell'	  'vb'	    use visual bell instead of beeping
 'warn'			    warn for shell command when buffer was changed
@@ -951,12 +986,14 @@ Short explanation of each option:		*option-list*
 'wildmode'	  'wim'     mode for 'wildchar' command-line expansion
 'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
+'wincolor'	  'wcr'	    window-local highlighting
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
 'winheight'	  'wh'	    minimum number of lines for the current window
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
 'winfixwidth'	  'wfw'     keep window width when opening/closing windows
 'winminheight'	  'wmh'     minimum number of lines for any window
 'winminwidth'	  'wmw'     minimal number of columns for any window
+'winptydll'		    name of the winpty dynamic library
 'winwidth'	  'wiw'     minimal number of columns for current window
 'wrap'			    long lines wrap and continue on the next line
 'wrapmargin'	  'wm'	    chars from the right where wrapping starts
@@ -1040,8 +1077,7 @@ Short explanation of each option:		*option-list*
 				      three digits)
 |c_CTRL-K|	CTRL-K {char1} {char2}
 				   enter digraph (See |Q_di|)
-|c_CTRL-R|	CTRL-R {0-9a-z"%#:-=}
-				   insert the contents of a register
+|c_CTRL-R|	CTRL-R {register}  insert the contents of a register
 
 |c_<Left>|	<Left>/<Right>	   cursor left/right
 |c_<S-Left>|	<S-Left>/<S-Right> cursor one word left/right
@@ -1055,6 +1091,8 @@ Short explanation of each option:		*option-list*
 |c_<Up>|	<Up>/<Down>	   recall older/newer command-line that starts
 				      with current command
 |c_<S-Up>|	<S-Up>/<S-Down>	   recall older/newer command-line from history
+|c_CTRL-G|	CTRL-G		   next match when 'incsearch' is active
+|c_CTRL-T|	CTRL-T		   previous match when 'incsearch' is active
 |:history|	:his[tory]	   show older command-lines
 
 Context-sensitive completion on the command-line:
@@ -1293,6 +1331,7 @@ Context-sensitive completion on the command-line:
 
 |:sfind|	:sf[ind] {file}		split window, find {file} in 'path'
 					   and edit it
+|:terminal|	:terminal {cmd}		open a terminal window
 |CTRL-W_]|	CTRL-W ]		split window and jump to tag under
 					   cursor
 |CTRL-W_f|	CTRL-W f		split window and edit file name under
@@ -1416,4 +1455,4 @@ Context-sensitive completion on the command-line:
 |zN|		zN			fold normal set 'foldenable'
 |zi|		zi			invert 'foldenable'
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

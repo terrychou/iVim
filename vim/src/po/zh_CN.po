@@ -1565,9 +1565,6 @@ msgstr "E509: 无法创建备份文件 (请加 ! 强制执行)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: 无法生成备份文件 (请加 ! 强制执行)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Resource fork 会丢失 (请加 ! 强制执行)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: 找不到用于写入的临时文件"
 
@@ -1770,7 +1767,7 @@ msgstr "E216: 无此组或事件: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- 自动命令 ---"
@@ -1789,7 +1786,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: 自动命令嵌套层数过深"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s 自动命令 \"%s\""
 
 #, c-format
@@ -2538,38 +2535,11 @@ msgstr "显示文件: "
 msgid "Generate docu for"
 msgstr "产生文件: "
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr "不能连接到 SNiFF+。请检查环境变量 ($PATH 里必需可以找到 sniffemacs)\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: 读取错误. 取消连接"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ 目前"
-
 msgid "not "
 msgstr "未"
 
 msgid "connected"
 msgstr "连接中"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: 不正确的 SNiff+ 调用: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: 连接到 SNiFF+ 失败"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: 未连接到 SNiFF+"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: 不是 SNiFF+ 的缓冲区"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: 写入错误。结束连接"
 
 msgid "invalid buffer number"
 msgstr "无效的缓冲区号"
@@ -2720,7 +2690,7 @@ msgstr "-q [errorfile]  编辑第一个出错处的文件"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -2829,7 +2799,7 @@ msgstr "-f\t\t\t不使用 newcli 来打开窗口"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\t使用 <device> 进行输入输出"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\t以 Arabic 模式启动"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -2851,7 +2821,7 @@ msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\t不加载 plugin 脚本"
 
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
-msgstr "-P[N]\t\t打开 N 个标签页 (默认值: 每个文件一个)"
+msgstr "-p[N]\t\t打开 N 个标签页 (默认值: 每个文件一个)"
 
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\t打开 N 个窗口 (默认值: 每个文件一个)"
@@ -3132,14 +3102,8 @@ msgstr "E288: 输入法不支持任何风格"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: 输入法不支持我的预编辑类型"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: over-the-spot 风格需要 Fontset"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: 你的 GTK+ 比 1.2.3 旧。状态区不可用。"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: 输入法服务器未运行"
 
 msgid "E293: block was not locked"
 msgstr "E293: 块未被锁定"
@@ -4472,7 +4436,7 @@ msgstr "E65: 无效的回引"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: 此处不允许 \\z("
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: 此处不允许 \\z1 等"
 
 msgid "E68: Invalid character after \\z"
@@ -4667,7 +4631,7 @@ msgid "Warning: region %s not supported"
 msgstr "警告: 区域 %s 不支持"
 
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "读取附加文件 %s ……"
 
 #, c-format
@@ -4795,7 +4759,7 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s 的值与另一个 .aff 文件中使用的值不相同"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "读取字典文件 %s ……"
 
 #, c-format
@@ -4823,7 +4787,7 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "忽略了含有非 ASCII 字符的 %d 个单词，在 %s 中"
 
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "读取单词文件 %s ……"
 
 #, c-format
@@ -4881,7 +4845,7 @@ msgid "Total number of words: %d"
 msgstr "单词总数: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "写入建议文件 %s ……"
 
 #, c-format
@@ -4902,7 +4866,7 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "警告: 同时指定了 compounding 和 NOBREAK"
 
 #, c-format
-msgid "Writing spell file %s ..."
+msgid "Writing spell file %s..."
 msgstr "写入拼写文件 %s ……"
 
 msgid "Done!"
@@ -5588,8 +5552,8 @@ msgstr "输入  :q<Enter>               退出            "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "输入  :help<Enter>  或  <F1>  查看在线帮助    "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "输入  :help version7<Enter>   查看版本信息    "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "输入  :help version8<Enter>   查看版本信息    "
 
 msgid "Running in Vi compatible mode"
 msgstr "运行于 Vi 兼容模式"

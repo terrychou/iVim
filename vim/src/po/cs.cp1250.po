@@ -218,7 +218,7 @@ msgstr " Doplòování klíèových slov (^N/^P)"
 msgid " ^X mode (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
 msgstr " ^X režim (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
 
-#. Scroll has it's own msgs, in it's place there is the msg for local
+#. Scroll has its own msgs, in its place there is the msg for local
 #. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
 msgid " Keyword Local completion (^N/^P)"
 msgstr " Lokální doplòování klíèových slov (^N/^P)"
@@ -1359,7 +1359,7 @@ msgstr "E216: Událost %s neexistuje"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Automatické pøíkazy ---"
@@ -1374,7 +1374,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: vnoøení automatického pøíkazu pøíliš hluboká"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s automatické pøíkazy pro \"%s\""
 
 #, c-format
@@ -1924,40 +1924,11 @@ msgstr "Zobrazení documentace"
 msgid "Generate docu for"
 msgstr "Generována dokumentace pro"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Nelze se pøipojit k SNiFF+. Zkontrolujte promìnné (sniffemacs musí "
-"být)uvedena v $PATH.\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Chyba pøi ètení. Odpojeno"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ je právì "
-
 msgid "not "
 msgstr "ne "
 
 msgid "connected"
 msgstr "pøipojen"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Neznámý požadavek SNiFF+: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Chybné pøipojení k SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ nepøipojen"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Není SNiFF+ buffer"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Chyba pøi zápisu. Odpojeno."
 
 msgid "invalid buffer number"
 msgstr "chybný název bufferu"
@@ -2121,7 +2092,7 @@ msgstr "-q [chybový soubor]  editovat soubor na místì výskytu první chyby"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -2495,14 +2466,8 @@ msgstr "E288: vstupní metoda nepodporuje žádný styl"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: vstupní metoda nepodporuje mùj 'preedit' typ"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: Nadbodový styl vyžaduje fontset"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Máte GTK+ verze starší než 1.2.3. Stavová plocha vypnuta."
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Server vstupních metod nebìží"
 
 msgid "E293: block was not locked"
 msgstr "E293: blok nebyl zamknut"
@@ -2654,11 +2619,6 @@ msgstr ""
 
 msgid "and run diff with the original file to check for changes)\n"
 msgstr "a kontrolu zmìn pomocí programu diff.)\n"
-
-msgid ""
-"Delete the .swp file afterwards.\n"
-"\n"
-msgstr "Poté smažte odkládací soubor.\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -3120,7 +3080,7 @@ msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
 msgstr ""
-"E343: Chybná cesta: '**[èíslo] musí být buï na konci cesty, nebo musí být\n"
+"E343: Chybná cesta: '**[èíslo] musí být buï na konci cesty, nebo musí být "
 "následováno'%s. Viz :help path."
 
 #, c-format
@@ -3493,9 +3453,6 @@ msgstr "E244: Nepøípustná jméno znakové sady \"%s\" ve fontu \"%s\""
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Nepøípustný znak '%c' ve fontu \"%s\""
 
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Neplatný 'osfiletype' - použit Text"
-
 msgid "Vim: Double signal, exiting\n"
 msgstr "VIm: dvojitý signál, konèím\n"
 
@@ -3606,7 +3563,8 @@ msgid ""
 "See  :help win32-vimrun  for more information."
 msgstr ""
 "VIMRUN.EXE se nevyskytuje ve Vaší $PATH.\n"
-"Externí pøíkazy nebudou "
+"Externí pøíkazy nebudou\n"
+"See  :help win32-vimrun  for more information."
 
 msgid "Vim Warning"
 msgstr "Varování"
@@ -4358,8 +4316,8 @@ msgstr "zadejte :q<Enter>             pro ukonèení programu"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "zadejte :help<Enter>  èi <F1> pro nápovìdu"
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "zadejte :help version7<Enter>  pro informace o verzi 6"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "zadejte :help version8<Enter>  pro informace o verzi 6"
 
 msgid "Running in Vi compatible mode"
 msgstr "Bìžím v režimu kompatibility s Vi"

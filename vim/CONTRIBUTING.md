@@ -4,14 +4,23 @@ Patches are welcome in whatever form.
 Discussions about patches happen on the vim-dev maillist.
 If you create a pull request on GitHub it will be
 forwarded to the vim-dev maillist.  You can also send your patch there
-directly.  An attachment with a unified diff format is preferred.
+directly.  In that case an attachment with a unified diff format is preferred.
 Information about the maillist can be found [on the Vim website].
 
 [on the Vim website]: http://www.vim.org/maillist.php#vim-dev
 
-Please consider adding a test.  Test coverage isn't very good yet, this needs
-to improve.  Look through recent patches for examples.  The tests are located
-under "src/testdir".
+A pull request has the advantage that it will trigger the Continuous
+Integration tests, you will be warned of problems (you can ignore the coverage
+warning, it's noisy).
+
+Please consider adding a test.  All new functionality should be tested and bug
+fixes should be tested for regressions: the test should fail before the fix and
+pass after the fix.  Look through recent patches for examples and find help
+with ":help testing".  The tests are located under "src/testdir".
+
+Contributions will be distributed with Vim under the Vim license.  Providing a
+change to be included implies that you agree with this and your contribution
+does not cause us trouble with trademarks or patents.  There is no CLA to sign.
 
 
 # Reporting issues
@@ -21,9 +30,9 @@ maillist is also fine.
 
 Please use the GitHub issues only for actual issues. If you are not 100% sure
 that your problem is a Vim issue, please first discuss this on the Vim user
-maillist.  Try reproducing the problem without any plugins or settings:
+maillist.  Try reproducing the problem without any of your plugins or settings:
 
-    vim -N -u NONE
+    vim --clean
 
 If you report an issue, please describe exactly how to reproduce it.
 For example, don't say "insert some text" but say what you did exactly:
@@ -51,4 +60,25 @@ Look in the header of the file for the name and email address.
 The maintainer will take care of issues and send updates to Bram for 
 distribution with Vim.
 
-If the maintainer does not react, contact the vim-dev maillist.
+If the maintainer does not respond, contact the vim-dev maillist.
+
+
+# Translations
+
+Translating messages and runtime files is very much appreciated!  These things
+can be translated:
+*   Messages in Vim, see [src/po/README.txt][1]
+    Also used for the desktop icons.
+*   Menus, see [runtime/lang/README.txt][2]
+*   Vim tutor, see [runtime/tutor/README.txt][3]
+*   Manual pages, see [runtime/doc/\*.1][4] for examples
+*   Installer, see [nsis/lang/\*.nsi][5] for examples
+
+The help files can be translated and made available separately.
+See https://www.vim.org/translations.php for examples.
+
+[1]: https://github.com/vim/vim/blob/master/src/po/README.txt
+[2]: https://github.com/vim/vim/blob/master/runtime/lang/README.txt
+[3]: https://github.com/vim/vim/blob/master/runtime/tutor/README.txt
+[4]: https://github.com/vim/vim/blob/master/runtime/doc/vim.1
+[5]: https://github.com/vim/vim/blob/master/nsis/lang/english.nsi

@@ -70,7 +70,7 @@ void gui_ios_init_bg_color(void);
 // scenes keeper
 void scenes_keeper_stash(void);
 NSString *scene_keeper_valid_session_file_path(void);
-void scenes_keeper_restore_prepare(void);
+BOOL scenes_keeper_restore_prepare(void);
 BOOL scene_keeper_add_pending_url_task(void (^task)(void));
 void scenes_keeper_clear_all(void);
 void register_auto_restore_enabled(void);

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -100,45 +100,32 @@ typedef struct {
 } bufinfo_T;
 
 
-static long get_undolevel __ARGS((void));
-static void u_unch_branch __ARGS((u_header_T *uhp));
-static u_entry_T *u_get_headentry __ARGS((void));
-static void u_getbot __ARGS((void));
-static void u_doit __ARGS((int count));
-static void u_undoredo __ARGS((int undo));
-static void u_undo_end __ARGS((int did_undo, int absolute));
-static void u_add_time __ARGS((char_u *buf, size_t buflen, time_t tt));
-static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
-static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
-static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
-static void u_freeentry __ARGS((u_entry_T *, long));
+static void u_unch_branch(u_header_T *uhp);
+static u_entry_T *u_get_headentry(void);
+static void u_getbot(void);
+static void u_doit(int count);
+static void u_undoredo(int undo);
+static void u_undo_end(int did_undo, int absolute);
+static void u_add_time(char_u *buf, size_t buflen, time_t tt);
+static void u_freeheader(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
+static void u_freebranch(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
+static void u_freeentries(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
+static void u_freeentry(u_entry_T *, long);
 #ifdef FEAT_PERSISTENT_UNDO
-static void corruption_error __ARGS((char *mesg, char_u *file_name));
-static void u_free_uhp __ARGS((u_header_T *uhp));
-static int undo_write __ARGS((bufinfo_T *bi, char_u *ptr, size_t len));
-static int undo_flush __ARGS((bufinfo_T *bi));
-static int fwrite_crypt __ARGS((bufinfo_T *bi, char_u *ptr, size_t len));
-static int undo_write_bytes __ARGS((bufinfo_T *bi, long_u nr, int len));
-static void put_header_ptr __ARGS((bufinfo_T *bi, u_header_T *uhp));
-static int undo_read_4c __ARGS((bufinfo_T *bi));
-static int undo_read_2c __ARGS((bufinfo_T *bi));
-static int undo_read_byte __ARGS((bufinfo_T *bi));
-static time_t undo_read_time __ARGS((bufinfo_T *bi));
-static int undo_read __ARGS((bufinfo_T *bi, char_u *buffer, size_t size));
-static char_u *read_string_decrypt __ARGS((bufinfo_T *bi, int len));
-static int serialize_header __ARGS((bufinfo_T *bi, char_u *hash));
-static int serialize_uhp __ARGS((bufinfo_T *bi, u_header_T *uhp));
-static u_header_T *unserialize_uhp __ARGS((bufinfo_T *bi, char_u *file_name));
-static int serialize_uep __ARGS((bufinfo_T *bi, u_entry_T *uep));
-static u_entry_T *unserialize_uep __ARGS((bufinfo_T *bi, int *error, char_u *file_name));
-static void serialize_pos __ARGS((bufinfo_T *bi, pos_T pos));
-static void unserialize_pos __ARGS((bufinfo_T *bi, pos_T *pos));
-static void serialize_visualinfo __ARGS((bufinfo_T *bi, visualinfo_T *info));
-static void unserialize_visualinfo __ARGS((bufinfo_T *bi, visualinfo_T *info));
+# ifdef FEAT_CRYPT
+static int undo_flush(bufinfo_T *bi);
+# endif
+static int undo_read(bufinfo_T *bi, char_u *buffer, size_t size);
+static int serialize_uep(bufinfo_T *bi, u_entry_T *uep);
+static u_entry_T *unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name);
+static void serialize_pos(bufinfo_T *bi, pos_T pos);
+static void unserialize_pos(bufinfo_T *bi, pos_T *pos);
+static void serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
+static void unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 #endif
+static void u_saveline(linenr_T lnum);
 
-#define U_ALLOC_LINE(size) lalloc((long_u)(size), FALSE)
-static char_u *u_save_line __ARGS((linenr_T));
+#define U_ALLOC_LINE(size) lalloc(size, FALSE)
 
 /* used in undo_end() to report number of added and deleted lines */
 static long	u_newcount, u_oldcount;
@@ -172,30 +159,30 @@ u_check_tree(u_header_T *uhp,
     ++header_count;
     if (uhp == curbuf->b_u_curhead && ++seen_b_u_curhead > 1)
     {
-	EMSG("b_u_curhead found twice (looping?)");
+	emsg("b_u_curhead found twice (looping?)");
 	return;
     }
     if (uhp == curbuf->b_u_newhead && ++seen_b_u_newhead > 1)
     {
-	EMSG("b_u_newhead found twice (looping?)");
+	emsg("b_u_newhead found twice (looping?)");
 	return;
     }
 
     if (uhp->uh_magic != UH_MAGIC)
-	EMSG("uh_magic wrong (may be using freed memory)");
+	emsg("uh_magic wrong (may be using freed memory)");
     else
     {
 	/* Check pointers back are correct. */
 	if (uhp->uh_next.ptr != exp_uh_next)
 	{
-	    EMSG("uh_next wrong");
-	    smsg((char_u *)"expected: 0x%x, actual: 0x%x",
+	    emsg("uh_next wrong");
+	    smsg("expected: 0x%x, actual: 0x%x",
 					       exp_uh_next, uhp->uh_next.ptr);
 	}
 	if (uhp->uh_alt_prev.ptr != exp_uh_alt_prev)
 	{
-	    EMSG("uh_alt_prev wrong");
-	    smsg((char_u *)"expected: 0x%x, actual: 0x%x",
+	    emsg("uh_alt_prev wrong");
+	    smsg("expected: 0x%x, actual: 0x%x",
 				       exp_uh_alt_prev, uhp->uh_alt_prev.ptr);
 	}
 
@@ -204,7 +191,7 @@ u_check_tree(u_header_T *uhp,
 	{
 	    if (uep->ue_magic != UE_MAGIC)
 	    {
-		EMSG("ue_magic wrong (may be using freed memory)");
+		emsg("ue_magic wrong (may be using freed memory)");
 		break;
 	    }
 	}
@@ -228,13 +215,13 @@ u_check(int newhead_may_be_NULL)
 
     if (seen_b_u_newhead == 0 && curbuf->b_u_oldhead != NULL
 	    && !(newhead_may_be_NULL && curbuf->b_u_newhead == NULL))
-	EMSGN("b_u_newhead invalid: 0x%x", curbuf->b_u_newhead);
+	semsg("b_u_newhead invalid: 0x%x", curbuf->b_u_newhead);
     if (curbuf->b_u_curhead != NULL && seen_b_u_curhead == 0)
-	EMSGN("b_u_curhead invalid: 0x%x", curbuf->b_u_curhead);
+	semsg("b_u_curhead invalid: 0x%x", curbuf->b_u_curhead);
     if (header_count != curbuf->b_u_numhead)
     {
-	EMSG("b_u_numhead invalid");
-	smsg((char_u *)"expected: %ld, actual: %ld",
+	emsg("b_u_numhead invalid");
+	smsg("expected: %ld, actual: %ld",
 			       (long)header_count, (long)curbuf->b_u_numhead);
     }
 }
@@ -246,7 +233,7 @@ u_check(int newhead_may_be_NULL)
  * Returns OK or FAIL.
  */
     int
-u_save_cursor()
+u_save_cursor(void)
 {
     return (u_save((linenr_T)(curwin->w_cursor.lnum - 1),
 				      (linenr_T)(curwin->w_cursor.lnum + 1)));
@@ -259,16 +246,13 @@ u_save_cursor()
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
-u_save(top, bot)
-    linenr_T top, bot;
+u_save(linenr_T top, linenr_T bot)
 {
     if (undo_off)
 	return OK;
 
-    if (top > curbuf->b_ml.ml_line_count
-	    || top >= bot
-	    || bot > curbuf->b_ml.ml_line_count + 1)
-	return FALSE;	/* rely on caller to do error messages */
+    if (top >= bot || bot > curbuf->b_ml.ml_line_count + 1)
+	return FAIL;	// rely on caller to give an error message
 
     if (top + 2 == bot)
 	u_saveline((linenr_T)(top + 1));
@@ -283,8 +267,7 @@ u_save(top, bot)
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
-u_savesub(lnum)
-    linenr_T	lnum;
+u_savesub(linenr_T lnum)
 {
     if (undo_off)
 	return OK;
@@ -299,8 +282,7 @@ u_savesub(lnum)
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
-u_inssub(lnum)
-    linenr_T	lnum;
+u_inssub(linenr_T lnum)
 {
     if (undo_off)
 	return OK;
@@ -316,9 +298,7 @@ u_inssub(lnum)
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
-u_savedel(lnum, nlines)
-    linenr_T	lnum;
-    long	nlines;
+u_savedel(linenr_T lnum, long nlines)
 {
     if (undo_off)
 	return OK;
@@ -332,12 +312,12 @@ u_savedel(lnum, nlines)
  * return FALSE.
  */
     int
-undo_allowed()
+undo_allowed(void)
 {
     /* Don't allow changes when 'modifiable' is off.  */
     if (!curbuf->b_p_ma)
     {
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return FALSE;
     }
 
@@ -345,7 +325,7 @@ undo_allowed()
     /* In the sandbox it's not allowed to change the text. */
     if (sandbox != 0)
     {
-	EMSG(_(e_sandbox));
+	emsg(_(e_sandbox));
 	return FALSE;
     }
 #endif
@@ -354,7 +334,7 @@ undo_allowed()
      * caller of getcmdline() may get confused. */
     if (textlock != 0)
     {
-	EMSG(_(e_secure));
+	emsg(_(e_secure));
 	return FALSE;
     }
 
@@ -365,11 +345,35 @@ undo_allowed()
  * Get the undolevle value for the current buffer.
  */
     static long
-get_undolevel()
+get_undolevel(void)
 {
     if (curbuf->b_p_ul == NO_LOCAL_UNDOLEVEL)
 	return p_ul;
     return curbuf->b_p_ul;
+}
+
+/*
+ * u_save_line(): save an allocated copy of line "lnum" into "ul".
+ * Returns FAIL when out of memory.
+ */
+    static int
+u_save_line(undoline_T *ul, linenr_T lnum)
+{
+    char_u *line = ml_get(lnum);
+
+    if (curbuf->b_ml.ml_line_len == 0)
+    {
+	ul->ul_len = 1;
+	ul->ul_line = vim_strsave((char_u *)"");
+    }
+    else
+    {
+	// This uses the length in the memline, thus text properties are
+	// included.
+	ul->ul_len = curbuf->b_ml.ml_line_len;
+	ul->ul_line = vim_memsave(line, ul->ul_len);
+    }
+    return ul->ul_line == NULL ? FAIL : OK;
 }
 
 /*
@@ -382,10 +386,11 @@ get_undolevel()
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
-u_savecommon(top, bot, newbot, reload)
-    linenr_T	top, bot;
-    linenr_T	newbot;
-    int		reload;
+u_savecommon(
+    linenr_T	top,
+    linenr_T	bot,
+    linenr_T	newbot,
+    int		reload)
 {
     linenr_T	lnum;
     long	i;
@@ -411,18 +416,21 @@ u_savecommon(top, bot, newbot, reload)
 	{
 	    if (netbeans_is_guarded(top, bot))
 	    {
-		EMSG(_(e_guarded));
+		emsg(_(e_guarded));
 		return FAIL;
 	    }
 	    if (curbuf->b_p_ro)
 	    {
-		EMSG(_(e_nbreadonly));
+		emsg(_(e_nbreadonly));
 		return FAIL;
 	    }
 	}
 #endif
+#ifdef FEAT_TERMINAL
+	/* A change in a terminal buffer removes the highlighting. */
+	term_change_in_curbuf();
+#endif
 
-#ifdef FEAT_AUTOCMD
 	/*
 	 * Saving text for undo means we are going to make a change.  Give a
 	 * warning for a read-only file before making the change, so that the
@@ -434,10 +442,9 @@ u_savecommon(top, bot, newbot, reload)
 	{
 	    /* This happens when the FileChangedRO autocommand changes the
 	     * file in a way it becomes shorter. */
-	    EMSG(_("E881: Line count changed unexpectedly"));
+	    emsg(_("E881: Line count changed unexpectedly"));
 	    return FAIL;
 	}
-#endif
     }
 
 #ifdef U_DEBUG
@@ -462,7 +469,7 @@ u_savecommon(top, bot, newbot, reload)
 	     * Make a new header entry.  Do this first so that we don't mess
 	     * up the undo info when out of memory.
 	     */
-	    uhp = (u_header_T *)U_ALLOC_LINE(sizeof(u_header_T));
+	    uhp = U_ALLOC_LINE(sizeof(u_header_T));
 	    if (uhp == NULL)
 		goto nomem;
 #ifdef U_DEBUG
@@ -536,7 +543,7 @@ u_savecommon(top, bot, newbot, reload)
 
 	uhp->uh_seq = ++curbuf->b_u_seq_last;
 	curbuf->b_u_seq_cur = uhp->uh_seq;
-	uhp->uh_time = time(NULL);
+	uhp->uh_time = vim_time();
 	uhp->uh_save_nr = 0;
 	curbuf->b_u_time_cur = uhp->uh_time + 1;
 
@@ -544,12 +551,10 @@ u_savecommon(top, bot, newbot, reload)
 	uhp->uh_entry = NULL;
 	uhp->uh_getbot_entry = NULL;
 	uhp->uh_cursor = curwin->w_cursor;	/* save cursor pos. for undo */
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_active() && curwin->w_cursor.coladd > 0)
 	    uhp->uh_cursor_vcol = getviscol();
 	else
 	    uhp->uh_cursor_vcol = -1;
-#endif
 
 	/* save changed and buffer empty flag for undo */
 	uhp->uh_flags = (curbuf->b_changed ? UH_CHANGED : 0) +
@@ -643,9 +648,9 @@ u_savecommon(top, bot, newbot, reload)
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(DJGPP) && !defined(WIN32) && !defined(__EMX__)
+#if !defined(UNIX) && !defined(MSWIN)
 	/*
-	 * With Amiga and MSDOS 16 bit we can't handle big undo's, because
+	 * With Amiga we can't handle big undo's, because
 	 * then u_alloc_line would have to allocate a block larger than 32K
 	 */
     if (size >= 8000)
@@ -655,7 +660,7 @@ u_savecommon(top, bot, newbot, reload)
     /*
      * add lines in front of entry list
      */
-    uep = (u_entry_T *)U_ALLOC_LINE(sizeof(u_entry_T));
+    uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
     vim_memset(uep, 0, sizeof(u_entry_T));
@@ -681,8 +686,7 @@ u_savecommon(top, bot, newbot, reload)
 
     if (size > 0)
     {
-	if ((uep->ue_array = (char_u **)U_ALLOC_LINE(
-					    sizeof(char_u *) * size)) == NULL)
+	if ((uep->ue_array = U_ALLOC_LINE(sizeof(undoline_T) * size)) == NULL)
 	{
 	    u_freeentry(uep, 0L);
 	    goto nomem;
@@ -695,7 +699,7 @@ u_savecommon(top, bot, newbot, reload)
 		u_freeentry(uep, i);
 		return FAIL;
 	    }
-	    if ((uep->ue_array[i] = u_save_line(lnum++)) == NULL)
+	    if (u_save_line(&uep->ue_array[i], lnum++) == FAIL)
 	    {
 		u_freeentry(uep, i);
 		goto nomem;
@@ -749,8 +753,7 @@ static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
  * Compute the hash for the current buffer text into hash[UNDO_HASH_SIZE].
  */
     void
-u_compute_hash(hash)
-    char_u *hash;
+u_compute_hash(char_u *hash)
 {
     context_sha256_T	ctx;
     linenr_T		lnum;
@@ -772,10 +775,8 @@ u_compute_hash(hash)
  * When "reading" is FALSE use the first name where the directory exists.
  * Returns NULL when there is no place to write or no file to read.
  */
-    char_u *
-u_get_undo_file_name(buf_ffname, reading)
-    char_u	*buf_ffname;
-    int		reading;
+    static char_u *
+u_get_undo_file_name(char_u *buf_ffname, int reading)
 {
     char_u	*dirp;
     char_u	dir_name[IOSIZE + 1];
@@ -783,7 +784,7 @@ u_get_undo_file_name(buf_ffname, reading)
     char_u	*undo_file_name = NULL;
     int		dir_len;
     char_u	*p;
-    struct stat st;
+    stat_T	st;
     char_u	*ffname = buf_ffname;
 #ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
@@ -838,7 +839,7 @@ u_get_undo_file_name(buf_ffname, reading)
 		    munged_name = vim_strsave(ffname);
 		    if (munged_name == NULL)
 			return NULL;
-		    for (p = munged_name; *p != NUL; mb_ptr_adv(p))
+		    for (p = munged_name; *p != NUL; MB_PTR_ADV(p))
 			if (vim_ispathsep(*p))
 			    *p = '%';
 		}
@@ -850,8 +851,7 @@ u_get_undo_file_name(buf_ffname, reading)
 	if (undo_file_name != NULL && (!reading
 			       || mch_stat((char *)undo_file_name, &st) >= 0))
 	    break;
-	vim_free(undo_file_name);
-	undo_file_name = NULL;
+	VIM_CLEAR(undo_file_name);
     }
 
     vim_free(munged_name);
@@ -859,16 +859,13 @@ u_get_undo_file_name(buf_ffname, reading)
 }
 
     static void
-corruption_error(mesg, file_name)
-    char *mesg;
-    char_u *file_name;
+corruption_error(char *mesg, char_u *file_name)
 {
-    EMSG3(_("E825: Corrupted undo file (%s): %s"), mesg, file_name);
+    semsg(_("E825: Corrupted undo file (%s): %s"), mesg, file_name);
 }
 
     static void
-u_free_uhp(uhp)
-    u_header_T	*uhp;
+u_free_uhp(u_header_T *uhp)
 {
     u_entry_T	*nuep;
     u_entry_T	*uep;
@@ -889,10 +886,7 @@ u_free_uhp(uhp)
  * Returns OK or FAIL.
  */
     static int
-undo_write(bi, ptr, len)
-    bufinfo_T	*bi;
-    char_u	*ptr;
-    size_t	len;
+undo_write(bufinfo_T *bi, char_u *ptr, size_t len)
 {
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
@@ -926,10 +920,9 @@ undo_write(bi, ptr, len)
 
 #ifdef FEAT_CRYPT
     static int
-undo_flush(bi)
-    bufinfo_T	*bi;
+undo_flush(bufinfo_T *bi)
 {
-    if (bi->bi_buffer != NULL && bi->bi_used > 0)
+    if (bi->bi_buffer != NULL && bi->bi_state != NULL && bi->bi_used > 0)
     {
 	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
@@ -945,10 +938,7 @@ undo_flush(bi)
  * Returns OK or FAIL.
  */
     static int
-fwrite_crypt(bi, ptr, len)
-    bufinfo_T	*bi;
-    char_u	*ptr;
-    size_t	len;
+fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len)
 {
 #ifdef FEAT_CRYPT
     char_u  *copy;
@@ -982,10 +972,7 @@ fwrite_crypt(bi, ptr, len)
  * Returns OK or FAIL.
  */
     static int
-undo_write_bytes(bi, nr, len)
-    bufinfo_T *bi;
-    long_u  nr;
-    int	    len;
+undo_write_bytes(bufinfo_T *bi, long_u nr, int len)
 {
     char_u  buf[8];
     int	    i;
@@ -1001,16 +988,13 @@ undo_write_bytes(bi, nr, len)
  * we use the sequence number of the header.  This is converted back to
  * pointers when reading. */
     static void
-put_header_ptr(bi, uhp)
-    bufinfo_T	*bi;
-    u_header_T	*uhp;
+put_header_ptr(bufinfo_T *bi, u_header_T *uhp)
 {
     undo_write_bytes(bi, (long_u)(uhp != NULL ? uhp->uh_seq : 0), 4);
 }
 
     static int
-undo_read_4c(bi)
-    bufinfo_T	*bi;
+undo_read_4c(bufinfo_T *bi)
 {
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
@@ -1027,8 +1011,7 @@ undo_read_4c(bi)
 }
 
     static int
-undo_read_2c(bi)
-    bufinfo_T	*bi;
+undo_read_2c(bufinfo_T *bi)
 {
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
@@ -1045,8 +1028,7 @@ undo_read_2c(bi)
 }
 
     static int
-undo_read_byte(bi)
-    bufinfo_T	*bi;
+undo_read_byte(bufinfo_T *bi)
 {
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
@@ -1061,8 +1043,7 @@ undo_read_byte(bi)
 }
 
     static time_t
-undo_read_time(bi)
-    bufinfo_T	*bi;
+undo_read_time(bufinfo_T *bi)
 {
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
@@ -1085,11 +1066,10 @@ undo_read_time(bi)
  * Return OK or FAIL.
  */
     static int
-undo_read(bi, buffer, size)
-    bufinfo_T   *bi;
-    char_u	*buffer;
-    size_t	size;
+undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 {
+    int retval = OK;
+
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
@@ -1103,12 +1083,10 @@ undo_read(bi, buffer, size)
 	    if (bi->bi_used >= bi->bi_avail)
 	    {
 		n = fread(bi->bi_buffer, 1, (size_t)CRYPT_BUF_SIZE, bi->bi_fp);
-		if (n <= 0)
+		if (n == 0)
 		{
-		    /* Error may be checked for only later.  Fill with zeros,
-		     * so that the reader won't use garbage. */
-		    vim_memset(p, 0, size_todo);
-		    return FAIL;
+		    retval = FAIL;
+		    break;
 		}
 		bi->bi_avail = n;
 		bi->bi_used = 0;
@@ -1122,12 +1100,17 @@ undo_read(bi, buffer, size)
 	    size_todo -= (int)n;
 	    p += n;
 	}
-	return OK;
     }
+    else
 #endif
     if (fread(buffer, (size_t)size, 1, bi->bi_fp) != 1)
-	return FAIL;
-    return OK;
+	retval = FAIL;
+
+    if (retval == FAIL)
+	/* Error may be checked for only later.  Fill with zeros,
+	 * so that the reader won't use garbage. */
+	vim_memset(buffer, 0, size);
+    return retval;
 }
 
 /*
@@ -1138,11 +1121,9 @@ undo_read(bi, buffer, size)
  * Returns a pointer to allocated memory or NULL for failure.
  */
     static char_u *
-read_string_decrypt(bi, len)
-    bufinfo_T	*bi;
-    int		len;
+read_string_decrypt(bufinfo_T *bi, int len)
 {
-    char_u  *ptr = alloc((unsigned)len + 1);
+    char_u  *ptr = alloc(len + 1);
 
     if (ptr != NULL)
     {
@@ -1151,6 +1132,8 @@ read_string_decrypt(bi, len)
 	    vim_free(ptr);
 	    return NULL;
 	}
+	// In case there are text properties there already is a NUL, but
+	// checking for that is more expensive than just adding a dummy byte.
 	ptr[len] = NUL;
 #ifdef FEAT_CRYPT
 	if (bi->bi_state != NULL && bi->bi_buffer == NULL)
@@ -1164,11 +1147,9 @@ read_string_decrypt(bi, len)
  * Writes the (not encrypted) header and initializes encryption if needed.
  */
     static int
-serialize_header(bi, hash)
-    bufinfo_T	*bi;
-    char_u	*hash;
+serialize_header(bufinfo_T *bi, char_u *hash)
 {
-    int		len;
+    long	len;
     buf_T	*buf = bi->bi_buf;
     FILE	*fp = bi->bi_fp;
     char_u	time_buf[8];
@@ -1190,7 +1171,7 @@ serialize_header(bi, hash)
 					  buf->b_p_key, &header, &header_len);
 	if (bi->bi_state == NULL)
 	    return FAIL;
-	len = (int)fwrite(header, (size_t)header_len, (size_t)1, fp);
+	len = (long)fwrite(header, (size_t)header_len, (size_t)1, fp);
 	vim_free(header);
 	if (len != 1)
 	{
@@ -1223,9 +1204,11 @@ serialize_header(bi, hash)
 
     /* buffer-specific data */
     undo_write_bytes(bi, (long_u)buf->b_ml.ml_line_count, 4);
-    len = buf->b_u_line_ptr != NULL ? (int)STRLEN(buf->b_u_line_ptr) : 0;
+    len = buf->b_u_line_ptr.ul_line == NULL
+				? 0L : (long)STRLEN(buf->b_u_line_ptr.ul_line);
     undo_write_bytes(bi, (long_u)len, 4);
-    if (len > 0 && fwrite_crypt(bi, buf->b_u_line_ptr, (size_t)len) == FAIL)
+    if (len > 0 && fwrite_crypt(bi, buf->b_u_line_ptr.ul_line, (size_t)len)
+								       == FAIL)
 	return FAIL;
     undo_write_bytes(bi, (long_u)buf->b_u_line_lnum, 4);
     undo_write_bytes(bi, (long_u)buf->b_u_line_colnr, 4);
@@ -1252,9 +1235,7 @@ serialize_header(bi, hash)
 }
 
     static int
-serialize_uhp(bi, uhp)
-    bufinfo_T	*bi;
-    u_header_T	*uhp;
+serialize_uhp(bufinfo_T *bi, u_header_T *uhp)
 {
     int		i;
     u_entry_T	*uep;
@@ -1269,11 +1250,7 @@ serialize_uhp(bi, uhp)
     put_header_ptr(bi, uhp->uh_alt_prev.ptr);
     undo_write_bytes(bi, uhp->uh_seq, 4);
     serialize_pos(bi, uhp->uh_cursor);
-#ifdef FEAT_VIRTUALEDIT
     undo_write_bytes(bi, (long_u)uhp->uh_cursor_vcol, 4);
-#else
-    undo_write_bytes(bi, (long_u)0, 4);
-#endif
     undo_write_bytes(bi, (long_u)uhp->uh_flags, 2);
     /* Assume NMARKS will stay the same. */
     for (i = 0; i < NMARKS; ++i)
@@ -1301,9 +1278,7 @@ serialize_uhp(bi, uhp)
 }
 
     static u_header_T *
-unserialize_uhp(bi, file_name)
-    bufinfo_T	*bi;
-    char_u	*file_name;
+unserialize_uhp(bufinfo_T *bi, char_u *file_name)
 {
     u_header_T	*uhp;
     int		i;
@@ -1311,7 +1286,7 @@ unserialize_uhp(bi, file_name)
     int		c;
     int		error;
 
-    uhp = (u_header_T *)U_ALLOC_LINE(sizeof(u_header_T));
+    uhp = U_ALLOC_LINE(sizeof(u_header_T));
     if (uhp == NULL)
 	return NULL;
     vim_memset(uhp, 0, sizeof(u_header_T));
@@ -1330,11 +1305,7 @@ unserialize_uhp(bi, file_name)
 	return NULL;
     }
     unserialize_pos(bi, &uhp->uh_cursor);
-#ifdef FEAT_VIRTUALEDIT
     uhp->uh_cursor_vcol = undo_read_4c(bi);
-#else
-    (void)undo_read_4c(bi);
-#endif
     uhp->uh_flags = undo_read_2c(bi);
     for (i = 0; i < NMARKS; ++i)
 	unserialize_pos(bi, &uhp->uh_namedm[i]);
@@ -1347,6 +1318,12 @@ unserialize_uhp(bi, file_name)
 	int len = undo_read_byte(bi);
 	int what;
 
+	if (len == EOF)
+	{
+	    corruption_error("truncated", file_name);
+	    u_free_uhp(uhp);
+	    return NULL;
+	}
 	if (len == 0)
 	    break;
 	what = undo_read_byte(bi);
@@ -1393,9 +1370,9 @@ unserialize_uhp(bi, file_name)
  * Serialize "uep".
  */
     static int
-serialize_uep(bi, uep)
-    bufinfo_T	*bi;
-    u_entry_T	*uep;
+serialize_uep(
+    bufinfo_T	*bi,
+    u_entry_T	*uep)
 {
     int		i;
     size_t	len;
@@ -1406,28 +1383,27 @@ serialize_uep(bi, uep)
     undo_write_bytes(bi, (long_u)uep->ue_size, 4);
     for (i = 0; i < uep->ue_size; ++i)
     {
-	len = STRLEN(uep->ue_array[i]);
+	// Text is written without the text properties, since we cannot restore
+	// the text property types.
+	len = STRLEN(uep->ue_array[i].ul_line);
 	if (undo_write_bytes(bi, (long_u)len, 4) == FAIL)
 	    return FAIL;
-	if (len > 0 && fwrite_crypt(bi, uep->ue_array[i], len) == FAIL)
+	if (len > 0 && fwrite_crypt(bi, uep->ue_array[i].ul_line, len) == FAIL)
 	    return FAIL;
     }
     return OK;
 }
 
     static u_entry_T *
-unserialize_uep(bi, error, file_name)
-    bufinfo_T	*bi;
-    int		*error;
-    char_u	*file_name;
+unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
 {
     int		i;
     u_entry_T	*uep;
-    char_u	**array;
+    undoline_T	*array = NULL;
     char_u	*line;
     int		line_len;
 
-    uep = (u_entry_T *)U_ALLOC_LINE(sizeof(u_entry_T));
+    uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	return NULL;
     vim_memset(uep, 0, sizeof(u_entry_T));
@@ -1440,16 +1416,15 @@ unserialize_uep(bi, error, file_name)
     uep->ue_size = undo_read_4c(bi);
     if (uep->ue_size > 0)
     {
-	array = (char_u **)U_ALLOC_LINE(sizeof(char_u *) * uep->ue_size);
+	if (uep->ue_size < LONG_MAX / (int)sizeof(char_u *))
+	    array = U_ALLOC_LINE(sizeof(undoline_T) * uep->ue_size);
 	if (array == NULL)
 	{
 	    *error = TRUE;
 	    return uep;
 	}
-	vim_memset(array, 0, sizeof(char_u *) * uep->ue_size);
+	vim_memset(array, 0, sizeof(undoline_T) * uep->ue_size);
     }
-    else
-	array = NULL;
     uep->ue_array = array;
 
     for (i = 0; i < uep->ue_size; ++i)
@@ -1467,7 +1442,8 @@ unserialize_uep(bi, error, file_name)
 	    *error = TRUE;
 	    return uep;
 	}
-	array[i] = line;
+	array[i].ul_line = line;
+	array[i].ul_len = line_len + 1;
     }
     return uep;
 }
@@ -1476,26 +1452,18 @@ unserialize_uep(bi, error, file_name)
  * Serialize "pos".
  */
     static void
-serialize_pos(bi, pos)
-    bufinfo_T *bi;
-    pos_T pos;
+serialize_pos(bufinfo_T *bi, pos_T pos)
 {
     undo_write_bytes(bi, (long_u)pos.lnum, 4);
     undo_write_bytes(bi, (long_u)pos.col, 4);
-#ifdef FEAT_VIRTUALEDIT
     undo_write_bytes(bi, (long_u)pos.coladd, 4);
-#else
-    undo_write_bytes(bi, (long_u)0, 4);
-#endif
 }
 
 /*
  * Unserialize the pos_T at the current position.
  */
     static void
-unserialize_pos(bi, pos)
-    bufinfo_T *bi;
-    pos_T *pos;
+unserialize_pos(bufinfo_T *bi, pos_T *pos)
 {
     pos->lnum = undo_read_4c(bi);
     if (pos->lnum < 0)
@@ -1503,22 +1471,16 @@ unserialize_pos(bi, pos)
     pos->col = undo_read_4c(bi);
     if (pos->col < 0)
 	pos->col = 0;
-#ifdef FEAT_VIRTUALEDIT
     pos->coladd = undo_read_4c(bi);
     if (pos->coladd < 0)
 	pos->coladd = 0;
-#else
-    (void)undo_read_4c(bi);
-#endif
 }
 
 /*
  * Serialize "info".
  */
     static void
-serialize_visualinfo(bi, info)
-    bufinfo_T	    *bi;
-    visualinfo_T    *info;
+serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info)
 {
     serialize_pos(bi, info->vi_start);
     serialize_pos(bi, info->vi_end);
@@ -1530,9 +1492,7 @@ serialize_visualinfo(bi, info)
  * Unserialize the visualinfo_T at the current position.
  */
     static void
-unserialize_visualinfo(bi, info)
-    bufinfo_T	    *bi;
-    visualinfo_T    *info;
+unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info)
 {
     unserialize_pos(bi, &info->vi_start);
     unserialize_pos(bi, &info->vi_end);
@@ -1550,11 +1510,11 @@ unserialize_visualinfo(bi, info)
  * "hash[UNDO_HASH_SIZE]" must be the hash value of the buffer text.
  */
     void
-u_write_undo(name, forceit, buf, hash)
-    char_u	*name;
-    int		forceit;
-    buf_T	*buf;
-    char_u	*hash;
+u_write_undo(
+    char_u	*name,
+    int		forceit,
+    buf_T	*buf,
+    char_u	*hash)
 {
     u_header_T	*uhp;
     char_u	*file_name;
@@ -1568,8 +1528,8 @@ u_write_undo(name, forceit, buf, hash)
     int		write_ok = FALSE;
 #ifdef UNIX
     int		st_old_valid = FALSE;
-    struct stat	st_old;
-    struct stat	st_new;
+    stat_T	st_old;
+    stat_T	st_new;
 #endif
     bufinfo_T	bi;
 
@@ -1583,7 +1543,7 @@ u_write_undo(name, forceit, buf, hash)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		smsg((char_u *)
+		smsg(
 		   _("Cannot write undo file in any directory in 'undodir'"));
 		verbose_leave();
 	    }
@@ -1631,7 +1591,7 @@ u_write_undo(name, forceit, buf, hash)
 		{
 		    if (name == NULL)
 			verbose_enter();
-		    smsg((char_u *)
+		    smsg(
 		      _("Will not overwrite with undo file, cannot read: %s"),
 								   file_name);
 		    if (name == NULL)
@@ -1653,7 +1613,7 @@ u_write_undo(name, forceit, buf, hash)
 		    {
 			if (name == NULL)
 			    verbose_enter();
-			smsg((char_u *)
+			smsg(
 			_("Will not overwrite, this is not an undo file: %s"),
 								   file_name);
 			if (name == NULL)
@@ -1668,10 +1628,10 @@ u_write_undo(name, forceit, buf, hash)
 
     /* If there is no undo information at all, quit here after deleting any
      * existing undo file. */
-    if (buf->b_u_numhead == 0 && buf->b_u_line_ptr == NULL)
+    if (buf->b_u_numhead == 0 && buf->b_u_line_ptr.ul_line == NULL)
     {
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("Skipping undo file write, nothing to undo"));
+	    verb_msg(_("Skipping undo file write, nothing to undo"));
 	goto theend;
     }
 
@@ -1679,14 +1639,14 @@ u_write_undo(name, forceit, buf, hash)
 			    O_CREAT|O_EXTRA|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
     if (fd < 0)
     {
-	EMSG2(_(e_not_open), file_name);
+	semsg(_(e_not_open), file_name);
 	goto theend;
     }
     (void)mch_setperm(file_name, perm);
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg((char_u *)_("Writing undo file: %s"), file_name);
+	smsg(_("Writing undo file: %s"), file_name);
 	verbose_leave();
     }
 
@@ -1718,7 +1678,7 @@ u_write_undo(name, forceit, buf, hash)
     fp = fdopen(fd, "w");
     if (fp == NULL)
     {
-	EMSG2(_(e_not_open), file_name);
+	semsg(_(e_not_open), file_name);
 	close(fd);
 	mch_remove(file_name);
 	goto theend;
@@ -1773,8 +1733,8 @@ u_write_undo(name, forceit, buf, hash)
 #ifdef U_DEBUG
     if (headers_written != buf->b_u_numhead)
     {
-	EMSGN("Written %ld headers, ...", headers_written);
-	EMSGN("... but numhead is %ld", buf->b_u_numhead);
+	semsg("Written %ld headers, ...", headers_written);
+	semsg("... but numhead is %ld", buf->b_u_numhead);
     }
 #endif
 
@@ -1786,9 +1746,9 @@ u_write_undo(name, forceit, buf, hash)
 write_error:
     fclose(fp);
     if (!write_ok)
-	EMSG2(_("E829: write error in undo file: %s"), file_name);
+	semsg(_("E829: write error in undo file: %s"), file_name);
 
-#if defined(MACOS_CLASSIC) || defined(WIN3264)
+#if defined(MSWIN)
     /* Copy file attributes; for systems where this can only be done after
      * closing the file. */
     if (buf->b_ffname != NULL)
@@ -1824,19 +1784,16 @@ theend:
  * "hash[UNDO_HASH_SIZE]" must be the hash value of the buffer text.
  */
     void
-u_read_undo(name, hash, orig_name)
-    char_u *name;
-    char_u *hash;
-    char_u *orig_name;
+u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 {
     char_u	*file_name;
     FILE	*fp;
     long	version, str_len;
-    char_u	*line_ptr = NULL;
+    undoline_T	line_ptr;
     linenr_T	line_lnum;
     colnr_T	line_colnr;
     linenr_T	line_count;
-    int		num_head = 0;
+    long	num_head = 0;
     long	old_header_seq, new_header_seq, cur_header_seq;
     long	seq_last, seq_cur;
     long	last_save_nr = 0;
@@ -1853,12 +1810,15 @@ u_read_undo(name, hash, orig_name)
     int		*uhp_table_used;
 #endif
 #ifdef UNIX
-    struct stat	st_orig;
-    struct stat	st_undo;
+    stat_T	st_orig;
+    stat_T	st_undo;
 #endif
     bufinfo_T	bi;
 
     vim_memset(&bi, 0, sizeof(bi));
+    line_ptr.ul_len = 0;
+    line_ptr.ul_line = NULL;
+
     if (name == NULL)
     {
 	file_name = u_get_undo_file_name(curbuf->b_ffname, TRUE);
@@ -1876,7 +1836,7 @@ u_read_undo(name, hash, orig_name)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		smsg((char_u *)_("Not reading undo file, owner differs: %s"),
+		smsg(_("Not reading undo file, owner differs: %s"),
 								   file_name);
 		verbose_leave();
 	    }
@@ -1890,7 +1850,7 @@ u_read_undo(name, hash, orig_name)
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg((char_u *)_("Reading undo file: %s"), file_name);
+	smsg(_("Reading undo file: %s"), file_name);
 	verbose_leave();
     }
 
@@ -1898,7 +1858,7 @@ u_read_undo(name, hash, orig_name)
     if (fp == NULL)
     {
 	if (name != NULL || p_verbose > 0)
-	    EMSG2(_("E822: Cannot open undo file for reading: %s"), file_name);
+	    semsg(_("E822: Cannot open undo file for reading: %s"), file_name);
 	goto error;
     }
     bi.bi_buf = curbuf;
@@ -1910,7 +1870,7 @@ u_read_undo(name, hash, orig_name)
     if (fread(magic_buf, UF_START_MAGIC_LEN, 1, fp) != 1
 		|| memcmp(magic_buf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)
     {
-	EMSG2(_("E823: Not an undo file: %s"), file_name);
+	semsg(_("E823: Not an undo file: %s"), file_name);
 	goto error;
     }
     version = get2c(fp);
@@ -1919,14 +1879,14 @@ u_read_undo(name, hash, orig_name)
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
-	    EMSG2(_("E832: Non-encrypted file has encrypted undo file: %s"),
+	    semsg(_("E832: Non-encrypted file has encrypted undo file: %s"),
 								   file_name);
 	    goto error;
 	}
 	bi.bi_state = crypt_create_from_file(fp, curbuf->b_p_key);
 	if (bi.bi_state == NULL)
 	{
-	    EMSG2(_("E826: Undo file decryption failed: %s"), file_name);
+	    semsg(_("E826: Undo file decryption failed: %s"), file_name);
 	    goto error;
 	}
 	if (crypt_whole_undofile(bi.bi_state->method_nr))
@@ -1942,13 +1902,13 @@ u_read_undo(name, hash, orig_name)
 	    bi.bi_used = 0;
 	}
 #else
-	EMSG2(_("E827: Undo file is encrypted: %s"), file_name);
+	semsg(_("E827: Undo file is encrypted: %s"), file_name);
 	goto error;
 #endif
     }
     else if (version != UF_VERSION)
     {
-	EMSG2(_("E824: Incompatible undo file: %s"), file_name);
+	semsg(_("E824: Incompatible undo file: %s"), file_name);
 	goto error;
     }
 
@@ -1978,7 +1938,10 @@ u_read_undo(name, hash, orig_name)
     if (str_len < 0)
 	goto error;
     if (str_len > 0)
-	line_ptr = read_string_decrypt(&bi, str_len);
+    {
+	line_ptr.ul_line = read_string_decrypt(&bi, str_len);
+	line_ptr.ul_len = str_len + 1;
+    }
     line_lnum = (linenr_T)undo_read_4c(&bi);
     line_colnr = (colnr_T)undo_read_4c(&bi);
     if (line_lnum < 0 || line_colnr < 0)
@@ -2023,8 +1986,8 @@ u_read_undo(name, hash, orig_name)
      * When there are no headers uhp_table is NULL. */
     if (num_head > 0)
     {
-	uhp_table = (u_header_T **)U_ALLOC_LINE(
-					     num_head * sizeof(u_header_T *));
+	if (num_head < LONG_MAX / (long)sizeof(u_header_T *))
+	    uhp_table = U_ALLOC_LINE(num_head * sizeof(u_header_T *));
 	if (uhp_table == NULL)
 	    goto error;
     }
@@ -2055,8 +2018,7 @@ u_read_undo(name, hash, orig_name)
     }
 
 #ifdef U_DEBUG
-    uhp_table_used = (int *)alloc_clear(
-				     (unsigned)(sizeof(int) * num_head + 1));
+    uhp_table_used = alloc_clear(sizeof(int) * num_head + 1);
 # define SET_FLAG(j) ++uhp_table_used[j]
 #else
 # define SET_FLAG(j)
@@ -2148,17 +2110,17 @@ u_read_undo(name, hash, orig_name)
 #ifdef U_DEBUG
     for (i = 0; i < num_head; ++i)
 	if (uhp_table_used[i] == 0)
-	    EMSGN("uhp_table entry %ld not used, leaking memory", i);
+	    semsg("uhp_table entry %ld not used, leaking memory", i);
     vim_free(uhp_table_used);
     u_check(TRUE);
 #endif
 
     if (name != NULL)
-	smsg((char_u *)_("Finished reading undo file %s"), file_name);
+	smsg(_("Finished reading undo file %s"), file_name);
     goto theend;
 
 error:
-    vim_free(line_ptr);
+    vim_free(line_ptr.ul_line);
     if (uhp_table != NULL)
     {
 	for (i = 0; i < num_read_uhps; i++)
@@ -2188,8 +2150,7 @@ theend:
  * If 'cpoptions' does not contain 'u': Always undo.
  */
     void
-u_undo(count)
-    int count;
+u_undo(int count)
 {
     /*
      * If we get an undo command while executing a macro, we behave like the
@@ -2214,8 +2175,7 @@ u_undo(count)
  * If 'cpoptions' does not contain 'u': Always redo.
  */
     void
-u_redo(count)
-    int count;
+u_redo(int count)
 {
     if (vim_strchr(p_cpo, CPO_UNDO) == NULL)
 	undo_undoes = FALSE;
@@ -2226,8 +2186,7 @@ u_redo(count)
  * Undo or redo, depending on 'undo_undoes', 'count' times.
  */
     static void
-u_doit(startcount)
-    int startcount;
+u_doit(int startcount)
 {
     int count = startcount;
 
@@ -2261,7 +2220,7 @@ u_doit(startcount)
 		beep_flush();
 		if (count == startcount - 1)
 		{
-		    MSG(_("Already at oldest change"));
+		    msg(_("Already at oldest change"));
 		    return;
 		}
 		break;
@@ -2276,7 +2235,7 @@ u_doit(startcount)
 		beep_flush();	/* nothing to redo */
 		if (count == startcount - 1)
 		{
-		    MSG(_("Already at newest change"));
+		    msg(_("Already at newest change"));
 		    return;
 		}
 		break;
@@ -2304,21 +2263,21 @@ u_doit(startcount)
  * "sec" must be FALSE then.
  */
     void
-undo_time(step, sec, file, absolute)
-    long	step;
-    int		sec;
-    int		file;
-    int		absolute;
+undo_time(
+    long	step,
+    int		sec,
+    int		file,
+    int		absolute)
 {
     long	    target;
     long	    closest;
     long	    closest_start;
     long	    closest_seq = 0;
     long	    val;
-    u_header_T	    *uhp;
+    u_header_T	    *uhp = NULL;
     u_header_T	    *last;
     int		    mark;
-    int		    nomark;
+    int		    nomark = 0;  // shut up compiler
     int		    round;
     int		    dosec = sec;
     int		    dofile = file;
@@ -2343,10 +2302,8 @@ undo_time(step, sec, file, absolute)
     }
     else
     {
-	/* When doing computations with time_t subtract starttime, because
-	 * time_t converted to a long may result in a wrong number. */
 	if (dosec)
-	    target = (long)(curbuf->b_u_time_cur - starttime) + step;
+	    target = (long)(curbuf->b_u_time_cur) + step;
 	else if (dofile)
 	{
 	    if (step < 0)
@@ -2395,7 +2352,7 @@ undo_time(step, sec, file, absolute)
 	else
 	{
 	    if (dosec)
-		closest = (long)(time(NULL) - starttime + 1);
+		closest = (long)(vim_time() + 1);
 	    else if (dofile)
 		closest = curbuf->b_u_save_nr_last + 2;
 	    else
@@ -2406,6 +2363,13 @@ undo_time(step, sec, file, absolute)
     }
     closest_start = closest;
     closest_seq = curbuf->b_u_seq_cur;
+
+    /* When "target" is 0; Back to origin. */
+    if (target == 0)
+    {
+	mark = lastmark;  /* avoid that GCC complains */
+	goto target_zero;
+    }
 
     /*
      * May do this twice:
@@ -2433,7 +2397,7 @@ undo_time(step, sec, file, absolute)
 	{
 	    uhp->uh_walk = mark;
 	    if (dosec)
-		val = (long)(uhp->uh_time - starttime);
+		val = (long)(uhp->uh_time);
 	    else if (dofile)
 		val = uhp->uh_save_nr;
 	    else
@@ -2512,16 +2476,16 @@ undo_time(step, sec, file, absolute)
 
 	if (absolute)
 	{
-	    EMSGN(_("E830: Undo number %ld not found"), step);
+	    semsg(_("E830: Undo number %ld not found"), step);
 	    return;
 	}
 
 	if (closest == closest_start)
 	{
 	    if (step < 0)
-		MSG(_("Already at oldest change"));
+		msg(_("Already at oldest change"));
 	    else
-		MSG(_("Already at newest change"));
+		msg(_("Already at newest change"));
 	    return;
 	}
 
@@ -2532,8 +2496,9 @@ undo_time(step, sec, file, absolute)
 	    above = TRUE;	/* stop above the header */
     }
 
+target_zero:
     /* If we found it: Follow the path to go to where we want to be. */
-    if (uhp != NULL)
+    if (uhp != NULL || target == 0)
     {
 	/*
 	 * First go up the tree as much as needed.
@@ -2548,87 +2513,93 @@ undo_time(step, sec, file, absolute)
 		uhp = curbuf->b_u_newhead;
 	    else
 		uhp = uhp->uh_next.ptr;
-	    if (uhp == NULL || uhp->uh_walk != mark
+	    if (uhp == NULL || (target > 0 && uhp->uh_walk != mark)
 					 || (uhp->uh_seq == target && !above))
 		break;
 	    curbuf->b_u_curhead = uhp;
 	    u_undoredo(TRUE);
-	    uhp->uh_walk = nomark;	/* don't go back down here */
+	    if (target > 0)
+		uhp->uh_walk = nomark;	/* don't go back down here */
 	}
 
-	/*
-	 * And now go down the tree (redo), branching off where needed.
-	 */
-	while (!got_int)
+	/* When back to origin, redo is not needed. */
+	if (target > 0)
 	{
-	    /* Do the change warning now, for the same reason as above. */
-	    change_warning(0);
+	    /*
+	     * And now go down the tree (redo), branching off where needed.
+	     */
+	    while (!got_int)
+	    {
+		/* Do the change warning now, for the same reason as above. */
+		change_warning(0);
 
-	    uhp = curbuf->b_u_curhead;
-	    if (uhp == NULL)
-		break;
+		uhp = curbuf->b_u_curhead;
+		if (uhp == NULL)
+		    break;
 
-	    /* Go back to the first branch with a mark. */
-	    while (uhp->uh_alt_prev.ptr != NULL
+		/* Go back to the first branch with a mark. */
+		while (uhp->uh_alt_prev.ptr != NULL
 				     && uhp->uh_alt_prev.ptr->uh_walk == mark)
-		uhp = uhp->uh_alt_prev.ptr;
-
-	    /* Find the last branch with a mark, that's the one. */
-	    last = uhp;
-	    while (last->uh_alt_next.ptr != NULL
-				    && last->uh_alt_next.ptr->uh_walk == mark)
-		last = last->uh_alt_next.ptr;
-	    if (last != uhp)
-	    {
-		/* Make the used branch the first entry in the list of
-		 * alternatives to make "u" and CTRL-R take this branch. */
-		while (uhp->uh_alt_prev.ptr != NULL)
 		    uhp = uhp->uh_alt_prev.ptr;
-		if (last->uh_alt_next.ptr != NULL)
-		    last->uh_alt_next.ptr->uh_alt_prev.ptr =
+
+		/* Find the last branch with a mark, that's the one. */
+		last = uhp;
+		while (last->uh_alt_next.ptr != NULL
+				    && last->uh_alt_next.ptr->uh_walk == mark)
+		    last = last->uh_alt_next.ptr;
+		if (last != uhp)
+		{
+		    /* Make the used branch the first entry in the list of
+		     * alternatives to make "u" and CTRL-R take this branch. */
+		    while (uhp->uh_alt_prev.ptr != NULL)
+			uhp = uhp->uh_alt_prev.ptr;
+		    if (last->uh_alt_next.ptr != NULL)
+			last->uh_alt_next.ptr->uh_alt_prev.ptr =
 							last->uh_alt_prev.ptr;
-		last->uh_alt_prev.ptr->uh_alt_next.ptr = last->uh_alt_next.ptr;
-		last->uh_alt_prev.ptr = NULL;
-		last->uh_alt_next.ptr = uhp;
-		uhp->uh_alt_prev.ptr = last;
+		    last->uh_alt_prev.ptr->uh_alt_next.ptr =
+							last->uh_alt_next.ptr;
+		    last->uh_alt_prev.ptr = NULL;
+		    last->uh_alt_next.ptr = uhp;
+		    uhp->uh_alt_prev.ptr = last;
 
-		if (curbuf->b_u_oldhead == uhp)
-		    curbuf->b_u_oldhead = last;
-		uhp = last;
-		if (uhp->uh_next.ptr != NULL)
-		    uhp->uh_next.ptr->uh_prev.ptr = uhp;
-	    }
-	    curbuf->b_u_curhead = uhp;
+		    if (curbuf->b_u_oldhead == uhp)
+			curbuf->b_u_oldhead = last;
+		    uhp = last;
+		    if (uhp->uh_next.ptr != NULL)
+			uhp->uh_next.ptr->uh_prev.ptr = uhp;
+		}
+		curbuf->b_u_curhead = uhp;
 
-	    if (uhp->uh_walk != mark)
-		break;	    /* must have reached the target */
+		if (uhp->uh_walk != mark)
+		    break;	    /* must have reached the target */
 
-	    /* Stop when going backwards in time and didn't find the exact
-	     * header we were looking for. */
-	    if (uhp->uh_seq == target && above)
-	    {
-		curbuf->b_u_seq_cur = target - 1;
-		break;
-	    }
+		/* Stop when going backwards in time and didn't find the exact
+		 * header we were looking for. */
+		if (uhp->uh_seq == target && above)
+		{
+		    curbuf->b_u_seq_cur = target - 1;
+		    break;
+		}
 
-	    u_undoredo(FALSE);
+		u_undoredo(FALSE);
 
-	    /* Advance "curhead" to below the header we last used.  If it
-	     * becomes NULL then we need to set "newhead" to this leaf. */
-	    if (uhp->uh_prev.ptr == NULL)
-		curbuf->b_u_newhead = uhp;
-	    curbuf->b_u_curhead = uhp->uh_prev.ptr;
-	    did_undo = FALSE;
+		/* Advance "curhead" to below the header we last used.  If it
+		 * becomes NULL then we need to set "newhead" to this leaf. */
+		if (uhp->uh_prev.ptr == NULL)
+		    curbuf->b_u_newhead = uhp;
+		curbuf->b_u_curhead = uhp->uh_prev.ptr;
+		did_undo = FALSE;
 
-	    if (uhp->uh_seq == target)	/* found it! */
-		break;
+		if (uhp->uh_seq == target)	/* found it! */
+		    break;
 
-	    uhp = uhp->uh_prev.ptr;
-	    if (uhp == NULL || uhp->uh_walk != mark)
-	    {
-		/* Need to redo more but can't find it... */
-		EMSG2(_(e_intern2), "undo_time()");
-		break;
+		uhp = uhp->uh_prev.ptr;
+		if (uhp == NULL || uhp->uh_walk != mark)
+		{
+		    /* Need to redo more but can't find it... */
+		    internal_error("undo_time()");
+		    break;
+		}
 	    }
 	}
     }
@@ -2645,15 +2616,15 @@ undo_time(step, sec, file, absolute)
  * When "undo" is TRUE we go up in the tree, when FALSE we go down.
  */
     static void
-u_undoredo(undo)
-    int		undo;
+u_undoredo(int undo)
 {
-    char_u	**newarray = NULL;
+    undoline_T	*newarray = NULL;
     linenr_T	oldsize;
     linenr_T	newsize;
     linenr_T	top, bot;
     linenr_T	lnum;
     linenr_T	newlnum = MAXLNUM;
+    pos_T	new_curpos = curwin->w_cursor;
     long	i;
     u_entry_T	*uep, *nuep;
     u_entry_T	*newlist = NULL;
@@ -2664,11 +2635,9 @@ u_undoredo(undo)
     int		empty_buffer;		    /* buffer became empty */
     u_header_T	*curhead = curbuf->b_u_curhead;
 
-#ifdef FEAT_AUTOCMD
     /* Don't want autocommands using the undo structures here, they are
      * invalid till the end. */
     block_autocmds();
-#endif
 
 #ifdef U_DEBUG
     u_check(FALSE);
@@ -2697,62 +2666,68 @@ u_undoredo(undo)
 	if (top > curbuf->b_ml.ml_line_count || top >= bot
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
-#ifdef FEAT_AUTOCMD
 	    unblock_autocmds();
-#endif
-	    EMSG(_("E438: u_undo: line numbers wrong"));
-	    changed();		/* don't want UNCHANGED now */
+	    iemsg(_("E438: u_undo: line numbers wrong"));
+	    changed();		// don't want UNCHANGED now
 	    return;
 	}
 
-	oldsize = bot - top - 1;    /* number of lines before undo */
-	newsize = uep->ue_size;	    /* number of lines after undo */
+	oldsize = bot - top - 1;    // number of lines before undo
+	newsize = uep->ue_size;	    // number of lines after undo
 
+	// Decide about the cursor position, depending on what text changed.
+	// Don't set it yet, it may be invalid if lines are going to be added.
 	if (top < newlnum)
 	{
-	    /* If the saved cursor is somewhere in this undo block, move it to
-	     * the remembered position.  Makes "gwap" put the cursor back
-	     * where it was. */
+	    // If the saved cursor is somewhere in this undo block, move it to
+	    // the remembered position.  Makes "gwap" put the cursor back
+	    // where it was.
 	    lnum = curhead->uh_cursor.lnum;
 	    if (lnum >= top && lnum <= top + newsize + 1)
 	    {
-		curwin->w_cursor = curhead->uh_cursor;
-		newlnum = curwin->w_cursor.lnum - 1;
+		new_curpos = curhead->uh_cursor;
+		newlnum = new_curpos.lnum - 1;
 	    }
 	    else
 	    {
-		/* Use the first line that actually changed.  Avoids that
-		 * undoing auto-formatting puts the cursor in the previous
-		 * line. */
+		// Use the first line that actually changed.  Avoids that
+		// undoing auto-formatting puts the cursor in the previous
+		// line.
 		for (i = 0; i < newsize && i < oldsize; ++i)
-		    if (STRCMP(uep->ue_array[i], ml_get(top + 1 + i)) != 0)
+		{
+		    char_u *p = ml_get(top + 1 + i);
+
+		    if (curbuf->b_ml.ml_line_len != uep->ue_array[i].ul_len
+			    || memcmp(uep->ue_array[i].ul_line, p,
+						curbuf->b_ml.ml_line_len) != 0)
 			break;
+		}
 		if (i == newsize && newlnum == MAXLNUM && uep->ue_next == NULL)
 		{
 		    newlnum = top;
-		    curwin->w_cursor.lnum = newlnum + 1;
+		    new_curpos.lnum = newlnum + 1;
 		}
 		else if (i < newsize)
 		{
 		    newlnum = top + i;
-		    curwin->w_cursor.lnum = newlnum + 1;
+		    new_curpos.lnum = newlnum + 1;
 		}
 	    }
 	}
 
 	empty_buffer = FALSE;
 
-	/* delete the lines between top and bot and save them in newarray */
+	/*
+	 * Delete the lines between top and bot and save them in newarray.
+	 */
 	if (oldsize > 0)
 	{
-	    if ((newarray = (char_u **)U_ALLOC_LINE(
-					 sizeof(char_u *) * oldsize)) == NULL)
+	    if ((newarray = U_ALLOC_LINE(sizeof(undoline_T) * oldsize)) == NULL)
 	    {
-		do_outofmem_msg((long_u)(sizeof(char_u *) * oldsize));
-		/*
-		 * We have messed up the entry list, repair is impossible.
-		 * we have to free the rest of the list.
-		 */
+		do_outofmem_msg((long_u)(sizeof(undoline_T) * oldsize));
+
+		// We have messed up the entry list, repair is impossible.
+		// we have to free the rest of the list.
 		while (uep != NULL)
 		{
 		    nuep = uep->ue_next;
@@ -2761,14 +2736,14 @@ u_undoredo(undo)
 		}
 		break;
 	    }
-	    /* delete backwards, it goes faster in most cases */
+	    // delete backwards, it goes faster in most cases
 	    for (lnum = bot - 1, i = oldsize; --i >= 0; --lnum)
 	    {
-		/* what can we do when we run out of memory? */
-		if ((newarray[i] = u_save_line(lnum)) == NULL)
+		// what can we do when we run out of memory?
+		if (u_save_line(&newarray[i], lnum) == FAIL)
 		    do_outofmem_msg((long_u)0);
-		/* remember we deleted the last line in the buffer, and a
-		 * dummy empty line will be inserted */
+		// remember we deleted the last line in the buffer, and a
+		// dummy empty line will be inserted
 		if (curbuf->b_ml.ml_line_count == 1)
 		    empty_buffer = TRUE;
 		ml_delete(lnum, FALSE);
@@ -2777,25 +2752,30 @@ u_undoredo(undo)
 	else
 	    newarray = NULL;
 
-	/* insert the lines in u_array between top and bot */
+	// make sure the cursor is on a valid line after the deletions
+	check_cursor_lnum();
+
+	/*
+	 * Insert the lines in u_array between top and bot.
+	 */
 	if (newsize)
 	{
 	    for (lnum = top, i = 0; i < newsize; ++i, ++lnum)
 	    {
-		/*
-		 * If the file is empty, there is an empty line 1 that we
-		 * should get rid of, by replacing it with the new line
-		 */
+		// If the file is empty, there is an empty line 1 that we
+		// should get rid of, by replacing it with the new line.
 		if (empty_buffer && lnum == 0)
-		    ml_replace((linenr_T)1, uep->ue_array[i], TRUE);
+		    ml_replace_len((linenr_T)1, uep->ue_array[i].ul_line,
+					  uep->ue_array[i].ul_len, TRUE, TRUE);
 		else
-		    ml_append(lnum, uep->ue_array[i], (colnr_T)0, FALSE);
-		vim_free(uep->ue_array[i]);
+		    ml_append(lnum, uep->ue_array[i].ul_line,
+				      (colnr_T)uep->ue_array[i].ul_len, FALSE);
+		vim_free(uep->ue_array[i].ul_line);
 	    }
 	    vim_free((char_u *)uep->ue_array);
 	}
 
-	/* adjust marks */
+	// adjust marks
 	if (oldsize != newsize)
 	{
 	    mark_adjust(top + 1, top + oldsize, (long)MAXLNUM,
@@ -2808,7 +2788,7 @@ u_undoredo(undo)
 
 	changed_lines(top + 1, 0, bot, newsize - oldsize);
 
-	/* set '[ and '] mark */
+	// set '[ and '] mark
 	if (top + 1 < curbuf->b_op_start.lnum)
 	    curbuf->b_op_start.lnum = top + 1;
 	if (newsize == 0 && top + 1 > curbuf->b_op_end.lnum)
@@ -2830,9 +2810,13 @@ u_undoredo(undo)
 	newlist = uep;
     }
 
+    // Set the cursor to the desired position.  Check that the line is valid.
+    curwin->w_cursor = new_curpos;
+    check_cursor_lnum();
+
     curhead->uh_entry = newlist;
     curhead->uh_flags = new_flags;
-    if ((old_flags & UH_EMPTYBUF) && bufempty())
+    if ((old_flags & UH_EMPTYBUF) && BUFEMPTY())
 	curbuf->b_ml.ml_flags |= ML_EMPTY;
     if (old_flags & UH_CHANGED)
 	changed();
@@ -2841,7 +2825,7 @@ u_undoredo(undo)
 	/* per netbeans undo rules, keep it as modified */
 	if (!isNetbeansModified(curbuf))
 #endif
-	unchanged(curbuf, FALSE);
+	unchanged(curbuf, FALSE, TRUE);
 
     /*
      * restore marks from before undo/redo
@@ -2874,12 +2858,10 @@ u_undoredo(undo)
 	if (curhead->uh_cursor.lnum == curwin->w_cursor.lnum)
 	{
 	    curwin->w_cursor.col = curhead->uh_cursor.col;
-#ifdef FEAT_VIRTUALEDIT
 	    if (virtual_active() && curhead->uh_cursor_vcol >= 0)
 		coladvance((colnr_T)curhead->uh_cursor_vcol);
 	    else
 		curwin->w_cursor.coladd = 0;
-#endif
 	}
 	else
 	    beginline(BL_SOL | BL_FIX);
@@ -2891,9 +2873,7 @@ u_undoredo(undo)
 	 * check_cursor() will move the cursor to the last line.  Move it to
 	 * the first column here. */
 	curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
-#endif
     }
 
     /* Make sure the cursor is on an existing line and column. */
@@ -2902,9 +2882,14 @@ u_undoredo(undo)
     /* Remember where we are for "g-" and ":earlier 10s". */
     curbuf->b_u_seq_cur = curhead->uh_seq;
     if (undo)
+    {
 	/* We are below the previous undo.  However, to make ":earlier 1s"
 	 * work we compute this as being just above the just undone change. */
-	--curbuf->b_u_seq_cur;
+	if (curhead->uh_next.ptr != NULL)
+	    curbuf->b_u_seq_cur = curhead->uh_next.ptr->uh_seq;
+	else
+	    curbuf->b_u_seq_cur = 0;
+    }
 
     /* Remember where we are for ":earlier 1f" and ":later 1f". */
     if (curhead->uh_save_nr != 0)
@@ -2919,9 +2904,7 @@ u_undoredo(undo)
      * the undone/redone change. */
     curbuf->b_u_time_cur = curhead->uh_time;
 
-#ifdef FEAT_AUTOCMD
     unblock_autocmds();
-#endif
 #ifdef U_DEBUG
     u_check(FALSE);
 #endif
@@ -2933,9 +2916,9 @@ u_undoredo(undo)
  * in some cases, but it's better than nothing).
  */
     static void
-u_undo_end(did_undo, absolute)
-    int		did_undo;	/* just did an undo */
-    int		absolute;	/* used ":undo N" */
+u_undo_end(
+    int		did_undo,	/* just did an undo */
+    int		absolute)	/* used ":undo N" */
 {
     char	*msgstr;
     u_header_T	*uhp;
@@ -3004,7 +2987,7 @@ u_undo_end(did_undo, absolute)
     }
 #endif
 
-    smsg((char_u *)_("%ld %s; %s #%ld  %s"),
+    smsg_attr_keep(0, _("%ld %s; %s #%ld  %s"),
 	    u_oldcount < 0 ? -u_oldcount : u_oldcount,
 	    _(msgstr),
 	    did_undo ? _("before") : _("after"),
@@ -3016,14 +2999,14 @@ u_undo_end(did_undo, absolute)
  * u_sync: stop adding to the current entry list
  */
     void
-u_sync(force)
-    int	    force;	/* Also sync when no_u_sync is set. */
+u_sync(
+    int	    force)	/* Also sync when no_u_sync is set. */
 {
     /* Skip it when already synced or syncing is disabled. */
     if (curbuf->b_u_synced || (!force && no_u_sync > 0))
 	return;
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    if (im_is_preediting())
+    if (p_imst == IM_ON_THE_SPOT && im_is_preediting())
 	return;		    /* XIM is busy, don't break an undo sequence */
 #endif
     if (get_undolevel() < 0)
@@ -3039,8 +3022,7 @@ u_sync(force)
  * ":undolist": List the leafs of the undo tree
  */
     void
-ex_undolist(eap)
-    exarg_T *eap UNUSED;
+ex_undolist(exarg_T *eap UNUSED)
 {
     garray_T	ga;
     u_header_T	*uhp;
@@ -3066,7 +3048,7 @@ ex_undolist(eap)
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
 		break;
-	    vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7ld  ",
+	    vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7d  ",
 							uhp->uh_seq, changes);
 	    u_add_time(IObuff + STRLEN(IObuff), IOSIZE - STRLEN(IObuff),
 								uhp->uh_time);
@@ -3121,20 +3103,20 @@ ex_undolist(eap)
     }
 
     if (ga.ga_len == 0)
-	MSG(_("Nothing to undo"));
+	msg(_("Nothing to undo"));
     else
     {
 	sort_strings((char_u **)ga.ga_data, ga.ga_len);
 
 	msg_start();
-	msg_puts_attr((char_u *)_("number changes  when               saved"),
-							      hl_attr(HLF_T));
+	msg_puts_attr(_("number changes  when               saved"),
+							      HL_ATTR(HLF_T));
 	for (i = 0; i < ga.ga_len && !got_int; ++i)
 	{
 	    msg_putchar('\n');
 	    if (got_int)
 		break;
-	    msg_puts(((char_u **)ga.ga_data)[i]);
+	    msg_puts(((char **)ga.ga_data)[i]);
 	}
 	msg_end();
 
@@ -3146,18 +3128,16 @@ ex_undolist(eap)
  * Put the timestamp of an undo header in "buf[buflen]" in a nice format.
  */
     static void
-u_add_time(buf, buflen, tt)
-    char_u	*buf;
-    size_t	buflen;
-    time_t	tt;
+u_add_time(char_u *buf, size_t buflen, time_t tt)
 {
 #ifdef HAVE_STRFTIME
+    struct tm	tmval;
     struct tm	*curtime;
 
-    if (time(NULL) - tt >= 100)
+    if (vim_time() - tt >= 100)
     {
-	curtime = localtime(&tt);
-	if (time(NULL) - tt < (60L * 60L * 12L))
+	curtime = vim_localtime(&tt, &tmval);
+	if (vim_time() - tt < (60L * 60L * 12L))
 	    /* within 12 hours */
 	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
 	else
@@ -3166,22 +3146,26 @@ u_add_time(buf, buflen, tt)
     }
     else
 #endif
-	vim_snprintf((char *)buf, buflen, _("%ld seconds ago"),
-						     (long)(time(NULL) - tt));
+    {
+	long seconds = (long)(vim_time() - tt);
+
+	vim_snprintf((char *)buf, buflen,
+		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
+		seconds);
+    }
 }
 
 /*
  * ":undojoin": continue adding to the last entry list
  */
     void
-ex_undojoin(eap)
-    exarg_T *eap UNUSED;
+ex_undojoin(exarg_T *eap UNUSED)
 {
     if (curbuf->b_u_newhead == NULL)
 	return;		    /* nothing changed before */
     if (curbuf->b_u_curhead != NULL)
     {
-	EMSG(_("E790: undojoin is not allowed after undo"));
+	emsg(_("E790: undojoin is not allowed after undo"));
 	return;
     }
     if (!curbuf->b_u_synced)
@@ -3189,11 +3173,8 @@ ex_undojoin(eap)
     if (get_undolevel() < 0)
 	return;		    /* no entries, nothing to do */
     else
-    {
-	/* Go back to the last entry */
-	curbuf->b_u_curhead = curbuf->b_u_newhead;
-	curbuf->b_u_synced = FALSE;  /* no entries, nothing to do */
-    }
+	/* Append next change to the last entry */
+	curbuf->b_u_synced = FALSE;
 }
 
 /*
@@ -3201,8 +3182,7 @@ ex_undojoin(eap)
  * Now an undo means that the buffer is modified.
  */
     void
-u_unchanged(buf)
-    buf_T	*buf;
+u_unchanged(buf_T *buf)
 {
     u_unch_branch(buf->b_u_oldhead);
     buf->b_did_warn = FALSE;
@@ -3213,7 +3193,7 @@ u_unchanged(buf)
  * line that was changed and set the cursor there.
  */
     void
-u_find_first_changed()
+u_find_first_changed(void)
 {
     u_header_T	*uhp = curbuf->b_u_newhead;
     u_entry_T   *uep;
@@ -3229,17 +3209,21 @@ u_find_first_changed()
 
     for (lnum = 1; lnum < curbuf->b_ml.ml_line_count
 					      && lnum <= uep->ue_size; ++lnum)
-	if (STRCMP(ml_get_buf(curbuf, lnum, FALSE),
-						uep->ue_array[lnum - 1]) != 0)
+    {
+	char_u *p = ml_get_buf(curbuf, lnum, FALSE);
+
+	if (uep->ue_array[lnum - 1].ul_len != curbuf->b_ml.ml_line_len
+		|| memcmp(p, uep->ue_array[lnum - 1].ul_line, uep->ue_array[lnum - 1].ul_len) != 0)
 	{
-	    clearpos(&(uhp->uh_cursor));
+	    CLEAR_POS(&(uhp->uh_cursor));
 	    uhp->uh_cursor.lnum = lnum;
 	    return;
 	}
+    }
     if (curbuf->b_ml.ml_line_count != uep->ue_size)
     {
 	/* lines added or deleted at the end, put the cursor there */
-	clearpos(&(uhp->uh_cursor));
+	CLEAR_POS(&(uhp->uh_cursor));
 	uhp->uh_cursor.lnum = lnum;
     }
 }
@@ -3249,8 +3233,7 @@ u_find_first_changed()
  * used for "u".
  */
     void
-u_update_save_nr(buf)
-    buf_T *buf;
+u_update_save_nr(buf_T *buf)
 {
     u_header_T	*uhp;
 
@@ -3266,8 +3249,7 @@ u_update_save_nr(buf)
 }
 
     static void
-u_unch_branch(uhp)
-    u_header_T	*uhp;
+u_unch_branch(u_header_T *uhp)
 {
     u_header_T	*uh;
 
@@ -3284,11 +3266,11 @@ u_unch_branch(uhp)
  * If it's not valid, give an error message and return NULL.
  */
     static u_entry_T *
-u_get_headentry()
+u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	EMSG(_("E439: undo list corrupt"));
+	iemsg(_("E439: undo list corrupt"));
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3299,7 +3281,7 @@ u_get_headentry()
  *		It is called only when b_u_synced is FALSE.
  */
     static void
-u_getbot()
+u_getbot(void)
 {
     u_entry_T	*uep;
     linenr_T	extra;
@@ -3320,7 +3302,7 @@ u_getbot()
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    EMSG(_("E440: undo line missing"));
+	    iemsg(_("E440: undo line missing"));
 	    uep->ue_bot = uep->ue_top + 1;  /* assume all lines deleted, will
 					     * get all the old lines back
 					     * without deleting the current
@@ -3337,10 +3319,10 @@ u_getbot()
  * Free one header "uhp" and its entry list and adjust the pointers.
  */
     static void
-u_freeheader(buf, uhp, uhpp)
-    buf_T	    *buf;
-    u_header_T	    *uhp;
-    u_header_T	    **uhpp;	/* if not NULL reset when freeing this header */
+u_freeheader(
+    buf_T	    *buf,
+    u_header_T	    *uhp,
+    u_header_T	    **uhpp)	/* if not NULL reset when freeing this header */
 {
     u_header_T	    *uhap;
 
@@ -3372,10 +3354,10 @@ u_freeheader(buf, uhp, uhpp)
  * Free an alternate branch and any following alternate branches.
  */
     static void
-u_freebranch(buf, uhp, uhpp)
-    buf_T	    *buf;
-    u_header_T	    *uhp;
-    u_header_T	    **uhpp;	/* if not NULL reset when freeing this header */
+u_freebranch(
+    buf_T	    *buf,
+    u_header_T	    *uhp,
+    u_header_T	    **uhpp)	/* if not NULL reset when freeing this header */
 {
     u_header_T	    *tofree, *next;
 
@@ -3407,10 +3389,10 @@ u_freebranch(buf, uhp, uhpp)
  * This means that "uhp" is invalid when returning.
  */
     static void
-u_freeentries(buf, uhp, uhpp)
-    buf_T	    *buf;
-    u_header_T	    *uhp;
-    u_header_T	    **uhpp;	/* if not NULL reset when freeing this header */
+u_freeentries(
+    buf_T	    *buf,
+    u_header_T	    *uhp,
+    u_header_T	    **uhpp)	/* if not NULL reset when freeing this header */
 {
     u_entry_T	    *uep, *nuep;
 
@@ -3439,12 +3421,10 @@ u_freeentries(buf, uhp, uhpp)
  * free entry 'uep' and 'n' lines in uep->ue_array[]
  */
     static void
-u_freeentry(uep, n)
-    u_entry_T	*uep;
-    long	    n;
+u_freeentry(u_entry_T *uep, long n)
 {
     while (n > 0)
-	vim_free(uep->ue_array[--n]);
+	vim_free(uep->ue_array[--n].ul_line);
     vim_free((char_u *)uep->ue_array);
 #ifdef U_DEBUG
     uep->ue_magic = 0;
@@ -3456,22 +3436,21 @@ u_freeentry(uep, n)
  * invalidate the undo buffer; called when storage has already been released
  */
     void
-u_clearall(buf)
-    buf_T	*buf;
+u_clearall(buf_T *buf)
 {
     buf->b_u_newhead = buf->b_u_oldhead = buf->b_u_curhead = NULL;
     buf->b_u_synced = TRUE;
     buf->b_u_numhead = 0;
-    buf->b_u_line_ptr = NULL;
+    buf->b_u_line_ptr.ul_line = NULL;
+    buf->b_u_line_ptr.ul_len = 0;
     buf->b_u_line_lnum = 0;
 }
 
 /*
- * save the line "lnum" for the "U" command
+ * Save the line "lnum" for the "U" command.
  */
-    void
-u_saveline(lnum)
-    linenr_T lnum;
+    static void
+u_saveline(linenr_T lnum)
 {
     if (lnum == curbuf->b_u_line_lnum)	    /* line is already saved */
 	return;
@@ -3483,7 +3462,7 @@ u_saveline(lnum)
 	curbuf->b_u_line_colnr = curwin->w_cursor.col;
     else
 	curbuf->b_u_line_colnr = 0;
-    if ((curbuf->b_u_line_ptr = u_save_line(lnum)) == NULL)
+    if (u_save_line(&curbuf->b_u_line_ptr, lnum) == FAIL)
 	do_outofmem_msg((long_u)0);
 }
 
@@ -3492,12 +3471,12 @@ u_saveline(lnum)
  * (this is used externally for crossing a line while in insert mode)
  */
     void
-u_clearline()
+u_clearline(void)
 {
-    if (curbuf->b_u_line_ptr != NULL)
+    if (curbuf->b_u_line_ptr.ul_line != NULL)
     {
-	vim_free(curbuf->b_u_line_ptr);
-	curbuf->b_u_line_ptr = NULL;
+	VIM_CLEAR(curbuf->b_u_line_ptr.ul_line);
+	curbuf->b_u_line_ptr.ul_len = 0;
 	curbuf->b_u_line_lnum = 0;
     }
 }
@@ -3509,34 +3488,32 @@ u_clearline()
  * Careful: may trigger autocommands that reload the buffer.
  */
     void
-u_undoline()
+u_undoline(void)
 {
-    colnr_T t;
-    char_u  *oldp;
+    colnr_T	t;
+    undoline_T  oldp;
 
     if (undo_off)
 	return;
 
-    if (curbuf->b_u_line_ptr == NULL
+    if (curbuf->b_u_line_ptr.ul_line == NULL
 			|| curbuf->b_u_line_lnum > curbuf->b_ml.ml_line_count)
     {
 	beep_flush();
 	return;
     }
 
-    /* first save the line for the 'u' command */
+    // first save the line for the 'u' command
     if (u_savecommon(curbuf->b_u_line_lnum - 1,
 		       curbuf->b_u_line_lnum + 1, (linenr_T)0, FALSE) == FAIL)
 	return;
-    oldp = u_save_line(curbuf->b_u_line_lnum);
-    if (oldp == NULL)
+    if (u_save_line(&oldp, curbuf->b_u_line_lnum) == FAIL)
     {
 	do_outofmem_msg((long_u)0);
 	return;
     }
-    ml_replace(curbuf->b_u_line_lnum, curbuf->b_u_line_ptr, TRUE);
+    ml_replace_len(curbuf->b_u_line_lnum, curbuf->b_u_line_ptr.ul_line, curbuf->b_u_line_ptr.ul_len, TRUE, FALSE);
     changed_bytes(curbuf->b_u_line_lnum, 0);
-    vim_free(curbuf->b_u_line_ptr);
     curbuf->b_u_line_ptr = oldp;
 
     t = curbuf->b_u_line_colnr;
@@ -3551,60 +3528,70 @@ u_undoline()
  * Free all allocated memory blocks for the buffer 'buf'.
  */
     void
-u_blockfree(buf)
-    buf_T	*buf;
+u_blockfree(buf_T *buf)
 {
     while (buf->b_u_oldhead != NULL)
 	u_freeheader(buf, buf->b_u_oldhead, NULL);
-    vim_free(buf->b_u_line_ptr);
-}
-
-/*
- * u_save_line(): allocate memory and copy line 'lnum' into it.
- * Returns NULL when out of memory.
- */
-    static char_u *
-u_save_line(lnum)
-    linenr_T	lnum;
-{
-    return vim_strsave(ml_get(lnum));
+    vim_free(buf->b_u_line_ptr.ul_line);
 }
 
 /*
  * Check if the 'modified' flag is set, or 'ff' has changed (only need to
  * check the first character, because it can only be "dos", "unix" or "mac").
  * "nofile" and "scratch" type buffers are considered to always be unchanged.
+ * Also considers a buffer changed when a terminal window contains a running
+ * job.
  */
     int
-bufIsChanged(buf)
-    buf_T	*buf;
+bufIsChanged(buf_T *buf)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	    !bt_dontwrite(buf) &&
+#ifdef FEAT_TERMINAL
+    if (term_job_running(buf->b_term))
+	return TRUE;
 #endif
-	    (buf->b_changed || file_ff_differs(buf, TRUE));
+    return bufIsChangedNotTerm(buf);
+}
+
+/*
+ * Return TRUE if any buffer has changes.  Also buffers that are not written.
+ */
+    int
+anyBufIsChanged(void)
+{
+    buf_T *buf;
+
+    FOR_ALL_BUFFERS(buf)
+	if (bufIsChanged(buf))
+	    return TRUE;
+    return FALSE;
+}
+
+/*
+ * Like bufIsChanged() but ignoring a terminal window.
+ */
+    int
+bufIsChangedNotTerm(buf_T *buf)
+{
+    // In a "prompt" buffer we do respect 'modified', so that we can control
+    // closing the window by setting or resetting that option.
+    return (!bt_dontwrite(buf) || bt_prompt(buf))
+	&& (buf->b_changed || file_ff_differs(buf, TRUE));
 }
 
     int
-curbufIsChanged()
+curbufIsChanged(void)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	!bt_dontwrite(curbuf) &&
-#endif
-	(curbuf->b_changed || file_ff_differs(curbuf, TRUE));
+    return bufIsChanged(curbuf);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
 /*
  * For undotree(): Append the list of undo blocks at "first_uhp" to "list".
  * Recursive.
  */
-    void
-u_eval_tree(first_uhp, list)
-    u_header_T  *first_uhp;
-    list_T	*list;
+    static void
+u_eval_tree(u_header_T *first_uhp, list_T *list)
 {
     u_header_T  *uhp = first_uhp;
     dict_T	*dict;
@@ -3614,14 +3601,14 @@ u_eval_tree(first_uhp, list)
 	dict = dict_alloc();
 	if (dict == NULL)
 	    return;
-	dict_add_nr_str(dict, "seq", uhp->uh_seq, NULL);
-	dict_add_nr_str(dict, "time", (long)uhp->uh_time, NULL);
+	dict_add_number(dict, "seq", uhp->uh_seq);
+	dict_add_number(dict, "time", (long)uhp->uh_time);
 	if (uhp == curbuf->b_u_newhead)
-	    dict_add_nr_str(dict, "newhead", 1, NULL);
+	    dict_add_number(dict, "newhead", 1);
 	if (uhp == curbuf->b_u_curhead)
-	    dict_add_nr_str(dict, "curhead", 1, NULL);
+	    dict_add_number(dict, "curhead", 1);
 	if (uhp->uh_save_nr > 0)
-	    dict_add_nr_str(dict, "save", uhp->uh_save_nr, NULL);
+	    dict_add_number(dict, "save", uhp->uh_save_nr);
 
 	if (uhp->uh_alt_next.ptr != NULL)
 	{
@@ -3639,4 +3626,62 @@ u_eval_tree(first_uhp, list)
 	uhp = uhp->uh_prev.ptr;
     }
 }
+
+/*
+ * "undofile(name)" function
+ */
+    void
+f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+#ifdef FEAT_PERSISTENT_UNDO
+    {
+	char_u *fname = tv_get_string(&argvars[0]);
+
+	if (*fname == NUL)
+	{
+	    /* If there is no file name there will be no undo file. */
+	    rettv->vval.v_string = NULL;
+	}
+	else
+	{
+	    char_u *ffname = FullName_save(fname, TRUE);
+
+	    if (ffname != NULL)
+		rettv->vval.v_string = u_get_undo_file_name(ffname, FALSE);
+	    vim_free(ffname);
+	}
+    }
+#else
+    rettv->vval.v_string = NULL;
+#endif
+}
+
+/*
+ * "undotree()" function
+ */
+    void
+f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_dict_alloc(rettv) == OK)
+    {
+	dict_T *dict = rettv->vval.v_dict;
+	list_T *list;
+
+	dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
+	dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
+	dict_add_number(dict, "save_last", (long)curbuf->b_u_save_nr_last);
+	dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
+	dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
+	dict_add_number(dict, "save_cur", (long)curbuf->b_u_save_nr_cur);
+
+	list = list_alloc();
+	if (list != NULL)
+	{
+	    u_eval_tree(curbuf->b_u_oldhead, list);
+	    dict_add_list(dict, "entries", list);
+	}
+    }
+}
+
 #endif

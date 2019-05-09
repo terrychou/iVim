@@ -1,7 +1,7 @@
 " Vim syntax file
-" Language:         ld(1) script
-" Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Language:             ld(1) script
+" Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
+" Latest Revision:      2006-04-19
 
 if exists("b:current_syntax")
   finish
@@ -48,7 +48,7 @@ syn match   ldSpecSections  '\.\%(text\|data\|bss\|symver\)\>'
 
 syn match   ldNumber        display '\<0[xX]\x\+\>'
 syn match   ldNumber        display '\d\+[KM]\>' contains=ldNumberMult
-syn match   ldNumberMult    display '[KM]\>'
+syn match   ldNumberMult    display '\(\d\+\)\@<=[KM]\>'
 syn match   ldOctal         contained display '\<0\o\+\>'
                             \ contains=ldOctalZero
 syn match   ldOctalZero     contained display '\<0'

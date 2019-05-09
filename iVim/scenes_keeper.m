@@ -13,6 +13,10 @@
 #define TONSSTRING(chars) [[NSString alloc] initWithUTF8String:(const char *)(chars)]
 #define TOCHARS(str) (char_u *)[(str) UTF8String]
 
+// global variable to mark whether need to do
+// post work or not, to prevent possible abundant
+// post work.
+static BOOL post_done = NO;
 
 /*
  * create directory at path if not exist yet
@@ -363,16 +367,16 @@ static NSString *regex_for_old(NSString *old) {
 }
 
 typedef NSUInteger (^AbsolutePathsCorrector)(NSMutableString *);
-typedef void (^CorrectTask)(AbsolutePathsCorrector);
+typedef BOOL (^CorrectTask)(AbsolutePathsCorrector);
 
-static void correct_absolute_paths_with(CorrectTask task) {
+static BOOL correct_absolute_paths_with(CorrectTask task) {
     NSString *lap = last_app_prefix();
     if (!lap) {
-        return;
+        return YES;
     }
     NSString *cap = app_dir();
     if ([lap isEqualToString:cap]) { // application prefix did not change
-        return;
+        return YES;
     }
     NSString *app_data_regex = regex_for_old(lap);
     NSString *crp = TONSSTRING(mch_getenv("VIMRUNTIME"));
@@ -388,15 +392,16 @@ static void correct_absolute_paths_with(CorrectTask task) {
                                       crp);
         return ret;
     };
-    task(corrector);
+    
+    return task(corrector);
 }
 
-static void correct_absolute_paths_in_file(NSString *(*path_block)(void)) {
-    correct_absolute_paths_with(^(AbsolutePathsCorrector corrector) {
+static BOOL correct_absolute_paths_in_file(NSString *(*path_block)(void)) {
+    return correct_absolute_paths_with(^(AbsolutePathsCorrector corrector) {
         NSError *err;
         NSString *path = path_block();
         if (!path) {
-            return;
+            return YES;
         }
         NSMutableString *content = [NSMutableString
                                     stringWithContentsOfFile:path
@@ -404,7 +409,7 @@ static void correct_absolute_paths_in_file(NSString *(*path_block)(void)) {
                                     error:&err];
         if (!content) {
             NSLog(@"failed to read file: %@", [err localizedDescription]);
-            return;
+            return NO;
         }
         NSUInteger replaced = corrector(content);
         NSLog(@"%lu paths corrected in file %@", (unsigned long)replaced, path);
@@ -413,7 +418,9 @@ static void correct_absolute_paths_in_file(NSString *(*path_block)(void)) {
                                          encoding:NSUTF8StringEncoding
                                             error:&err]) {
             NSLog(@"failed to write file: %@", [err localizedDescription]);
+            return NO;
         }
+        return YES;
     });
 }
 
@@ -426,10 +433,26 @@ static void correct_absolute_paths_in_file(NSString *(*path_block)(void)) {
  *
  * could be nil
  */
+static char_u *find_viminfo_parameter(int type) {
+    char_u  *p;
+
+    for (p = p_viminfo; *p; ++p)
+    {
+    if (*p == type)
+        return p + 1;
+    if (*p == 'n')            // 'n' is always the last one
+        break;
+    p = vim_strchr(p, ',');        // skip until next ','
+    if (p == NULL)            // hit the end without finding parameter
+        break;
+    }
+    return NULL;
+}
+
 static char_u *full_viminfo_path(void) {
     char_u *path = NULL;
-    if (use_viminfo != NULL) {
-        path = use_viminfo;
+    if (*p_viminfofile != NUL) {
+        path = p_viminfofile;
     } else if ((path = find_viminfo_parameter('n')) == NULL ||
                *path == NUL) {
         path = (char_u *)VIMINFO_FILE;
@@ -499,19 +522,19 @@ static void correct_viminfo(void) {
     correct_absolute_paths_with(^(AbsolutePathsCorrector corrector) {
         NSString *opath = last_viminfo_path();
         if (!opath) {
-            return;
+            return YES;
         }
         FILE *op = NULL;
         FILE *tp = NULL;
         if ((op = fopen([opath UTF8String], "r")) == NULL) {
             NSLog(@"failed to open viminfo file %@", opath);
-            return;
+            return YES;
         }
         NSString *tpath = [NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
         if ((tp = fopen([tpath UTF8String], "w")) == NULL) {
             NSLog(@"failed to create temp viminfo file %@", tpath);
             fclose(op);
-            return;
+            return YES;
         }
         size_t len;
         NSUInteger replaced = 0;
@@ -578,6 +601,8 @@ static void correct_viminfo(void) {
                       [err localizedDescription]);
             }
         }
+        
+        return YES;
     });
 }
 
@@ -592,13 +617,11 @@ void scenes_keeper_stash(void) {
     if (should_restore) {
         clean_dir(buffer_scenes_dir());
     }
-    buf_T *buf;
-    char_u fspath[MAXPATHL];
-    char_u *spath;
     FILE *slp;
     FILE *bmlp = NULL;
     FILE *mflp = NULL;
     NSMutableArray<NSValue *> *changed_bufs = nil;
+    NSMutableDictionary<NSValue *, NSValue *> *corrected = nil;
     NSString *mirrorDir = nil;
     if ((slp = fopen([swap_file_list_path() UTF8String], "w")) == NULL) {
         NSLog(@"failed to create swap file list");
@@ -617,14 +640,21 @@ void scenes_keeper_stash(void) {
             return;
         }
         changed_bufs = [NSMutableArray array];
+        corrected = [NSMutableDictionary dictionary];
         mirrorDir = [[[NSFileManager defaultManager] mirrorDirectoryURL] path];
     }
     
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
+    enumerate_bufs_with_corrected(^(buf_T *buf, char_u *ffname, BOOL should_correct) {
         if (should_restore) {
+            if (should_correct) {
+                // work around the [No Name] netrw buffer problem
+//                NSLog(@"local dir: %s", ffname);
+                corrected[[NSValue valueWithPointer:buf]] = [NSValue valueWithPointer:buf->b_ffname];
+                buf->b_ffname = ffname;
+            }
             // record mirrored file paths
             if (buf->b_ffname &&
-                buf->b_p_bl && // is in buffer list
+                (buf->b_p_bl || buf->b_nwindows > 0) &&
                 is_path_under(TONSSTRING(buf->b_ffname), mirrorDir)) {
                 fputs((char *)path_relative_to_app(buf->b_ffname), mflp);
                 fputc('\n', mflp);
@@ -645,6 +675,8 @@ void scenes_keeper_stash(void) {
             }
         }
         // record swap file paths
+        char_u fspath[MAXPATHL];
+        char_u *spath;
         if (buf->b_ml.ml_mfp && buf->b_ml.ml_mfp->mf_fname) {
             spath = buf->b_ml.ml_mfp->mf_fname;
             if (!mch_isFullName(spath) &&
@@ -654,7 +686,7 @@ void scenes_keeper_stash(void) {
             fputs((char *)path_relative_to_app(spath), slp);
             fputc('\n', slp);
         }
-    }
+    });
     fclose(slp);
     record_last_app_prefix();
     // write viminfo file
@@ -673,9 +705,15 @@ void scenes_keeper_stash(void) {
     do_cmdline_cmd(TOCHARS(cmd));
     
     // restore changed dir buffers
+    buf_T *buf = NULL;
     for (NSValue *v in changed_bufs) {
         buf = (buf_T *)[v pointerValue];
         buf->b_p_bl = FALSE;
+    }
+    // restore corrected ffnames
+    for (NSValue *k in corrected) {
+        buf = (buf_T *)[k pointerValue];
+        buf->b_ffname = (char_u *)[[corrected objectForKey:k] pointerValue];
     }
 }
 
@@ -761,8 +799,8 @@ static void enumerate_buffer_mappings(void (*task)(NSString *bpath, NSString *op
 /*
  * correct file paths in session files
  */
-static void correct_session_file(void) {
-    correct_absolute_paths_in_file(session_file_path);
+static BOOL correct_session_file(void) {
+    return correct_absolute_paths_in_file(session_file_path);
 }
 
 /*
@@ -831,14 +869,26 @@ static void temporarily_sub(NSString *bpath, NSString *opath) {
         
 }
 
-void scenes_keeper_restore_prepare(void) {
+static void run_pending_url_task(void);
+
+BOOL scenes_keeper_restore_prepare(void) {
     remove_swap_files();
     correct_viminfo();
     if (should_auto_restore()) {
-        correct_session_file();
+        if (!correct_session_file()) {
+            // give up all post-restore work
+            // actually, scenes_keeper_restore_post
+            // won't launch due to return NO
+            post_done = YES;
+            // run possible pending url task
+            run_pending_url_task();
+            return NO;
+        }
         restore_pickinfos();
         enumerate_buffer_mappings(temporarily_sub);
     }
+    
+    return YES;
 }
 
 /*
@@ -882,21 +932,21 @@ static void restore_origin(NSString *bpath, NSString *opath) {
 
 /*
  * remove items under given directories
- * and not in buffer list
+ * and not in buffer list or in active pickinfo mirrors
  *
  * all subitem in given directories needs to be uuid
  */
 static void remove_leftover_items_under(NSArray<NSString *> *dirs) {
-    buf_T *buf;
     NSError *err;
     NSString *path;
     NSFileManager *fm = [NSFileManager defaultManager];
-    NSMutableArray<NSString *> *bpaths = [NSMutableArray array];
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf->b_ffname && (buf->b_p_bl || buf->b_nwindows > 0)) {
-            [bpaths addObject:TONSSTRING(buf->b_ffname)];
+    NSMutableSet<NSString *> *to_keep = [NSMutableSet setWithArray:[[PickInfoManager shared] activeMirrorPaths]];
+//    NSLog(@"active mirrors: %@", to_keep);
+    enumerate_bufs_with_corrected(^(buf_T *buf, char_u *ffname, BOOL _) {
+        if (ffname != NULL && (buf->b_p_bl || buf->b_nwindows > 0)) {
+            [to_keep addObject:TONSSTRING(ffname)];
         }
-    }
+    });
     NSArray<NSString *> *subitems;
     BOOL to_delete;
     for (NSString *dir in dirs) {
@@ -908,8 +958,8 @@ static void remove_leftover_items_under(NSArray<NSString *> *dirs) {
         }
         for (NSString *si in subitems) {
             to_delete = YES;
-            for (NSString *bpath in bpaths) {
-                if ([bpath containsString:si]) {
+            for (NSString *keep_path in to_keep) {
+                if ([keep_path containsString:si]) {
                     to_delete = NO;
                     break;
                 }
@@ -940,14 +990,11 @@ static void remove_leftover_items_under(NSArray<NSString *> *dirs) {
  * them.
  */
 static void unlist_dir_buffers(void) {
-    buf_T *buf;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf->b_ffname && mch_isdir(buf->b_ffname)) {
-            if (buf->b_p_bl) {
-                buf->b_p_bl = FALSE;
-            }
+    enumerate_bufs_with_corrected(^(buf_T *buf, char_u *ffname, BOOL _) {
+        if (ffname != NULL && mch_isdir(ffname) && buf->b_p_bl) {
+            buf->b_p_bl = FALSE;
         }
-    }
+    });
 }
 
 /*
@@ -960,7 +1007,6 @@ static void unlist_dir_buffers(void) {
 
 typedef void (^SKPendingURLTask)(void);
 static SKPendingURLTask pendingURLTask = nil;
-static BOOL post_done = NO;
 
 BOOL scene_keeper_add_pending_url_task(SKPendingURLTask task) {
     BOOL added = NO;

@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.4.  Last change: 2012 Aug 02
+*if_tcl.txt*    For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -16,9 +16,8 @@ The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
 8. Examples				|tcl-examples|
 9. Dynamic loading			|tcl-dynamic|
 
-{Vi does not have any of these commands} *E280* *E281*
-
-The Tcl interface only works when Vim was compiled with the |+tcl| feature.
+*E280*
+{only available when Vim was compiled with the |+tcl| feature}
 
 WARNING: There are probably still some bugs.  Please send bug reports,
 comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
@@ -31,7 +30,7 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			is working: >
 				:tcl puts "Hello"
 
-:[range]tc[l] << {endmarker}
+:[range]tc[l] << [endmarker]
 {script}
 {endmarker}
 			Execute Tcl script {script}.
@@ -39,9 +38,11 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-{endmarker} must NOT be preceded by any white space.  If {endmarker} is
-omitted from after the "<<", a dot '.' must be used after {script}, like for
-the |:append| and |:insert| commands.
+The {endmarker} after {script} must NOT be preceded by any white space.
+
+If [endmarker] is omitted from after the "<<", a dot '.' must be used after
+{script}, like for the |:append| and |:insert| commands.
+
 This form of the |:tcl| command is mainly useful for including tcl code in Vim
 scripts.
 
@@ -54,6 +55,9 @@ Example: >
 	EOF
 	endfunction
 <
+To see what version of Tcl you have: >
+	:tcl puts [info patchlevel]
+<
 
 							*:tcldo* *:tcld*
 :[range]tcld[o] {cmd}	Execute Tcl command {cmd} for each line in [range]
@@ -63,12 +67,11 @@ Example: >
 			possible to add or delete lines using this command.
 			If {cmd} returns an error, the command is interrupted.
 			The default for [range] is the whole file: "1,$".
-			See |tcl-var-line| and |tcl-var-lnum|.  {not in Vi}
+			See |tcl-var-line| and |tcl-var-lnum|.
 
 							*:tclfile* *:tclf*
 :tclf[ile] {file}	Execute the Tcl script in {file}.  This is the same as
 			":tcl source {file}", but allows file name completion.
-			{not in Vi}
 
 
 Note that Tcl objects (like variables) persist from one command to the next,
@@ -515,19 +518,30 @@ startup file (usually "~/.vimrc" on Unix):
 ==============================================================================
 9. Dynamic loading					*tcl-dynamic*
 
-On MS-Windows the Tcl library can be loaded dynamically.  The |:version|
-output then includes |+tcl/dyn|.
+On MS-Windows and Unix the Tcl library can be loaded dynamically.  The
+|:version| output then includes |+tcl/dyn|.
 
-This means that Vim will search for the Tcl DLL file only when needed.  When
-you don't use the Tcl interface you don't need it, thus you can use Vim
-without this DLL file.
+This means that Vim will search for the Tcl DLL or shared library file only
+when needed.  When you don't use the Tcl interface you don't need it, thus you
+can use Vim without this file.
+
+
+MS-Windows ~
 
 To use the Tcl interface the Tcl DLL must be in your search path.  In a
-console window type "path" to see what directories are used.
+console window type "path" to see what directories are used.  The 'tcldll'
+option can be also used to specify the Tcl DLL.
 
 The name of the DLL must match the Tcl version Vim was compiled with.
-Currently the name is "tcl83.dll".  That is for Tcl 8.3.  To know for sure
+Currently the name is "tcl86.dll".  That is for Tcl 8.6.  To know for sure
 edit "gvim.exe" and search for "tcl\d*.dll\c".
 
+
+Unix ~
+
+The 'tcldll' option can be used to specify the Tcl shared library file instead
+of DYNAMIC_TCL_DLL file what was specified at compile time.  The version of
+the shared library must match the Tcl version Vim was compiled with.
+
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

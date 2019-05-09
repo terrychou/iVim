@@ -75,9 +75,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let workingDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         vim_setenv("HOME", workingDir)
         FileManager.default.changeCurrentDirectoryPath(workingDir)
-        scenes_keeper_restore_prepare();
         var args = ["vim"]
-        if let spath = scene_keeper_valid_session_file_path() {
+        if !scenes_keeper_restore_prepare() {
+            gSVO.showError("failed to auto-restore")
+        } else if let spath = scene_keeper_valid_session_file_path() {
             let rCmd = "silent! source \(spath) | " +
             "silent! idocuments session"
             args += ["-c", rCmd]

@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 7.4.  Last change: 2014 Sep 19
+*helphelp.txt*	For Vim version 8.1.  Last change: 2019 May 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -24,14 +24,19 @@ Help on help files					*helphelp*
 			the very top.
 			The 'helplang' option is used to select a language, if
 			the main help file is available in several languages.
-			{not in Vi}
 
 						*{subject}* *E149* *E661*
 :h[elp] {subject}	Like ":help", additionally jump to the tag {subject}.
-			{subject} can include wildcards like "*", "?" and
+			For example:  >
+				:help options
+
+<			{subject} can include wildcards such as "*", "?" and
 			"[a-z]":
 			   :help z?	jump to help for any "z" command
 			   :help z.	jump to the help for "z."
+			But when a tag exists it is taken literally:
+			   :help :?	jump to help for ":?"
+
 			If there is no full match for the pattern, or there
 			are several matches, the "best" match will be used.
 			A sophisticated algorithm is used to decide which
@@ -68,18 +73,19 @@ Help on help files					*helphelp*
 			example to find help for CTRL-V in Insert mode: >
 				:help i^V
 <
-			To use a regexp |pattern|, first do ":help" and then
+			It is also possible to first do ":help" and then
 			use ":tag {pattern}" in the help window.  The
 			":tnext" command can then be used to jump to other
 			matches, "tselect" to list matches and choose one. >
-				:help index| :tse z.
+				:help index
+				:tselect /.*mode
 
 <			When there is no argument you will see matches for
 			"help", to avoid listing all possible matches (that
 			would be very slow).
 			The number of matches displayed is limited to 300.
 
-			This command can be followed by '|' and another
+			The `:help` command can be followed by '|' and another
 			command, but you don't need to escape the '|' inside a
 			help command.  So these both work: >
 				:help |
@@ -90,7 +96,6 @@ Help on help files					*helphelp*
 			command from a following command.  You need to type
 			CTRL-V first to insert the <LF> or <CR>.  Example: >
 				:help so<C-V><CR>only
-<			{not in Vi}
 
 :h[elp]! [subject]	Like ":help", but in non-English help files prefer to
 			find a tag in a file with the same language as the
@@ -126,7 +131,6 @@ Help on help files					*helphelp*
 			|:execute| when needed.
 			Compressed help files will not be searched (Fedora
 			compresses the help files).
-			{not in Vi}
 
 							*:lh* *:lhelpgrep*
 :lh[elpgrep] {pattern}[@xx]
@@ -135,15 +139,16 @@ Help on help files					*helphelp*
 			already opened, then the location list for that window
 			is used.  Otherwise, a new help window is opened and
 			the location list for that window is set.  The
-			location list for the current window is not changed.
+			location list for the current window is not changed
+			then.
 
 							*:exu* *:exusage*
 :exu[sage]		Show help on Ex commands.  Added to simulate the Nvi
-			command. {not in Vi}
+			command.
 
 							*:viu* *:viusage*
 :viu[sage]		Show help on Normal mode commands.  Added to simulate
-			the Nvi command. {not in Vi}
+			the Nvi command.
 
 When no argument is given to |:help| the file given with the 'helpfile' option
 will be opened.  Otherwise the specified tag is searched for in all "doc/tags"
@@ -191,12 +196,14 @@ command: >
 			Only for backwards compatibility.  It now executes the
 			ToolBar.FindHelp menu entry instead of using a builtin
 			dialog.  {only when compiled with |+GUI_GTK|}
-			{not in Vi}
 
 					*:helpt* *:helptags*
 				*E154* *E150* *E151* *E152* *E153* *E670*
 :helpt[ags] [++t] {dir}
 			Generate the help tags file(s) for directory {dir}.
+			When {dir} is ALL then all "doc" directories in
+			'runtimepath' will be used.
+
 			All "*.txt" and "*.??x" files in the directory and
 			sub-directories are scanned for a help tag definition
 			in between stars.  The "*.??x" files are for
@@ -205,14 +212,14 @@ command: >
 			sorted.
 			When there are duplicates an error message is given.
 			An existing tags file is silently overwritten.
+
 			The optional "++t" argument forces adding the
 			"help-tags" tag.  This is also done when the {dir} is
 			equal to $VIMRUNTIME/doc.
+
 			To rebuild the help tags in the runtime directory
 			(requires write permission there): >
 				:helptags $VIMRUNTIME/doc
-<			{not in Vi}
-
 
 ==============================================================================
 2. Translated help files				*help-translated*
@@ -258,7 +265,9 @@ The second one finds the English user manual, even when 'helplang' is set to
 
 When using command-line completion for the ":help" command, the "@en"
 extension is only shown when a tag exists for multiple languages.  When the
-tag only exists for English "@en" is omitted.
+tag only exists for English "@en" is omitted.  When the first candidate has an
+"@ab" extension and it matches the first language in 'helplang' "@ab" is also
+omitted.
 
 When using |CTRL-]| or ":help!" in a non-English help file Vim will try to
 find the tag in the same language.  If not found then 'helplang' will be used
@@ -300,7 +309,7 @@ the applicable Vim version.  The last field specifies the last modification
 date of the file.  Each field is separated by a tab.
 
 At the bottom of the help file, place a Vim modeline to set the 'textwidth'
-and 'tabstop' options and the 'filetype' to 'help'.  Never set a global option
+and 'tabstop' options and the 'filetype' to "help".  Never set a global option
 in such a modeline, that can have consequences undesired by whoever reads that
 help.
 
@@ -314,6 +323,10 @@ aligned on a line.
 
 When referring to an existing help tag and to create a hot-link, place the
 name between two bars (|) eg. |help-writing|.
+
+When referring to a Vim command and to create a hot-link, place the
+name between two backticks, eg. inside `:filetype`.  You will see this is
+highlighted as a command, like a code block (see below).
 
 When referring to a Vim option in the help file, place the option name between
 two single quotes, eg. 'statusline'
@@ -351,4 +364,4 @@ highlighting.  So do these:
 
 You can find the details in $VIMRUNTIME/syntax/help.vim
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

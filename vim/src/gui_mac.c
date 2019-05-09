@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *				GUI/Motif support by Robert Webb
@@ -48,11 +48,7 @@
 
 /* Vim's Scrap flavor. */
 #define VIMSCRAPFLAVOR 'VIM!'
-#ifdef FEAT_MBYTE
-# define SCRAPTEXTFLAVOR kScrapFlavorTypeUnicode
-#else
-# define SCRAPTEXTFLAVOR kScrapFlavorTypeText
-#endif
+#define SCRAPTEXTFLAVOR kScrapFlavorTypeUnicode
 
 static EventHandlerUPP mouseWheelHandlerUPP = NULL;
 SInt32 gMacSystemVersion;
@@ -61,13 +57,13 @@ SInt32 gMacSystemVersion;
 # define USE_CARBONKEYHANDLER
 
 static int im_is_active = FALSE;
-#if 0
+# if 0
     /* TODO: Implement me! */
 static int im_start_row = 0;
 static int im_start_col = 0;
-#endif
+# endif
 
-#define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
+# define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
 
 static TSMDocumentID gTSMDocument;
 
@@ -169,9 +165,7 @@ static struct
 # define USE_ATSUI_DRAWING
 int	    p_macatsui_last;
 ATSUStyle   gFontStyle;
-# ifdef FEAT_MBYTE
 ATSUStyle   gWideFontStyle;
-# endif
 Boolean	    gIsFontFallbackSet;
 UInt32      useAntialias_cached = 0x0;
 #endif
@@ -267,9 +261,7 @@ static struct
 /*  {XK_Help,		'%', '1'}, */
 /*  {XK_Undo,		'&', '8'}, */
 /*  {XK_BackSpace,	'k', 'b'}, */
-#ifndef MACOS_X
-    {vk_Delete,		'k', 'b'},
-#endif
+/*  {vk_Delete,		'k', 'b'}, */
     {vk_Insert,		'k', 'I'},
     {vk_FwdDelete,	'k', 'D'},
     {vk_Home,		'k', 'h'},
@@ -302,7 +294,6 @@ static WindowRef drawer = NULL; // TODO: put into gui.h
 
 #ifdef USE_ATSUI_DRAWING
 static void gui_mac_set_font_attributes(GuiFont font);
-static void gui_mac_dispose_atsui_style(void);
 #endif
 
 /*
@@ -369,9 +360,7 @@ C2Pascal_save_and_remove_backslash(char_u *Cstring)
 	for (c = Cstring, p = PascalString+1, len = 0; (*c != 0) && (len < 255); c++)
 	{
 	    if ((*c == '\\') && (c[1] != 0))
-	    {
 		c++;
-	    }
 	    *p = *c;
 	    p++;
 	    len++;
@@ -547,7 +536,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
 	return fnames;
 
     /* Allocate the pointer list */
-    fnames = (char_u **) alloc(*numFiles * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, *numFiles);
 
     /* Empty out the list */
     for (fileCount = 0; fileCount < *numFiles; fileCount++)
@@ -633,7 +622,7 @@ Handle_KAHL_SRCH_AE(
     if (error)
 	return error;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL
 		&& SearchData.theFile.parID == buf->b_FSSpec.parID
 		&& SearchData.theFile.name[0] == buf->b_FSSpec.name[0]
@@ -725,7 +714,7 @@ Handle_KAHL_MOD_AE(
 #endif
 
     numFiles = 0;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL)
 	{
 	    /* Add this file to the list */
@@ -807,7 +796,7 @@ Handle_KAHL_GTTX_AE(
     if (error)
 	return error;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL)
 	    if (GetTextData.theFile.parID == buf->b_FSSpec.parID)
 	    {
@@ -1009,6 +998,55 @@ struct SelectionRange /* for handling kCoreClassEvent:kOpenDocuments:keyAEPositi
     long theDate; // modification date/time
 };
 
+static long drop_numFiles;
+static short drop_gotPosition;
+static SelectionRange drop_thePosition;
+
+    static void
+drop_callback(void *cookie UNUSED)
+{
+    /* TODO: Handle the goto/select line more cleanly */
+    if ((drop_numFiles == 1) & (drop_gotPosition))
+    {
+	if (drop_thePosition.lineNum >= 0)
+	{
+	    lnum = drop_thePosition.lineNum + 1;
+	/*  oap->motion_type = MLINE;
+	    setpcmark();*/
+	    if (lnum < 1L)
+		lnum = 1L;
+	    else if (lnum > curbuf->b_ml.ml_line_count)
+		lnum = curbuf->b_ml.ml_line_count;
+	    curwin->w_cursor.lnum = lnum;
+	    curwin->w_cursor.col = 0;
+	/*  beginline(BL_SOL | BL_FIX);*/
+	}
+	else
+	    goto_byte(drop_thePosition.startRange + 1);
+    }
+
+    /* Update the screen display */
+    update_screen(NOT_VALID);
+
+    /* Select the text if possible */
+    if (drop_gotPosition)
+    {
+	VIsual_active = TRUE;
+	VIsual_select = FALSE;
+	VIsual = curwin->w_cursor;
+	if (drop_thePosition.lineNum < 0)
+	{
+	    VIsual_mode = 'v';
+	    goto_byte(drop_thePosition.endRange);
+	}
+	else
+	{
+	    VIsual_mode = 'V';
+	    VIsual.col = 0;
+	}
+    }
+}
+
 /* The IDE uses the optional keyAEPosition parameter to tell the ed-
    itor the selection range. If lineNum is zero or greater, scroll the text
    to the specified line. If lineNum is less than zero, use the values in
@@ -1107,55 +1145,18 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	}
 
 	/* Change directory to the location of the first file. */
-	if (GARGCOUNT > 0 && vim_chdirfile(alist_name(&GARGLIST[0])) == OK)
+	if (GARGCOUNT > 0
+		      && vim_chdirfile(alist_name(&GARGLIST[0]), "drop") == OK)
 	    shorten_fnames(TRUE);
 
 	goto finished;
     }
 
     /* Handle the drop, :edit to get to the file */
-    handle_drop(numFiles, fnames, FALSE);
-
-    /* TODO: Handle the goto/select line more cleanly */
-    if ((numFiles == 1) & (gotPosition))
-    {
-	if (thePosition.lineNum >= 0)
-	{
-	    lnum = thePosition.lineNum + 1;
-	/*  oap->motion_type = MLINE;
-	    setpcmark();*/
-	    if (lnum < 1L)
-		lnum = 1L;
-	    else if (lnum > curbuf->b_ml.ml_line_count)
-		lnum = curbuf->b_ml.ml_line_count;
-	    curwin->w_cursor.lnum = lnum;
-	    curwin->w_cursor.col = 0;
-	/*  beginline(BL_SOL | BL_FIX);*/
-	}
-	else
-	    goto_byte(thePosition.startRange + 1);
-    }
-
-    /* Update the screen display */
-    update_screen(NOT_VALID);
-
-    /* Select the text if possible */
-    if (gotPosition)
-    {
-	VIsual_active = TRUE;
-	VIsual_select = FALSE;
-	VIsual = curwin->w_cursor;
-	if (thePosition.lineNum < 0)
-	{
-	    VIsual_mode = 'v';
-	    goto_byte(thePosition.endRange);
-	}
-	else
-	{
-	    VIsual_mode = 'V';
-	    VIsual.col = 0;
-	}
-    }
+    drop_numFiles = numFiles;
+    drop_gotPosition = gotPosition;
+    drop_thePosition = thePosition;
+    handle_drop(numFiles, fnames, FALSE, drop_callback, NULL);
 
     setcursor();
     out_flush();
@@ -1256,25 +1257,19 @@ InstallAEHandlers(void)
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_oapp_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install quit application handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEQuitApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_quit_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install open document handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
 		    NewAEEventHandlerUPP(HandleODocAE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install print document handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments,
@@ -1328,21 +1323,13 @@ InstallAEHandlers(void)
     error = AEInstallEventHandler('KAHL', 'GTTX',
 		    NewAEEventHandlerUPP(Handle_KAHL_GTTX_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
     error = AEInstallEventHandler('KAHL', 'SRCH',
 		    NewAEEventHandlerUPP(Handle_KAHL_SRCH_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
     error = AEInstallEventHandler('KAHL', 'MOD ',
 		    NewAEEventHandlerUPP(Handle_KAHL_MOD_AE), 0, false);
-    if (error)
-    {
-	return error;
-    }
 #endif
 
     return error;
@@ -1612,7 +1599,7 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
     else			/* Bottom scrollbar */
     {
 	sb_info = sb;
-	page = W_WIDTH(curwin) - 5;
+	page = curwin->w_width - 5;
     }
 
     switch (partCode)
@@ -2026,15 +2013,11 @@ gui_mac_handle_window_activate(
 	switch (eventKind)
 	{
 	    case kEventWindowActivated:
-#if defined(USE_IM_CONTROL)
 		im_on_window_switch(TRUE);
-#endif
 		return noErr;
 
 	    case kEventWindowDeactivated:
-#if defined(USE_IM_CONTROL)
 		im_on_window_switch(FALSE);
-#endif
 		return noErr;
 	}
     }
@@ -2050,30 +2033,30 @@ gui_mac_handle_text_input(
 {
     UInt32 eventClass = GetEventClass(theEvent);
     UInt32 eventKind  = GetEventKind(theEvent);
-    
+
     if (eventClass != kEventClassTextInput)
-        return eventNotHandledErr;
-    
+	return eventNotHandledErr;
+
     if ((kEventTextInputUpdateActiveInputArea != eventKind) &&
-        (kEventTextInputUnicodeForKeyEvent    != eventKind) &&
-        (kEventTextInputOffsetToPos	      != eventKind) &&
-        (kEventTextInputPosToOffset	      != eventKind) &&
-        (kEventTextInputGetSelectedText       != eventKind))
-        return eventNotHandledErr;
-    
+	(kEventTextInputUnicodeForKeyEvent    != eventKind) &&
+	(kEventTextInputOffsetToPos	      != eventKind) &&
+	(kEventTextInputPosToOffset	      != eventKind) &&
+	(kEventTextInputGetSelectedText       != eventKind))
+	      return eventNotHandledErr;
+
     switch (eventKind)
     {
-        case kEventTextInputUpdateActiveInputArea:
-            return gui_mac_update_input_area(nextHandler, theEvent);
-        case kEventTextInputUnicodeForKeyEvent:
-            return gui_mac_unicode_key_event(nextHandler, theEvent);
-            
-        case kEventTextInputOffsetToPos:
-        case kEventTextInputPosToOffset:
-        case kEventTextInputGetSelectedText:
-            break;
+    case kEventTextInputUpdateActiveInputArea:
+	return gui_mac_update_input_area(nextHandler, theEvent);
+    case kEventTextInputUnicodeForKeyEvent:
+	return gui_mac_unicode_key_event(nextHandler, theEvent);
+
+    case kEventTextInputOffsetToPos:
+    case kEventTextInputPosToOffset:
+    case kEventTextInputGetSelectedText:
+	break;
     }
-    
+
     return eventNotHandledErr;
 }
 
@@ -2122,7 +2105,7 @@ gui_mac_unicode_key_event(
 		typeUnicodeText, NULL, 0, &actualSize, NULL))
 	return eventNotHandledErr;
 
-    text = (UniChar *)alloc(actualSize);
+    text = alloc(actualSize);
     if (!text)
 	return eventNotHandledErr;
 
@@ -2269,7 +2252,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
     if (p_mh)
 	ObscureCursor();
 
-    /* Get the key code and it's ASCII representation */
+    /* Get the key code and its ASCII representation */
     key_sym = ((theEvent->message & keyCodeMask) >> 8);
     key_char = theEvent->message & charCodeMask;
     num = 1;
@@ -2382,7 +2365,6 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    /* Convert characters when needed (e.g., from MacRoman to latin1).
 	     * This doesn't work for the NUL byte. */
 	    if (input_conv.vc_type != CONV_NONE && key_char > 0)
@@ -2412,7 +2394,6 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 		    string[len++] = key_char;
 	    }
 	    else
-#endif
 		string[len++] = key_char;
 	}
 
@@ -2588,7 +2569,7 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
 bail:
     /*
      * when we fail give any additional callback handler a chance to perform
-     * it's actions
+     * its actions
      */
     return CallNextEventHandler(nextHandler, theEvent);
 }
@@ -2607,8 +2588,7 @@ gui_mch_mousehide(int hide)
  * the menu that we should display
  */
     void
-gui_mac_handle_contextual_menu(event)
-    EventRecord *event;
+gui_mac_handle_contextual_menu(EventRecord *event)
 {
 /*
  *  Clone PopUp to use menu
@@ -2995,7 +2975,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 	count = countItem;
     }
 
-    fnames = (char_u **)alloc(count * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, count);
     if (fnames == NULL)
 	return dragNotAcceptedErr;
 
@@ -3187,12 +3167,6 @@ gui_mch_init(void)
     }
 #endif
 
-/*
-#ifdef FEAT_MBYTE
-    set_option_value((char_u *)"encoding", 0L, (char_u *)"utf-8", 0);
-#endif
-*/
-
 #ifdef FEAT_GUI_TABLINE
     /*
      * Create the tabline
@@ -3246,10 +3220,8 @@ gui_mac_dispose_atsui_style(void)
 {
     if (p_macatsui && gFontStyle)
 	ATSUDisposeStyle(gFontStyle);
-#ifdef FEAT_MBYTE
     if (p_macatsui && gWideFontStyle)
 	ATSUDisposeStyle(gWideFontStyle);
-#endif
 }
 #endif
 
@@ -3422,13 +3394,11 @@ gui_mac_create_atsui_style(void)
 	if (ATSUCreateStyle(&gFontStyle) != noErr)
 	    gFontStyle = NULL;
     }
-#ifdef FEAT_MBYTE
     if (p_macatsui && gWideFontStyle == NULL)
     {
 	if (ATSUCreateStyle(&gWideFontStyle) != noErr)
 	    gWideFontStyle = NULL;
     }
-#endif
 
     p_macatsui_last = p_macatsui;
 }
@@ -3548,7 +3518,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     if (font == NOFONT)
     {
 	if (giveErrorIfMissing)
-	    EMSG2(_(e_font), name);
+	    semsg(_(e_font), name);
 	return NOFONT;
     }
     /*
@@ -3614,7 +3584,6 @@ gui_mac_set_font_attributes(GuiFont font)
 	    gFontStyle = NULL;
 	}
 
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    /* FIXME: we should use a more mbyte sensitive way to support
@@ -3629,7 +3598,6 @@ gui_mac_set_font_attributes(GuiFont font)
 		gWideFontStyle = NULL;
 	    }
 	}
-#endif
     }
 }
 #endif
@@ -3697,25 +3665,13 @@ gui_mch_set_font(GuiFont font)
  * If a font is not going to be used, free its structure.
  */
     void
-gui_mch_free_font(font)
-    GuiFont	font;
+gui_mch_free_font(GuiFont font)
 {
     /*
      * Free font when "font" is not 0.
      * Nothing to do in the current implementation, since
      * nothing is allocated for each font used.
      */
-}
-
-    static int
-hex_digit(int c)
-{
-    if (isdigit(c))
-	return c - '0';
-    c = TOLOWER_ASC(c);
-    if (c >= 'a' && c <= 'f')
-	return c - 'a' + 10;
-    return -1000;
 }
 
 /*
@@ -3730,146 +3686,19 @@ gui_mch_get_color(char_u *name)
     /* TODO: Add support for the new named color of MacOS 8
      */
     RGBColor	MacColor;
-//    guicolor_T	color = 0;
 
-    typedef struct guicolor_tTable
+    if (STRICMP(name, "hilite") == 0)
     {
-	char	    *name;
-	guicolor_T  color;
-    } guicolor_tTable;
-
-    /*
-     * The comment at the end of each line is the source
-     * (Mac, Window, Unix) and the number is the unix rgb.txt value
-     */
-    static guicolor_tTable table[] =
-    {
-	{"Black",	RGB(0x00, 0x00, 0x00)},
-	{"darkgray",	RGB(0x80, 0x80, 0x80)}, /*W*/
-	{"darkgrey",	RGB(0x80, 0x80, 0x80)}, /*W*/
-	{"Gray",	RGB(0xC0, 0xC0, 0xC0)}, /*W*/
-	{"Grey",	RGB(0xC0, 0xC0, 0xC0)}, /*W*/
-	{"lightgray",	RGB(0xE0, 0xE0, 0xE0)}, /*W*/
-	{"lightgrey",	RGB(0xE0, 0xE0, 0xE0)}, /*W*/
-	{"gray10",	RGB(0x1A, 0x1A, 0x1A)}, /*W*/
-	{"grey10",	RGB(0x1A, 0x1A, 0x1A)}, /*W*/
-	{"gray20",	RGB(0x33, 0x33, 0x33)}, /*W*/
-	{"grey20",	RGB(0x33, 0x33, 0x33)}, /*W*/
-	{"gray30",	RGB(0x4D, 0x4D, 0x4D)}, /*W*/
-	{"grey30",	RGB(0x4D, 0x4D, 0x4D)}, /*W*/
-	{"gray40",	RGB(0x66, 0x66, 0x66)}, /*W*/
-	{"grey40",	RGB(0x66, 0x66, 0x66)}, /*W*/
-	{"gray50",	RGB(0x7F, 0x7F, 0x7F)}, /*W*/
-	{"grey50",	RGB(0x7F, 0x7F, 0x7F)}, /*W*/
-	{"gray60",	RGB(0x99, 0x99, 0x99)}, /*W*/
-	{"grey60",	RGB(0x99, 0x99, 0x99)}, /*W*/
-	{"gray70",	RGB(0xB3, 0xB3, 0xB3)}, /*W*/
-	{"grey70",	RGB(0xB3, 0xB3, 0xB3)}, /*W*/
-	{"gray80",	RGB(0xCC, 0xCC, 0xCC)}, /*W*/
-	{"grey80",	RGB(0xCC, 0xCC, 0xCC)}, /*W*/
-	{"gray90",	RGB(0xE5, 0xE5, 0xE5)}, /*W*/
-	{"grey90",	RGB(0xE5, 0xE5, 0xE5)}, /*W*/
-	{"white",	RGB(0xFF, 0xFF, 0xFF)},
-	{"darkred",	RGB(0x80, 0x00, 0x00)}, /*W*/
-	{"red",		RGB(0xDD, 0x08, 0x06)}, /*M*/
-	{"lightred",	RGB(0xFF, 0xA0, 0xA0)}, /*W*/
-	{"DarkBlue",	RGB(0x00, 0x00, 0x80)}, /*W*/
-	{"Blue",	RGB(0x00, 0x00, 0xD4)}, /*M*/
-	{"lightblue",	RGB(0xA0, 0xA0, 0xFF)}, /*W*/
-	{"DarkGreen",	RGB(0x00, 0x80, 0x00)}, /*W*/
-	{"Green",	RGB(0x00, 0x64, 0x11)}, /*M*/
-	{"lightgreen",	RGB(0xA0, 0xFF, 0xA0)}, /*W*/
-	{"DarkCyan",	RGB(0x00, 0x80, 0x80)}, /*W ?0x307D7E */
-	{"cyan",	RGB(0x02, 0xAB, 0xEA)}, /*M*/
-	{"lightcyan",	RGB(0xA0, 0xFF, 0xFF)}, /*W*/
-	{"darkmagenta",	RGB(0x80, 0x00, 0x80)}, /*W*/
-	{"magenta",	RGB(0xF2, 0x08, 0x84)}, /*M*/
-	{"lightmagenta",RGB(0xF0, 0xA0, 0xF0)}, /*W*/
-	{"brown",	RGB(0x80, 0x40, 0x40)}, /*W*/
-	{"yellow",	RGB(0xFC, 0xF3, 0x05)}, /*M*/
-	{"lightyellow",	RGB(0xFF, 0xFF, 0xA0)}, /*M*/
-	{"darkyellow",	RGB(0xBB, 0xBB, 0x00)}, /*U*/
-	{"SeaGreen",	RGB(0x2E, 0x8B, 0x57)}, /*W 0x4E8975 */
-	{"orange",	RGB(0xFC, 0x80, 0x00)}, /*W 0xF87A17 */
-	{"Purple",	RGB(0xA0, 0x20, 0xF0)}, /*W 0x8e35e5 */
-	{"SlateBlue",	RGB(0x6A, 0x5A, 0xCD)}, /*W 0x737CA1 */
-	{"Violet",	RGB(0x8D, 0x38, 0xC9)}, /*U*/
-    };
-
-    int		r, g, b;
-    int		i;
-
-    if (name[0] == '#' && strlen((char *) name) == 7)
-    {
-	/* Name is in "#rrggbb" format */
-	r = hex_digit(name[1]) * 16 + hex_digit(name[2]);
-	g = hex_digit(name[3]) * 16 + hex_digit(name[4]);
-	b = hex_digit(name[5]) * 16 + hex_digit(name[6]);
-	if (r < 0 || g < 0 || b < 0)
-	    return INVALCOLOR;
-	return RGB(r, g, b);
+	LMGetHiliteRGB(&MacColor);
+	return (RGB(MacColor.red >> 8, MacColor.green >> 8, MacColor.blue >> 8));
     }
-    else
-    {
-	if (STRICMP(name, "hilite") == 0)
-	{
-	    LMGetHiliteRGB(&MacColor);
-	    return (RGB(MacColor.red >> 8, MacColor.green >> 8, MacColor.blue >> 8));
-	}
-	/* Check if the name is one of the colors we know */
-	for (i = 0; i < sizeof(table) / sizeof(table[0]); i++)
-	    if (STRICMP(name, table[i].name) == 0)
-		return table[i].color;
-    }
+    return gui_get_color_cmn(name);
+}
 
-    /*
-     * Last attempt. Look in the file "$VIM/rgb.txt".
-     */
-    {
-#define LINE_LEN 100
-	FILE	*fd;
-	char	line[LINE_LEN];
-	char_u	*fname;
-
-	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-	if (fname == NULL)
-	    return INVALCOLOR;
-
-	fd = fopen((char *)fname, "rt");
-	vim_free(fname);
-	if (fd == NULL)
-	    return INVALCOLOR;
-
-	while (!feof(fd))
-	{
-	    int		len;
-	    int		pos;
-	    char	*color;
-
-	    fgets(line, LINE_LEN, fd);
-	    len = strlen(line);
-
-	    if (len <= 1 || line[len-1] != '\n')
-		continue;
-
-	    line[len-1] = '\0';
-
-	    i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
-	    if (i != 3)
-		continue;
-
-	    color = line + pos;
-
-	    if (STRICMP(color, name) == 0)
-	    {
-		fclose(fd);
-		return (guicolor_T) RGB(r, g, b);
-	    }
-	}
-	fclose(fd);
-    }
-
-    return INVALCOLOR;
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
 }
 
 /*
@@ -3942,7 +3771,6 @@ draw_undercurl(int flags, int row, int col, int cells)
     static void
 draw_string_QD(int row, int col, char_u *s, int len, int flags)
 {
-#ifdef FEAT_MBYTE
     char_u	*tofree = NULL;
 
     if (output_conv.vc_type != CONV_NONE)
@@ -3951,7 +3779,6 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	if (tofree != NULL)
 	    s = tofree;
     }
-#endif
 
     /*
      * On OS X, try using Quartz-style text antialiasing.
@@ -3980,7 +3807,6 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 
 	rc.left = FILL_X(col);
 	rc.top = FILL_Y(row);
-#ifdef FEAT_MBYTE
 	/* Multibyte computation taken from gui_w32.c */
 	if (has_mbyte)
 	{
@@ -3988,8 +3814,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	    rc.right = FILL_X(col + mb_string2cells(s, len));
 	}
 	else
-#endif
-	rc.right = FILL_X(col + len) + (col + len == Columns);
+	    rc.right = FILL_X(col + len) + (col + len == Columns);
 	rc.bottom = FILL_Y(row + 1);
 	EraseRect(&rc);
     }
@@ -4020,9 +3845,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
     /*  SelectFont(hdc, gui.currFont); */
 
 	if (flags & DRAW_TRANSP)
-	{
 	    TextMode(srcOr);
-	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
 	DrawText((char *)s, 0, len);
@@ -4039,14 +3862,17 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	    MoveTo(FILL_X(col), FILL_Y(row + 1) - 1);
 	    LineTo(FILL_X(col + len) - 1, FILL_Y(row + 1) - 1);
 	}
+	if (flags & DRAW_STRIKE)
+	{
+	    MoveTo(FILL_X(col), FILL_Y(row + 1) - gui.char_height/2);
+	    LineTo(FILL_X(col + len) - 1, FILL_Y(row + 1) - gui.char_height/2);
+	}
     }
 
     if (flags & DRAW_UNDERC)
 	draw_undercurl(flags, row, col, len);
 
-#ifdef FEAT_MBYTE
     vim_free(tofree);
-#endif
 }
 
 #ifdef USE_ATSUI_DRAWING
@@ -4099,9 +3925,7 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 
 	/*  SelectFont(hdc, gui.currFont); */
 	if (flags & DRAW_TRANSP)
-	{
 	    TextMode(srcOr);
-	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
 
@@ -4133,7 +3957,6 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	    useAntialias_cached = useAntialias;
 	}
 
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    int n, width_in_cell, last_width_in_cell;
@@ -4195,7 +4018,6 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	    ATSUDisposeTextLayout(textLayout);
 	}
 	else
-#endif
 	{
 	    ATSUTextLayout textLayout;
 
@@ -4351,10 +4173,8 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     rc.left = FILL_X(gui.col);
     rc.top = FILL_Y(gui.row);
     rc.right = rc.left + gui.char_width;
-#ifdef FEAT_MBYTE
     if (mb_lefthalve(gui.row, gui.col))
 	rc.right += gui.char_width;
-#endif
     rc.bottom = rc.top + gui.char_height;
 
     gui_mch_set_fg_color(color);
@@ -4614,7 +4434,7 @@ gui_mch_insert_lines(int row, int num_lines)
      */
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
 
     Handle	textOfClip;
@@ -4656,7 +4476,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     /* In CARBON we don't need a Handle, a pointer is good */
     textOfClip = NewHandle(scrapSize);
 
-    /* tempclip = lalloc(scrapSize+1, TRUE); */
+    /* tempclip = alloc(scrapSize+1); */
     HLock(textOfClip);
     error = GetScrapFlavorData(scrap,
 	    flavor ? VIMSCRAPFLAVOR : SCRAPTEXTFLAVOR,
@@ -4668,7 +4488,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     else
 	type = MAUTO;
 
-    tempclip = lalloc(scrapSize + 1, TRUE);
+    tempclip = alloc(scrapSize + 1);
     mch_memmove(tempclip, *textOfClip + flavor, scrapSize);
     tempclip[scrapSize] = 0;
 
@@ -4704,7 +4524,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 }
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
     /*
      * TODO: Really nothing to do?
@@ -4712,7 +4532,7 @@ clip_mch_lose_selection(VimClipboard *cbd)
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return OK;
 }
@@ -4721,7 +4541,7 @@ clip_mch_own_selection(VimClipboard *cbd)
  * Send the current selection to the clipboard.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     Handle	textOfClip;
     long	scrapSize;
@@ -4784,13 +4604,9 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     GetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
     if (gui.which_scrollbars[SBAR_LEFT])
-    {
 	VimBound.left = -gui.scrollbar_width + 1;
-    }
     else
-    {
 	VimBound.left = 0;
-    }
 
     SetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
@@ -4831,11 +4647,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
      */
     static long	 next_avail_id = 128;
     long	 menu_after_me = 0; /* Default to the end */
-#if defined(FEAT_MBYTE)
     CFStringRef name;
-#else
-    char_u	*name;
-#endif
     short	 index;
     vimmenu_T	*parent = menu->parent;
     vimmenu_T	*brother = menu->next;
@@ -4876,12 +4688,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	 * OSStatus SetMenuTitle(MenuRef, ConstStr255Param title);
 	 */
 	menu->submenu_id = next_avail_id;
-#if defined(FEAT_MBYTE)
 	if (CreateNewMenu(menu->submenu_id, 0, (MenuRef *)&menu->submenu_handle) == noErr)
 	    SetMenuTitleWithCFString((MenuRef)menu->submenu_handle, name);
-#else
-	menu->submenu_handle = NewMenu(menu->submenu_id, name);
-#endif
 	next_avail_id++;
     }
 
@@ -4910,21 +4718,13 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	 * to avoid special character recognition by InsertMenuItem
 	 */
 	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
-#if defined(FEAT_MBYTE)
 	SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
-#else
-	SetMenuItemText(parent->submenu_handle, idx+1, name);
-#endif
 	SetItemCmd(parent->submenu_handle, idx+1, 0x1B);
 	SetItemMark(parent->submenu_handle, idx+1, menu->submenu_id);
 	InsertMenu(menu->submenu_handle, hierMenu);
     }
 
-#if defined(FEAT_MBYTE)
     CFRelease(name);
-#else
-    vim_free(name);
-#endif
 
 #if 0
     /* Done by Vim later on */
@@ -4938,11 +4738,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     void
 gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 {
-#if defined(FEAT_MBYTE)
     CFStringRef name;
-#else
-    char_u	*name;
-#endif
     vimmenu_T	*parent = menu->parent;
     int		menu_inserted;
 
@@ -4976,7 +4772,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	char_u	    *p_actext;
 
 	p_actext = menu->actext;
-	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE);
+	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE, FALSE);
 	if (*p_actext != 0)
 	    key = 0; /* error: trailing text */
 	/* find_special_key() returns a keycode with as many of the
@@ -5038,23 +4834,14 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     if (!menu_inserted)
 	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
     /* Set the menu item name. */
-#if defined(FEAT_MBYTE)
     SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
-#else
-    SetMenuItemText(parent->submenu_handle, idx+1, name);
-#endif
 
 #if 0
     /* Called by Vim */
     DrawMenuBar();
 #endif
 
-#if defined(FEAT_MBYTE)
     CFRelease(name);
-#else
-    /* TODO: Can name be freed? */
-    vim_free(name);
-#endif
 }
 
     void
@@ -5186,7 +4973,7 @@ gui_mch_set_scrollbar_thumb(
     SetControl32BitValue   (sb->id, val);
     SetControlViewSize     (sb->id, size);
 #ifdef DEBUG_MAC_SB
-    printf("thumb_sb (%x) %x, %x,%x\n",sb->id, val, size, max);
+    printf("thumb_sb (%x) %lx, %lx,%lx\n",sb->id, val, size, max);
 #endif
 }
 
@@ -5260,6 +5047,17 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 #endif
 }
 
+    int
+gui_mch_is_blinking(void)
+{
+    return FALSE;
+}
+
+    int
+gui_mch_is_blink_off(void)
+{
+    return FALSE;
+}
 
 /*
  * Cursor blink functions.
@@ -5282,9 +5080,10 @@ gui_mch_set_blinking(long wait, long on, long off)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
-    gui_update_cursor(TRUE, FALSE);
+    if (may_call_gui_update_cursor)
+	gui_update_cursor(TRUE, FALSE);
     /* TODO: TODO: TODO: TODO: */
 /*    gui_w32_rm_blink_timer();
     if (blink_state == BLINK_OFF)
@@ -5316,10 +5115,10 @@ gui_mch_start_blink(void)
 /*
  * Return the RGB value of a pixel as long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
-    return (Red(pixel) << 16) + (Green(pixel) << 8) + Blue(pixel);
+    return (guicolor_T)((Red(pixel) << 16) + (Green(pixel) << 8) + Blue(pixel));
 }
 
 
@@ -5856,9 +5655,8 @@ gui_mch_dialog(
 
     /* Hang until one of the button is hit */
     do
-    {
 	ModalDialog(dialogUPP, &itemHit);
-    } while ((itemHit < 1) || (itemHit > lastButton));
+    while ((itemHit < 1) || (itemHit > lastButton));
 
 #ifdef USE_CARBONKEYHANDLER
     dialog_busy = FALSE;
@@ -6356,7 +6154,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 }
 
-#if (defined(USE_IM_CONTROL) || defined(PROTO)) && defined(USE_CARBONKEYHANDLER)
+#if defined(USE_CARBONKEYHANDLER) || defined(PROTO)
 /*
  * Input Method Control functions.
  */
@@ -6367,11 +6165,11 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     void
 im_set_position(int row, int col)
 {
-#if 0
+# if 0
     /* TODO: Implement me! */
     im_start_row = row;
     im_start_col = col;
-#endif
+# endif
 }
 
 static ScriptLanguageRecord gTSLWindow;
@@ -6443,7 +6241,7 @@ im_set_active(int active)
     ScriptLanguageRecord *slptr = NULL;
     OSStatus err;
 
-    if (! gui.in_use)
+    if (!gui.in_use)
 	return;
 
     if (im_initialized == 0)
@@ -6505,8 +6303,7 @@ im_get_status(void)
     return im_is_active;
 }
 
-#endif /* defined(USE_IM_CONTROL) || defined(PROTO) */
-
+#endif
 
 
 
@@ -6515,7 +6312,7 @@ im_get_status(void)
 static MenuRef contextMenu = NULL;
 enum
 {
-    kTabContextMenuId = 42,
+    kTabContextMenuId = 42
 };
 
 // the caller has to CFRelease() the returned string
@@ -6557,7 +6354,7 @@ getTabCount(void)
     tabpage_T	*tp;
     int		numTabs = 0;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
 	++numTabs;
     return numTabs;
 }
@@ -6819,8 +6616,7 @@ initialise_tabline(void)
 
     // create tabline popup menu required by vim docs (see :he tabline-menu)
     CreateNewMenu(kTabContextMenuId, 0, &contextMenu);
-    if (first_tabpage->tp_next != NULL)
-	AppendMenuItemTextWithCFString(contextMenu, CFSTR("Close Tab"), 0,
+    AppendMenuItemTextWithCFString(contextMenu, CFSTR("Close Tab"), 0,
 						    TABLINE_MENU_CLOSE, NULL);
     AppendMenuItemTextWithCFString(contextMenu, CFSTR("New Tab"), 0,
 						      TABLINE_MENU_NEW, NULL);
@@ -6897,8 +6693,7 @@ gui_mch_update_tabline(void)
  * Set the current tab to "nr".  First tab is 1.
  */
     void
-gui_mch_set_curtab(nr)
-    int		nr;
+gui_mch_set_curtab(int nr)
 {
     DataBrowserItemID item = nr;
     SetDataBrowserSelectedItems(dataBrowser, 1, &item, kDataBrowserItemsAssign);

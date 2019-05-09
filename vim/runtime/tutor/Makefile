@@ -24,6 +24,7 @@ all: tutor.utf-8 \
 	tutor.nb.utf-8 \
 	tutor.ru tutor.ru.cp1251 \
 	tutor.sv.utf-8 \
+	tutor.tr.iso9 \
 	tutor.zh.utf-8
 
 tutor.utf-8: tutor
@@ -66,10 +67,10 @@ tutor.hr.cp1250: tutor.hr.utf-8
 	iconv -f UTF-8 -t cp1250 tutor.hr.utf-8 > tutor.hr.cp1250
 
 tutor.ja.sjis: tutor.ja.utf-8
-	nkf -WXs tutor.ja.utf-8 > tutor.ja.sjis
+	iconv -f UTF-8 -t cp932 tutor.ja.utf-8 > tutor.ja.sjis
 
 tutor.ja.euc: tutor.ja.utf-8
-	nkf -WXe tutor.ja.utf-8 > tutor.ja.euc
+	iconv -f UTF-8 -t EUC-JP tutor.ja.utf-8 > tutor.ja.euc
 
 tutor.ko.euc: tutor.ko.utf-8
 	iconv -f UTF-8 -t EUC-KR tutor.ko.utf-8 > tutor.ko.euc
@@ -92,6 +93,9 @@ tutor.ru: tutor.ru.utf-8
 
 tutor.ru.cp1251: tutor.ru.utf-8
 	iconv -f UTF-8 -t cp1251 tutor.ru.utf-8 > tutor.ru.cp1251
+
+tutor.tr.iso9: tutor.tr.utf-8
+	iconv -f UTF-8 -t ISO-8859-9 tutor.tr.utf-8 > tutor.tr.iso9
 
 tutor.sv.utf-8: tutor.sv
 	iconv -f ISO-8859-1 -t UTF-8 tutor.sv > tutor.sv.utf-8

@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2019 Sep 21
+*ios_commands.txt*	For Vim version 8.1.	Last change: 2019 Oct 27
 
 				iVim REFERENCE MANUAL	by Terry Chou
 
@@ -112,12 +112,51 @@ iVim has two commands for sharing |ios-share|.
                         :idoc dir               "open the document picker
                                                 "specific for picking dirs
 <
+                iVim also provides a trash bin for each opened directory, so
+                that the user has the chance to restore an item deleted by
+                accident. See |:idocuments-trash|. Also note that the trash
+                bin will be cleaned up after its associated directory is 
+                closed.
+
                 If the mode is `import`, the picked document will be copied
 		into iVim's `Documents` directory and opened for further
 		editing. 
 
 		Note: the imported file will be renamed if there has been 
 		a file already possesses that name.
+
+:idoc[uments] trash[!] [indexes]                    *:idocuments-trash*
+                Manage or restore deleted items in the trash bin of an opened
+                directory.
+
+                Without the bang, iVim lists items in the trash bin, Example:
+
+                        1   10/27/19, 2:36:20 PM    test/ddd ~
+                        2   10/26/19, 4:23:15 PM    test/aaa ~
+
+                Each line represents an item. The first column is the index 
+                of the item. The second is the date of the trashing. The last
+                column is the path of the item when it was deleted, starting
+                from the root opened directory (`test` here). Items are listed
+                in the order of trashing date, the first one is the latest.
+                When [indexes] are given, only items with those indexes are
+                listed: >
+                        :idoc trash 2 3         "only list items 2 and 3
+<
+                If any of the given indexes is invalid, iVim complains with
+                an error.
+
+                To restore items, run this command with the bang: >
+                        :idoc trash! 5 3 1      "restore items 5, 3 and 1
+<
+                At least one index needs to be given to indicate the target
+                item. Items are restored one by one in the given order. If an
+                item already exists at the target path, the restoration fails
+                for that item. However, the restoration attempt still goes on 
+                for the rest items.
+
+                Note that iVim complains if the current buffer does not belong 
+                to an opened external directory.
 
 
 ==============================================================================
@@ -862,4 +901,4 @@ iVim provides one command to manage the old documents |ivim-old-documents|
 <
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

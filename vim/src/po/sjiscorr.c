@@ -7,9 +7,7 @@
 #include <string.h>
 
 	int
-main(argc, argv)
-	int	argc;
-	char	**argv;
+main(int argc, char **argv)
 {
 	char buffer[BUFSIZ];
 	char *p;
@@ -18,7 +16,8 @@ main(argc, argv)
 	{
 		for (p = buffer; *p != 0; p++)
 		{
-			if (strncmp(p, "charset=utf-8", 13) == 0)
+			if (strncmp(p, "charset=utf-8", 13) == 0
+				|| strncmp(p, "charset=UTF-8", 13) == 0)
 			{
 				fputs("charset=cp932", stdout);
 				p += 12;

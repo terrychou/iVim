@@ -89,9 +89,9 @@ final class SafeVimOperations {
             let path = url.path.spaceEscaped
             do_cmdline_cmd("\(openCmd) \(path)")
             gEnsureSuccessfulOpen()
-            if url.isDirectory {
-                do_cmdline_cmd("lcd \(path)")
-            }
+//            if url.isDirectory {
+//                do_cmdline_cmd("lcd \(path)")
+//            }
         }
     }
 }
