@@ -73,6 +73,9 @@ extension PickInfoManager {
             let pi = PickInfo(ticket: ticket) else {
                 return
         }
+        if let mtime = URL(fileURLWithPath: path).contentModifiedDate() {
+            pi.updatedDate = mtime
+        }
         self.addPickInfo(pi)
         if update && pi.updateMirror() {
             NSLog("updated mirror \(ticket)")

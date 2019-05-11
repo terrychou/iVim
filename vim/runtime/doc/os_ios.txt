@@ -440,10 +440,10 @@ Type ":help :ictags" for details about the command.
 ==============================================================================
 11. Auto restore                                *ios-auto-restore*
 
-With `Auto restore` enabled, iVim automatically restores the last editing 
+With `Auto-restore` enabled, iVim automatically restores the last editing 
 session on launch, after an app termination.
 
-Because it is implemented based on vim's |session| feature, `Auto restore`'s 
+Because it is implemented based on vim's |session| feature, `Auto-restore`'s 
 basic behavior goes in that way.
 
 Although iVim tries its best to make a restore look as normal as possible, 
@@ -456,8 +456,9 @@ In another word, iVim will restore the latest content for each file in the
 windows, but the user still needs an explicit `write` operation to save the 
 changes, if there is any, back to the respective file.
 
-1) a changed buffer without a file name will be saved as a temporary file,
-and it is up to the user to save it as a formal file or just drop it.
+1) a changed buffer without a file name will be saved as a temporary file
+automatically, and it is up to the user to save it as a formal file or just 
+drop it.
 
 2) while a changed buffer with a file name keeps its changed state, its undo 
 history is lost.
@@ -471,7 +472,7 @@ restore, delete them from the buffer list.
 c. unlike default vim sessions, opened directories by |netrw| will also be 
 restored. However, their cursor position information is not kept.
 
-d. `Auto restore` can be disabled in |ios-settings|. Note that iVim will clear 
+d. `Auto-restore` can be disabled in |ios-settings|. Note that iVim will clear 
 all the cached information when this happens.
 
 
