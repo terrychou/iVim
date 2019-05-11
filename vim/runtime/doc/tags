@@ -6713,6 +6713,7 @@ intro.txt	intro.txt	/*intro.txt*
 inverse	syntax.txt	/*inverse*
 invert()	eval.txt	/*invert()*
 ios	os_ios.txt	/*ios*
+ios-auto-restore	os_ios.txt	/*ios-auto-restore*
 ios-commands	ios_commands.txt	/*ios-commands*
 ios-dictation	os_ios.txt	/*ios-dictation*
 ios-extended-keyboard	os_ios.txt	/*ios-extended-keyboard*

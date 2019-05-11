@@ -19,10 +19,15 @@ final class PickInfoManager: NSObject {
     
     private var localTable = [String: PickInfo]()
     private var table = [URL: PickInfo]()
+    private var isInit = true
 }
 
 extension PickInfoManager {
     func didBecomeActive() {
+        guard !self.isInit else { // no need do it when it is the app init
+            self.isInit = false
+            return
+        }
         NSLog("become active")
         self.table.values.forEach {
             NSFileCoordinator.addFilePresenter($0)

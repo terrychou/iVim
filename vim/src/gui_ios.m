@@ -559,12 +559,15 @@ static void ex_iopenurl(exarg_T * eap) {
 /*
  * Handling function for command *idocuments*
  */
+void scenes_keeper_restore_post(void);
 static void ex_idocuments(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0 || [arg isEqualToString:@"open"]) {
         [shellViewController() pickDocument];
     } else if ([arg isEqualToString:@"import"]) {
         [shellViewController() importDocument];
+    } else if ([arg isEqualToString:@"session"]) {
+        scenes_keeper_restore_post();
     }
 }
 

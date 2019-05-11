@@ -214,9 +214,13 @@ static NSString *filename_for(buf_T *buf) {
 }
 
 static int write_buf(buf_T *buf, NSString *to_path) {
-    return buf_write(buf, TOCHARS(to_path), NULL,
-                     (linenr_T)1, buf->b_ml.ml_line_count,
-                     NULL, FALSE, TRUE, FALSE, FALSE);
+    msg_silent++;
+    int ret = buf_write(buf, TOCHARS(to_path), NULL,
+                        (linenr_T)1, buf->b_ml.ml_line_count,
+                        NULL, FALSE, TRUE, FALSE, FALSE);
+    msg_silent--;
+    
+    return ret;
 }
 
 /*
@@ -248,6 +252,10 @@ static BOOL should_auto_restore(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:kUDAutoRestoreEnable];
 }
 
+void register_auto_restore_enabled(void) {
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{kUDAutoRestoreEnable: @YES}];
+}
+
 /*
  * cache buffer without associated file
  */
@@ -262,9 +270,13 @@ static int cache_temp_buffer(buf_T *buf) {
         sfname = TOCHARS(new_path);
     }
     
-    return buf_write(buf, fname, sfname,
-                     (linenr_T)1, buf->b_ml.ml_line_count,
-                     NULL, FALSE, TRUE, TRUE, FALSE);
+    msg_silent++;
+    int ret = buf_write(buf, fname, sfname,
+                        (linenr_T)1, buf->b_ml.ml_line_count,
+                        NULL, FALSE, TRUE, TRUE, FALSE);
+    msg_silent--;
+    
+    return ret;
 }
 
 /*
@@ -376,6 +388,8 @@ void scenes_keeper_stash(void) {
             }
         } else if (buf->b_p_bl && buf->b_changed) { // for file
             cache_buffer(buf, bmlp);
+        } else if (buf->b_help) { // disable swap file for help buffer
+            buf->b_p_swf = FALSE;
         }
     }
     fclose(slp);
@@ -486,6 +500,19 @@ static void enumerate_buffer_mappings(void (*task)(NSString *bpath, NSString *op
  */
 static NSString *uuid_regex = @"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}";
 
+static NSUInteger correct_content(NSMutableString *content, NSString *old, NSString *new) {
+    NSMutableString *regex = [NSMutableString stringWithString:old];
+    [regex replaceOccurrencesOfString:uuid_regex
+                           withString:uuid_regex
+                              options:NSRegularExpressionSearch
+                                range:NSMakeRange(0, [old length])];
+    
+    return [content replaceOccurrencesOfString:regex
+                                    withString:new
+                                       options:NSRegularExpressionSearch
+                                         range:NSMakeRange(0, [content length])];
+}
+
 static void correct_session_file(void) {
     NSString *lap = last_app_prefix();
     if (!lap) {
@@ -495,13 +522,7 @@ static void correct_session_file(void) {
     if ([lap isEqualToString:cap]) { // application prefix did not change
         return;
     }
-    // generate regular expression for last app prefix
-    NSMutableString *lap_regex = [NSMutableString stringWithString:lap];
-    [lap_regex replaceOccurrencesOfString:uuid_regex
-                               withString:uuid_regex
-                                  options:NSRegularExpressionSearch
-                                    range:NSMakeRange(0, [lap_regex length])];
-//    NSLog(@"lap regex: %@", lap_regex);
+    
     NSError *err;
     NSString *spath = session_file_path();
     NSMutableString *scontent = [NSMutableString stringWithContentsOfFile:spath
@@ -512,10 +533,13 @@ static void correct_session_file(void) {
               [err localizedDescription]);
         return;
     }
-    NSUInteger replaced = [scontent replaceOccurrencesOfString:lap_regex
-                                                    withString:cap
-                                                       options:NSRegularExpressionSearch
-                                                         range:NSMakeRange(0, [scontent length])];
+    // corrent possible application data paths
+    NSUInteger replaced = correct_content(scontent, lap, cap);
+    
+    // correct possible runtime paths
+    NSString *crp = TONSSTRING(mch_getenv("VIMRUNTIME"));
+    replaced += correct_content(scontent, crp, crp);
+    
     NSLog(@"%lu paths in session file corrected.", (unsigned long)replaced);
     if (replaced > 0 && ![scontent writeToFile:spath
                                     atomically:YES
@@ -616,10 +640,19 @@ static void mark_path_changed(NSString *path) {
 static void restore_origin(NSString *bpath, NSString *opath) {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSString *temp = [NSString stringWithFormat:@"%@.ori", bpath];
+    NSError *err;
     if ([fm fileExistsAtPath:temp]) {
-        [fm moveItemAtPath:opath toPath:bpath error:NULL];
-        [fm moveItemAtPath:temp toPath:opath error:NULL];
-        mark_path_changed(opath);
+        if ([fm moveItemAtPath:opath toPath:bpath error:&err]) {
+            if ([fm moveItemAtPath:temp toPath:opath error:&err]) {
+                mark_path_changed(opath);
+            } else {
+                NSLog(@"failed to move %@ to %@: %@",
+                      temp, opath, [err localizedDescription]);
+            }
+        } else {
+            NSLog(@"failed to move %@ to %@: %@",
+                  opath, bpath, [err localizedDescription]);
+        }
     }
 }
 
@@ -709,28 +742,28 @@ static void clean_leftover_items(void) {
     });
 }
 
-BOOL scenes_keeper_restore_post(void) {
-    static NSString *sign;
-    BOOL did_work = NO;
-    if (!sign) {
-        sign = @"done";
+void scenes_keeper_restore_post(void) {
+    static BOOL done = NO; // only try to do it once no matter what
+    if (!done) {
+        done = YES;
         if (should_auto_restore()) {
             enumerate_buffer_mappings(restore_origin);
             add_pickinfos_for_mirrors();
-//            do_cmdline_cmd((char_u *)"redraw!");
             unlist_dir_buffers();
             clean_leftover_items();
-            did_work = YES;
-        } else { // clean all mirrors and scenes
-            NSFileManager *fm = [NSFileManager defaultManager];
-            [fm cleanMirrorFiles];
-            if ([fm fileExistsAtPath:session_file_path()]) {
-                clean_dir(scenes_dir());
-            }
         }
     }
-    
-    return did_work;
+}
+
+void scenes_keeper_clear_all(void) {
+    if (should_auto_restore()) { // do not clear if need to restore
+        return;
+    }
+    NSFileManager *fm = [NSFileManager defaultManager];
+    [fm cleanMirrorFiles];
+    if ([fm fileExistsAtPath:session_file_path()]) {
+        clean_dir(scenes_dir());
+    }
 }
 
 /*

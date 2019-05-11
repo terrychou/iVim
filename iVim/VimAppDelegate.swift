@@ -15,12 +15,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        self.logToFile()
+        self.registerUserDefaultsValues()
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),
             with: nil,
             waitUntilDone: false)
-//        self.cleanMirrors()
+        self.doPossibleCleaning()
 
         return true
     }
@@ -35,11 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
-        DispatchQueue.main.async {
-            if !scenes_keeper_restore_post() {
-                gPIM.didBecomeActive()
-            }
-        }
+        gPIM.didBecomeActive()
     }
     
 //    private func logToFile() {
@@ -48,10 +45,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        freopen(file, "a+", stderr)
 //    }
     
-    private func cleanMirrors() {
+    private func doPossibleCleaning() {
         DispatchQueue.main.async {
-            FileManager.default.cleanMirrorFiles()
+            scenes_keeper_clear_all()
         }
+    }
+    
+    private func registerUserDefaultsValues() {
+        register_auto_restore_enabled()
     }
     
     @objc func VimStarter() {
@@ -65,7 +66,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         scenes_keeper_restore_prepare();
         var args = ["vim"] + LaunchArgumentsParser().parse()
         if let spath = scene_keeper_valid_session_file_path() {
-            args += ["-S", spath];
+            let rCmd = "silent! source \(spath) | silent! idocuments session"
+            args += ["-c", rCmd]
         }
         var argv = args.map { strdup($0) }
         VimMain(Int32(args.count), &argv)

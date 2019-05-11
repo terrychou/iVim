@@ -144,7 +144,7 @@
 			<key>Key</key>
 			<string>kUDAutoRestoreEnable</string>
 			<key>DefaultValue</key>
-			<false/>
+			<true/>
 		</dict>
 	</array>
 </dict>
