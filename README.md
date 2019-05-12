@@ -29,6 +29,10 @@ Via the document picker, you can also import or edit files or directories in iCl
 
 iVim supports external hardware keyboards well, just connect your favorite one to the device and start typing. If you are using a standard English keyboard, you can remap the `caps lock` key, too.
 
+### Auto restore
+
+After an app termination, iVim restores the last editing session automatically on launch. So you don't have to worry about data losing any more. And you can disable it in Settings.app if you prefer the old way.
+
 ## How to install it
 
 ### App Store
@@ -47,7 +51,6 @@ Normally, you can use iVim as vim on other platforms.
 However, there are some points worth mentioning due to iOS system's personality:
 1. there is no shell. You cannot call external shell commands.
 2. iVim is sandboxed. It means you don't have direct access to files of other apps if not via the sharing feature.
-3. iVim don't do autosave. Because the system could terminate apps without notifying at any time, iVim won't save its opened files automatically for the users.
 
 ## Giants' shoulders
 
