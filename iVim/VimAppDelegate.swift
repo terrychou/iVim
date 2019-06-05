@@ -12,6 +12,7 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
+    private var isLaunchedByURL = false
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        self.logToFile()
@@ -22,12 +23,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             with: nil,
             waitUntilDone: false)
         self.doPossibleCleaning()
+        self.isLaunchedByURL = launchOptions?[.url] != nil
 
         return true
     }
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
-        return VimURLHandler(url: url)?.open() ?? false
+        var handleNow = true
+        if self.isLaunchedByURL {
+            self.isLaunchedByURL = false
+            if scene_keeper_add_pending_bookmark(url.bookmark) {
+                handleNow = false
+            }
+        }
+        var result = true
+        if handleNow {
+            result = VimURLHandler(url: url)?.open() ?? false
+        }
+        
+        return result
     }
     
     func applicationWillResignActive(_ application: UIApplication) {

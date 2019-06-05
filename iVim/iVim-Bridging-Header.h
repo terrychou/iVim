@@ -72,6 +72,7 @@ NSString *path_relative_to_cwd(NSString *path);
 void scenes_keeper_stash(void);
 NSString *scene_keeper_valid_session_file_path(void);
 void scenes_keeper_restore_prepare(void);
+BOOL scene_keeper_add_pending_bookmark(NSData * bm);
 void scenes_keeper_clear_all(void);
 void register_auto_restore_enabled(void);
 

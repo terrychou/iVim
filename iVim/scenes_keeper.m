@@ -59,7 +59,7 @@ static NSString *app_dir(void) {
 static NSString *scenes_dir(void) {
     static NSString *dir;
     if (!dir) {
-        dir = create_subdir(@"scenes", NSTemporaryDirectory());
+        dir = create_subdir(@"scenes", [NSFileManager safeTmpDir]);
     }
     
     return dir;
@@ -430,27 +430,13 @@ static void remove_swap_files(void) {
         spath = strtok(spath, "\n");
         nsspath = TONSSTRING(spath);
         nsspath = full_path_to_app(nsspath);
-        NSLog(@"remove swap file: %@", nsspath);
+//        NSLog(@"remove swap file: %@", nsspath);
         if ([fm fileExistsAtPath:nsspath]) {
             [fm removeItemAtPath:nsspath error:NULL];
         }
     }
     fclose(slp);
 }
-
-/*
- * whether should do the session restoring
- *
- * restore when all of the following stands true:
- * 1. only 1 buffer
- * 2. no opened file
- * 3. the only buffer not changed
- */
-//static BOOL should_restore_session(void) {
-//    return !firstbuf->b_next &&
-//    !firstbuf->b_ml.ml_mfp &&
-//    !firstbuf->b_changed;
-//}
 
 static NSDate *last_modification_date(NSString *path) {
     return [[[NSFileManager defaultManager]
@@ -734,18 +720,46 @@ static void unlist_dir_buffers(void) {
     }
 }
 
+/*
+ * deal with pending URL openning
+ *
+ * should do this after leftover cleaning
+ * otherwise, the newly created mirror might
+ * be cleaned by accident
+ */
+
+static NSData * pendingBookmark = nil;
+static BOOL post_done = NO;
+
+BOOL scene_keeper_add_pending_bookmark(NSData * bm) {
+    BOOL added = NO;
+    if (should_auto_restore() && !post_done) {
+        pendingBookmark = bm;
+        added = YES;
+    }
+    
+    return added;
+}
+
+static void open_pending_bookmark(void) {
+    if (pendingBookmark) {
+        [[PickInfoManager shared] handleBookmark:pendingBookmark];
+        pendingBookmark = nil;
+    }
+}
+
 static void clean_leftover_items(void) {
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(queue, ^{
         NSString *mdir = [[[NSFileManager defaultManager] mirrorDirectoryURL] path];
         remove_leftover_items_under(@[temp_scenes_dir(), mdir]);
+        open_pending_bookmark();
     });
 }
 
 void scenes_keeper_restore_post(void) {
-    static BOOL done = NO; // only try to do it once no matter what
-    if (!done) {
-        done = YES;
+    if (!post_done) {
+        post_done = YES;
         if (should_auto_restore()) {
             enumerate_buffer_mappings(restore_origin);
             add_pickinfos_for_mirrors();

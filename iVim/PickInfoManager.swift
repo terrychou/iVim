@@ -45,6 +45,10 @@ extension PickInfoManager {
             NSFileCoordinator.removeFilePresenter($0)
         }
     }
+    
+    @objc func handleBookmark(_ bm: Data?) {
+        _ = VimURLHandler(url: bm?.resolvedURL)?.open()
+    }
 }
 
 private let mirrorDirectoryPath = FileManager.default.mirrorDirectoryURL.path
@@ -60,8 +64,7 @@ extension PickInfoManager {
         if let existing = self.table[url] {
             existing.addTask(task)
         } else {
-            let pi = PickInfo(origin: url)
-            pi.addTask(task)
+            let pi = PickInfo(origin: url, task: task)
             self.addPickInfo(pi)
         }
     }

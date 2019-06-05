@@ -12,10 +12,43 @@ extension FileManager {
     private static let mirrorMark = "com.terrychou.ivim.mirrormark"
     
     private static let cachedMirrorDirectoryURL = URL(
-        fileURLWithPath: NSTemporaryDirectory(),
+        fileURLWithPath: FileManager.safeTmpDir,
         isDirectory: true)
         .appendingPathComponent("Openbox")
         .appendingPathComponent(FileManager.mirrorMark)
+    
+    private static let ivimDirURL: URL = {
+        let fm = FileManager.default
+        var url = fm.urls(
+            for: .libraryDirectory,
+            in: .userDomainMask)[0]
+            .resolvingSymlinksInPath()
+            .appendingPathComponent("ivim")
+        do {
+            _ = try fm.createDirectoryIfNecessary(url)
+            let alreadyExcluded = url.resourceValue(
+                for: .isExcludedFromBackupKey)?
+                .isExcludedFromBackup ?? false
+            if !alreadyExcluded {
+                var rvalues = URLResourceValues()
+                rvalues.isExcludedFromBackup = true
+                try url.setResourceValues(rvalues)
+                NSLog("excluded from back up")
+            }
+        } catch {
+            fatalError("failed to prepare ivimdir: \(error)")
+        }
+        
+        return url
+    }()
+    
+    @objc static let safeTmpDir: String = {
+        let otmp = NSTemporaryDirectory()
+        let ntmp = otmp.nsstring.resolvingSymlinksInPath
+        let new = FileManager.ivimDirURL.path
+        
+        return otmp.replacingOccurrences(of: ntmp, with: new)
+    }()
     
     @objc var mirrorDirectoryURL: URL {
         return FileManager.cachedMirrorDirectoryURL
@@ -36,7 +69,8 @@ extension FileManager {
     }
     
     func mirrorSubpath(for path: String) -> String? {
-        guard let range = path.range(of: FileManager.mirrorMark) else { return nil }
+        guard let range = path.range(of: FileManager.mirrorMark),
+            range.upperBound != path.endIndex else { return nil }
         let start = path.index(after: range.upperBound)
         
         return String(path[start...])
@@ -53,7 +87,7 @@ extension FileManager {
         do {
             return try Data.init(contentsOf: url)
         } catch (let err) {
-            NSLog("failed to read bookmark" +
+            NSLog("failed to read bookmark " +
                 "for mirror \(ticket):" +
                 "\(err.localizedDescription)")
             return nil
@@ -69,16 +103,16 @@ final class PickInfo: NSObject {
     let ticket: String
     let subRootPath: String
     var updatedDate: Date!
-    var pendingTasks: [MirrorReadyTask]? = []
     lazy var mirrorURL: URL = FileManager.default.mirrorURL(for: self.subRootPath)
     
-    init(origin: URL) {
+    init(origin: URL, task: MirrorReadyTask?) {
         self.origin = origin
         self.bookmark = origin.bookmark
         self.ticket = UUID().uuidString
         self.subRootPath = self.ticket + "/" + self.origin.lastPathComponent
         super.init()
         self.createMirror()
+        self.addTask(task)
         self.updateUpdatedDate()
     }
     
@@ -118,7 +152,11 @@ extension PickInfo {
     private func createMirror() {
         self.origin.coordinatedRead(for: self) { [unowned self] url, err in
             guard let oURL = url else {
-                if let e = err { NSLog("Failed to read original file: \(e)") }
+                var log = "failed to read original file"
+                if let e = err {
+                    log += ": \(e)"
+                }
+                NSLog(log)
                 return
             }
             let mURL = self.mirrorURL
@@ -128,10 +166,6 @@ extension PickInfo {
                     at: mURL.deletingLastPathComponent(),
                     withIntermediateDirectories: true)
                 try fm.copyItem(at: oURL, to: mURL)
-                DispatchQueue.main.async {
-                    self.pendingTasks?.forEach { $0(mURL) }
-                    self.pendingTasks = nil
-                }
             } catch {
                 NSLog("Failed to create mirror: \(error)")
             }
@@ -166,11 +200,7 @@ extension PickInfo {
     func addTask(_ task: MirrorReadyTask?) {
         guard let t = task else { return }
         DispatchQueue.main.async {
-            if self.pendingTasks == nil {
-                t(self.mirrorURL)
-            } else {
-                self.pendingTasks!.append(t)
-            }
+            t(self.mirrorURL)
         }
     }
 }
