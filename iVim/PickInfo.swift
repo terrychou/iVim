@@ -22,7 +22,6 @@ extension FileManager {
         var url = fm.urls(
             for: .libraryDirectory,
             in: .userDomainMask)[0]
-            .resolvingSymlinksInPath()
             .appendingPathComponent("ivim")
         do {
             _ = try fm.createDirectoryIfNecessary(url)
@@ -43,11 +42,7 @@ extension FileManager {
     }()
     
     @objc static let safeTmpDir: String = {
-        let otmp = NSTemporaryDirectory()
-        let ntmp = otmp.nsstring.resolvingSymlinksInPath
-        let new = FileManager.ivimDirURL.path
-        
-        return otmp.replacingOccurrences(of: ntmp, with: new)
+        return ivim_full_path(FileManager.ivimDirURL.path)
     }()
     
     @objc var mirrorDirectoryURL: URL {
@@ -378,11 +373,10 @@ extension URL {
     }
     
     var bookmark: Data? {
+        defer { self.stopAccessingSecurityScopedResource() }
         guard self.startAccessingSecurityScopedResource() else { return nil }
         do {
-            let data = try self.bookmarkData()
-            self.stopAccessingSecurityScopedResource()
-            return data
+            return try self.bookmarkData()
         } catch {
             NSLog("Failed to create bookmark for \(self): \(error)")
             return nil

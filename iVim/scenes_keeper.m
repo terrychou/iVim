@@ -42,12 +42,29 @@ static BOOL is_path_under(NSString *path, NSString *parent_dir) {
 }
 
 /*
+ * get full path of given path
+ */
+
+NSString *ivim_full_path(NSString *path) {
+    char_u buf[MAXPATHL];
+    if (vim_FullName(TOCHARS(path), buf, MAXPATHL, TRUE) == FAIL) {
+        return path;
+    }
+    
+    return TONSSTRING(buf);
+}
+
+/*
  * path of application prefix
  */
 static NSString *app_dir(void) {
     static NSString *dir;
     if (!dir) {
-        dir = [NSTemporaryDirectory() stringByDeletingLastPathComponent];
+        // need the "/." part, otherwise cannot fully expand it
+        NSString *path = [NSString stringWithFormat:@"%@/.",
+                          NSHomeDirectory()];
+        dir = ivim_full_path(path);
+//        NSLog(@"app dir: %@", dir);
     }
     
     return dir;
@@ -71,33 +88,6 @@ static char_u *path_relative_to_app(char_u *ffname) {
 
 static NSString *full_path_to_app(NSString *path) {
     return [app_dir() stringByAppendingPathComponent:path];
-}
-
-static NSString *relative_path_of(NSString *path, NSString *to) {
-    NSArray<NSString *> *pcomps = [path pathComponents];
-    NSArray<NSString *> *tcomps = [to pathComponents];
-    NSUInteger pcount = [pcomps count];
-    NSUInteger tcount = [tcomps count];
-    NSUInteger count = pcount > tcount ? tcount : pcount;
-    NSUInteger i, j;
-    for (i = 0; i < count; i++) {
-        if (![pcomps[i] isEqualToString:tcomps[i]]) {
-            break;
-        }
-    }
-    NSMutableArray<NSString *> *rcomps = [NSMutableArray array];
-    NSUInteger ups = tcount - i;
-    if ([tcomps[tcount - 1] isEqualToString:@"/"]) { // when the base dir ends with /
-        ups -= 1;
-    }
-    for (j = 0; j < ups; j++) {
-        [rcomps addObject:@".."];
-    }
-    for (; i < pcount; i++) {
-        [rcomps addObject:pcomps[i]];
-    }
-    
-    return [NSString pathWithComponents:rcomps];
 }
 
 /*
@@ -206,6 +196,23 @@ static NSString *buffer_mapping_list_path(void) {
 }
 
 /*
+ * mirrored files list path
+ *
+ * this file records all buffered mirror paths
+ * used to recover pickinfos for mirrors in
+ * auto-restore prepare
+ */
+
+static NSString *mirrored_files_list_path(void) {
+    static NSString *path;
+    if (!path) {
+        path = subpath_under(@"mirroredfiles", scenes_dir());
+    }
+    
+    return path;
+}
+
+/*
  * generate file name for scene caches
  * according to the buffer's number
  */
@@ -221,27 +228,6 @@ static int write_buf(buf_T *buf, NSString *to_path) {
     msg_silent--;
     
     return ret;
-}
-
-/*
- * Get current working directory
- */
-static NSString * get_working_directory(void) {
-    char_u *cwd = alloc(MAXPATHL);
-    NSString *re = nil;
-    if (mch_dirname(cwd, MAXPATHL)) {
-        re = TONSSTRING(cwd);
-    }
-    free(cwd);
-    
-    return re;
-}
-
-/*
- * get path relative to current working directory
- */
-NSString *path_relative_to_cwd(NSString *path) {
-    return relative_path_of(path, get_working_directory());
 }
 
 /*
@@ -265,7 +251,6 @@ static int cache_temp_buffer(buf_T *buf) {
     if (!fname) {
         NSString *uuid = [[NSUUID UUID] UUIDString];
         NSString *new_path = subpath_under(uuid, temp_scenes_dir());
-        new_path = relative_path_of(new_path, get_working_directory());
         fname = TOCHARS(new_path);
         sfname = TOCHARS(new_path);
     }
@@ -347,25 +332,33 @@ void scenes_keeper_stash(void) {
     buf_T *buf;
     char_u fspath[MAXPATHL];
     char_u *spath;
-    NSString *swaplist = swap_file_list_path();
-    NSString *bufferlist = buffer_mapping_list_path();
     FILE *slp;
     FILE *bmlp = NULL;
-    if ((slp = fopen([swaplist UTF8String], "w")) == NULL) {
+    FILE *mflp = NULL;
+    NSMutableArray<NSValue *> *changed_bufs = nil;
+    NSString *mirrorDir = nil;
+    if ((slp = fopen([swap_file_list_path() UTF8String], "w")) == NULL) {
         NSLog(@"failed to create swap file list");
         return;
     }
-    if(should_restore && (bmlp = fopen([bufferlist UTF8String], "w")) == NULL) {
-        NSLog(@"failed to create buffer mapping list");
-        fclose(slp);
-        return;
+    if (should_restore) {
+        if ((bmlp = fopen([buffer_mapping_list_path() UTF8String], "w")) == NULL) {
+            NSLog(@"failed to create buffer mapping list");
+            fclose(slp);
+            return;
+        }
+        if ((mflp = fopen([mirrored_files_list_path() UTF8String], "w")) == NULL) {
+            NSLog(@"failed to create mirrored files list");
+            fclose(slp);
+            fclose(bmlp);
+            return;
+        }
+        changed_bufs = [NSMutableArray array];
+        mirrorDir = [[[NSFileManager defaultManager] mirrorDirectoryURL] path];
     }
-    NSMutableArray<NSValue *> *changed_bufs = [NSMutableArray array];
+    
     for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
         // record swap file paths
-//        if (buf->b_ffname) {
-//            NSLog(@"buffer file %s", buf->b_ffname);
-//        }
         if (buf->b_ml.ml_mfp && buf->b_ml.ml_mfp->mf_fname) {
             spath = buf->b_ml.ml_mfp->mf_fname;
             if (!mch_isFullName(spath) &&
@@ -377,6 +370,11 @@ void scenes_keeper_stash(void) {
         }
         if (!should_restore) {
             continue;
+        }
+        // record mirrored file paths
+        if (buf->b_ffname && is_path_under(TONSSTRING(buf->b_ffname), mirrorDir)) {
+            fputs((char *)path_relative_to_app(buf->b_ffname), mflp);
+            fputc('\n', mflp);
         }
         if (buf->b_ffname && mch_isdir(buf->b_ffname)) { // for dir
             if (buf->b_nwindows > 0) {
@@ -398,6 +396,7 @@ void scenes_keeper_stash(void) {
         return;
     }
     fclose(bmlp);
+    fclose(mflp);
     // make session
     record_last_app_prefix();
     NSString *cmd = [NSString stringWithFormat:@"mksession! %@",
@@ -412,30 +411,44 @@ void scenes_keeper_stash(void) {
 }
 
 /*
- * remove all recorded swap files
+ * a general function to deal with files list file
+ *
+ * a files list file has the following format
+ * - each line is a file path, with its app_dir prefix cut
+ *
+ * it takes the list file *path*, and a *handler* function
  */
-static void remove_swap_files(void) {
-    NSString *path = swap_file_list_path();
-    FILE *slp;
-    if ((slp = fopen([path UTF8String], "r")) == NULL) {
-        NSLog(@"no swap list file found");
+static void enumerate_files_list(NSString *path, void (*handler)(NSString *fpath)) {
+    FILE *fp;
+    if ((fp = fopen([path UTF8String], "r")) == NULL) {
+        NSLog(@"failed to open file %@", path);
         return;
     }
-    char *spath;
+    char *apath;
     size_t length;
-    NSString *nsspath;
-    NSFileManager *fm = [NSFileManager defaultManager];
-    while ((spath = fgetln(slp, &length))) {
+    NSString *nsapath;
+    while ((apath = fgetln(fp, &length))) {
         // this works only when each line ends with a \n
-        spath = strtok(spath, "\n");
-        nsspath = TONSSTRING(spath);
-        nsspath = full_path_to_app(nsspath);
-//        NSLog(@"remove swap file: %@", nsspath);
-        if ([fm fileExistsAtPath:nsspath]) {
-            [fm removeItemAtPath:nsspath error:NULL];
-        }
+        apath = strtok(apath, "\n");
+        nsapath = TONSSTRING(apath);
+        nsapath = full_path_to_app(nsapath);
+        handler(nsapath);
     }
-    fclose(slp);
+    fclose(fp);
+}
+
+/*
+ * remove all recorded swap files
+ */
+static void remove_swap_file_handler(NSString *path) {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if ([fm fileExistsAtPath:path]) {
+        [fm removeItemAtPath:path error:NULL];
+    }
+}
+
+static void remove_swap_files(void) {
+    enumerate_files_list(swap_file_list_path(), remove_swap_file_handler);
 }
 
 static NSDate *last_modification_date(NSString *path) {
@@ -571,8 +584,15 @@ static void copy_attrs(NSArray<NSFileAttributeKey> *keys, NSString *from_path, N
  * the original file may be edited at other places
  *
  */
+static void restore_pickinfo_handler(NSString *path) {
+    [[PickInfoManager shared] addPickInfoAt:path update:YES];
+}
+
+static void restore_pickinfos(void) {
+    enumerate_files_list(mirrored_files_list_path(), restore_pickinfo_handler);
+}
+
 static void temporarily_sub(NSString *bpath, NSString *opath) {
-    [[PickInfoManager shared] addPickInfoAt:opath update:YES];
     if (is_newer_than(opath, bpath)) {
         return;
     }
@@ -599,6 +619,7 @@ void scenes_keeper_restore_prepare(void) {
     remove_swap_files();
     if (should_auto_restore()) {
         correct_session_file();
+        restore_pickinfos();
         enumerate_buffer_mappings(temporarily_sub);
     }
 }
@@ -638,20 +659,6 @@ static void restore_origin(NSString *bpath, NSString *opath) {
         } else {
             NSLog(@"failed to move %@ to %@: %@",
                   opath, bpath, [err localizedDescription]);
-        }
-    }
-}
-
-static void add_pickinfos_for_mirrors(void) {
-    buf_T *buf;
-    PickInfoManager *pim = [PickInfoManager shared];
-    NSString *fpath;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf->b_ffname) {
-            fpath = TONSSTRING(buf->b_ffname);
-            if (fpath) {
-                [pim addPickInfoAt:fpath update:YES];
-            }
         }
     }
 }
@@ -728,23 +735,24 @@ static void unlist_dir_buffers(void) {
  * be cleaned by accident
  */
 
-static NSData * pendingBookmark = nil;
+typedef void (^SKPendingURLTask)(void);
+static SKPendingURLTask pendingURLTask = nil;
 static BOOL post_done = NO;
 
-BOOL scene_keeper_add_pending_bookmark(NSData * bm) {
+BOOL scene_keeper_add_pending_url_task(SKPendingURLTask task) {
     BOOL added = NO;
     if (should_auto_restore() && !post_done) {
-        pendingBookmark = bm;
+        pendingURLTask = task;
         added = YES;
     }
     
     return added;
 }
 
-static void open_pending_bookmark(void) {
-    if (pendingBookmark) {
-        [[PickInfoManager shared] handleBookmark:pendingBookmark];
-        pendingBookmark = nil;
+static void run_pending_url_task(void) {
+    if (pendingURLTask) {
+        pendingURLTask();
+        pendingURLTask = nil;
     }
 }
 
@@ -753,7 +761,9 @@ static void clean_leftover_items(void) {
     dispatch_async(queue, ^{
         NSString *mdir = [[[NSFileManager defaultManager] mirrorDirectoryURL] path];
         remove_leftover_items_under(@[temp_scenes_dir(), mdir]);
-        open_pending_bookmark();
+        dispatch_async(dispatch_get_main_queue(), ^{
+            run_pending_url_task();
+        });
     });
 }
 
@@ -762,7 +772,6 @@ void scenes_keeper_restore_post(void) {
         post_done = YES;
         if (should_auto_restore()) {
             enumerate_buffer_mappings(restore_origin);
-            add_pickinfos_for_mirrors();
             unlist_dir_buffers();
             clean_leftover_items();
         }
@@ -781,16 +790,10 @@ void scenes_keeper_clear_all(void) {
 }
 
 /*
- * valid session file path
+ * session file path
  *
- * "valid" in it exists
+ * return nil if not doing auto-restore
  */
 NSString *scene_keeper_valid_session_file_path(void) {
-    if (!should_auto_restore()) {
-        return nil;
-    }
-    NSString *path = session_file_path();
-    
-    return [[NSFileManager defaultManager] fileExistsAtPath:path] ?
-    path : nil;
+    return should_auto_restore() ? session_file_path() : nil;
 }

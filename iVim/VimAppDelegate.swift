@@ -32,16 +32,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var handleNow = true
         if self.isLaunchedByURL {
             self.isLaunchedByURL = false
-            if scene_keeper_add_pending_bookmark(url.bookmark) {
+            if scene_keeper_add_pending_url_task({
+                _ = VimURLHandler(url: url)?.open()
+            }) {
                 handleNow = false
             }
         }
-        var result = true
-        if handleNow {
-            result = VimURLHandler(url: url)?.open() ?? false
-        }
         
-        return result
+        return !handleNow || VimURLHandler(url: url)?.open() ?? false
     }
     
     func applicationWillResignActive(_ application: UIApplication) {
@@ -78,11 +76,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         vim_setenv("HOME", workingDir)
         FileManager.default.changeCurrentDirectoryPath(workingDir)
         scenes_keeper_restore_prepare();
-        var args = ["vim"] + LaunchArgumentsParser().parse()
+        var args = ["vim"]
         if let spath = scene_keeper_valid_session_file_path() {
-            let rCmd = "silent! source \(spath) | silent! idocuments session"
+            let rCmd = "silent! source \(spath) | " +
+            "silent! idocuments session"
             args += ["-c", rCmd]
         }
+        args += LaunchArgumentsParser().parse()
         var argv = args.map { strdup($0) }
         VimMain(Int32(args.count), &argv)
         argv.forEach { free($0) }
