@@ -226,8 +226,13 @@ extension PickInfo {
             let fm = FileManager.default
             do {
                 if mURL.isDirectory {
+                    let oldCwd = fm.currentDirectoryPath
+                    // the dir to be removed could be the currnt directory
+                    // in that case, it needs to be restored manually
+                    // afterwards, otherwise vim would work incorrectly
                     try fm.removeItem(at: mURL)
                     try fm.copyItem(at: oURL, to: mURL)
+                    fm.changeCurrentDirectoryPath(oldCwd)
                     self.updateUpdatedDate()
                 } else {
                     self.update(from: oURL, to: mURL, err: err)
@@ -333,8 +338,9 @@ extension PickInfo: NSFilePresenter {
     
     func presentedItemDidChange() {
         NSLog("presented did change")
-        self.read() //the content modification date of the origin never update here
-        gPIM.reloadBufferForMirror(at: self.mirrorURL)
+        if self.updateMirror() {
+            gPIM.reloadBufferForMirror(at: self.mirrorURL)
+        }
     }
     
     func accommodatePresentedItemDeletion(completionHandler: @escaping (Error?) -> Void) {
