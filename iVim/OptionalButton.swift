@@ -8,6 +8,54 @@
 
 import UIKit
 
+
+private extension UIColor {
+    private static func alterColor(light: UIColor, dark: UIColor) -> UIColor {
+        let result: UIColor
+        if #available(iOS 13, *) {
+            result = UIColor {
+                $0.userInterfaceStyle == .dark ? dark : light
+            }
+        } else {
+            result = light
+        }
+        
+        return result
+    }
+    
+    private static var darkPressedGray: UIColor = {
+        if #available(iOS 13, *) {
+            return .systemGray5
+        } else {
+            return .white
+        }
+    }()
+    
+    static var normalBackground: UIColor {
+        return UIColor.alterColor(light: .white, dark: .darkGray)
+    }
+    
+    static var primaryText: UIColor {
+        return UIColor.alterColor(light: .black, dark: .white)
+    }
+    
+    static var secondaryText: UIColor {
+        return UIColor.alterColor(light: .gray, dark: .lightGray)
+    }
+    
+    static var pressedBackground: UIColor {
+        return UIColor.alterColor(light: .lightGray, dark: .darkPressedGray)
+    }
+    
+    static var heldBackground: UIColor {
+        return UIColor.alterColor(light: .darkGray, dark: .black)
+    }
+    
+    static var heldText: UIColor {
+        return .white
+    }
+}
+
 extension UIDevice {
     var isPhone: Bool {
         return self.userInterfaceIdiom == .phone
@@ -48,7 +96,7 @@ class OptionalButton: UIView {
 
 extension OptionalButton {
     fileprivate func setup() {
-        self.layer.backgroundColor = UIColor.white.cgColor
+        self.layer.backgroundColor = UIColor.normalBackground.cgColor
         self.layer.cornerRadius = 5
         self.layer.shadowColor = UIColor.black.cgColor
         self.layer.shadowOffset = CGSize(width: 0, height: 1)
@@ -103,7 +151,7 @@ extension OptionalButton {
         let width = ceil(contentSize.width)
         let height = ceil(contentSize.height)
         layer.bounds = CGRect(x: 0, y: 0, width: width, height: height)
-        layer.font = font.fontName as CFTypeRef
+        layer.font = font//font.fontName as CFTypeRef
         layer.fontSize = size
     }
     
@@ -124,7 +172,7 @@ extension OptionalButton {
     private func setKey(for option: EKKeyOption, at anchorPoint: CGPoint) {
         self.addLayer(
             option: option,
-            color: .gray,
+            color: .secondaryText,
             fontSize: optionalFontSize,
             anchorPoint: anchorPoint)
     }
@@ -133,7 +181,7 @@ extension OptionalButton {
         let primaryPoint = CGPoint(0.5, 0.5)
         self.addLayer(
             option: option,
-            color: .black,
+            color: .primaryText,
             fontSize: primaryFontSize,
             anchorPoint: primaryPoint)
         self.primaryInfo = self.info[primaryPoint.key]
@@ -145,7 +193,7 @@ extension OptionalButton {
         let t = touches.first!
         self.startLocation = t.location(in: self)
         if self.isOn { return }
-        self.layer.backgroundColor = UIColor.lightGray.cgColor
+        self.layer.backgroundColor = UIColor.pressedBackground.cgColor
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -201,8 +249,8 @@ extension OptionalButton {
         self.isHeld = true
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        self.layer.backgroundColor = UIColor.darkGray.cgColor
-        l.foregroundColor = UIColor.white.cgColor
+        self.layer.backgroundColor = UIColor.heldBackground.cgColor
+        l.foregroundColor = UIColor.heldText.cgColor
         CATransaction.commit()
     }
     
@@ -243,7 +291,7 @@ extension OptionalButton {
         self.initTranslation = translation
         self.updateLayers(reset: false,
                           target: i,
-                          color: .black)
+                          color: .primaryText)
         
         return i
     }
@@ -254,11 +302,11 @@ extension OptionalButton {
         if let i = self.transformingInfo {
             self.transform(layer: i.layer, scale: 1)
             target = i
-            color = .gray
+            color = .secondaryText
             self.transformingInfo = nil
         } else {
             target = self.primaryInfo
-            color = .black
+            color = .primaryText
         }
         self.updateLayers(reset: true, target: target, color: color)
         self.initTranslation = nil
@@ -266,7 +314,7 @@ extension OptionalButton {
     
     private func restore() {
         DispatchQueue.main.async {
-            self.layer.backgroundColor = UIColor.white.cgColor
+            self.layer.backgroundColor = UIColor.normalBackground.cgColor
             self.reset()
         }
     }
