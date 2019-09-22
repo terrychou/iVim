@@ -127,11 +127,13 @@ static NSString *buffer_scenes_dir(void) {
  */
 static void clean_dir(NSString *path) {
     NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *oldCwd = [fm currentDirectoryPath];
     [fm removeItemAtPath:path error:NULL];
     [fm createDirectoryAtPath:path
   withIntermediateDirectories:YES
                    attributes:NULL
                         error:NULL];
+    [fm changeCurrentDirectoryPath:oldCwd];
 }
 
 /*
@@ -301,21 +303,277 @@ static void cache_buffer(buf_T *buf, FILE *buffer_list) {
  * need to record the application prefix of last using
  * store it in file scenes_dir/lastapppre
  */
-static void record_last_app_prefix(void) {
+static void record_content_to(NSString *content,
+                              NSString *path,
+                              NSString *name) {
     NSError *err;
-    if (![app_dir() writeToFile:last_app_prefix_file_path()
-                     atomically:YES
-                       encoding:NSUTF8StringEncoding
-                          error:&err]) {
-        NSLog(@"failed to record last app prefix: %@",
-              [err localizedDescription]);
+    if (![content writeToFile:path
+                   atomically:YES
+                     encoding:NSUTF8StringEncoding
+                        error:&err]) {
+        NSLog(@"failed to record %@: %@", name, [err localizedDescription]);
     }
 }
 
-static NSString *last_app_prefix(void) {
-    return [NSString stringWithContentsOfFile:last_app_prefix_file_path()
+static NSString *content_of_record_at_path(NSString *path) {
+    return [NSString stringWithContentsOfFile:path
                                      encoding:NSUTF8StringEncoding
                                         error:NULL];
+}
+
+static void record_last_app_prefix(void) {
+    record_content_to(app_dir(),
+                      last_app_prefix_file_path(),
+                      @"last app prefix");
+}
+
+static NSString *last_app_prefix(void) {
+    return content_of_record_at_path(last_app_prefix_file_path());
+}
+
+/*
+ * helper function for correcting absolute paths in files
+ *
+ * absolute file paths may change due to
+ * application re-installation, the old ones need correcting to
+ * current application prefix to make session restoration work
+ * properly
+ */
+static NSString *uuid_regex = @"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}";
+
+static NSUInteger replace_occurrences_in(NSMutableString *content,
+                                         NSString *regex,
+                                         NSString *replacement) {
+    return [content replaceOccurrencesOfString:regex
+                                    withString:replacement
+                                       options:NSRegularExpressionSearch
+                                         range:NSMakeRange(0, [content length])];
+}
+
+static NSString *regex_for_old(NSString *old) {
+    NSMutableString *regex = [NSMutableString stringWithString:old];
+    replace_occurrences_in(regex, uuid_regex, uuid_regex);
+    
+    return regex;
+}
+
+typedef NSUInteger (^AbsolutePathsCorrector)(NSMutableString *);
+typedef void (^CorrectTask)(AbsolutePathsCorrector);
+
+static void correct_absolute_paths_with(CorrectTask task) {
+    NSString *lap = last_app_prefix();
+    if (!lap) {
+        return;
+    }
+    NSString *cap = app_dir();
+    if ([lap isEqualToString:cap]) { // application prefix did not change
+        return;
+    }
+    NSString *app_data_regex = regex_for_old(lap);
+    NSString *crp = TONSSTRING(mch_getenv("VIMRUNTIME"));
+    NSString *runtime_regex = regex_for_old(crp);
+    AbsolutePathsCorrector corrector = ^(NSMutableString *content){
+        // corrent possible application data paths
+        NSUInteger ret = replace_occurrences_in(content,
+                                                app_data_regex,
+                                                cap);
+        // correct possible runtime paths
+        ret += replace_occurrences_in(content,
+                                      runtime_regex,
+                                      crp);
+        return ret;
+    };
+    task(corrector);
+}
+
+static void correct_absolute_paths_in_file(NSString *(*path_block)(void)) {
+    correct_absolute_paths_with(^(AbsolutePathsCorrector corrector) {
+        NSError *err;
+        NSString *path = path_block();
+        if (!path) {
+            return;
+        }
+        NSMutableString *content = [NSMutableString
+                                    stringWithContentsOfFile:path
+                                    encoding:NSUTF8StringEncoding
+                                    error:&err];
+        if (!content) {
+            NSLog(@"failed to read file: %@", [err localizedDescription]);
+            return;
+        }
+        NSUInteger replaced = corrector(content);
+        NSLog(@"%lu paths corrected in file %@", (unsigned long)replaced, path);
+        if (replaced > 0 && ![content writeToFile:path
+                                       atomically:YES
+                                         encoding:NSUTF8StringEncoding
+                                            error:&err]) {
+            NSLog(@"failed to write file: %@", [err localizedDescription]);
+        }
+    });
+}
+
+/*
+ * handle viminfo file
+ */
+
+/*
+ * path of viminfo file
+ *
+ * could be nil
+ */
+static char_u *full_viminfo_path(void) {
+    char_u *path = NULL;
+    if (use_viminfo != NULL) {
+        path = use_viminfo;
+    } else if ((path = find_viminfo_parameter('n')) == NULL ||
+               *path == NUL) {
+        path = (char_u *)VIMINFO_FILE;
+    }
+    expand_env(path, NameBuff, MAXPATHL);
+    path = NameBuff;
+    char_u buf[MAXPATHL];
+    if (vim_FullName(path, buf, MAXPATHL, TRUE) != FAIL) {
+        path = buf;
+    }
+    
+    return vim_strsave(path);
+}
+
+/*
+ * path of file recording last viminfo path
+ */
+static NSString *last_viminfo_path_file_path(void) {
+    static NSString *path;
+    if (!path) {
+        path = subpath_under(@"lastviminfopath", scenes_dir());
+    }
+    
+    return path;
+}
+
+/*
+ * record last viminfo file path
+ */
+static void record_last_viminfo_path(void) {
+    char_u *vpath = full_viminfo_path();
+    char_u *rpath = path_relative_to_app(vpath);
+    if (!rpath) {
+        return;
+    }
+    record_content_to(TONSSTRING(rpath),
+                      last_viminfo_path_file_path(),
+                      @"last viminfo path");
+    vim_free(vpath);
+}
+
+/*
+ * last viminfo path
+ */
+static NSString *last_viminfo_path(void) {
+    NSString *path = content_of_record_at_path(last_viminfo_path_file_path());
+    if (!path) {
+        return nil;
+    } else {
+        return full_path_to_app(path);
+    }
+}
+
+/*
+ * correct the viminfo file
+ */
+static const char *correct_line(const char *line,
+                                AbsolutePathsCorrector ctr,
+                                NSUInteger *replaced) {
+    NSMutableString *content = [NSMutableString stringWithUTF8String:line];
+    *replaced += ctr(content);
+    
+    return [content UTF8String];
+}
+
+static void correct_viminfo(void) {
+    correct_absolute_paths_with(^(AbsolutePathsCorrector corrector) {
+        NSString *opath = last_viminfo_path();
+        if (!opath) {
+            return;
+        }
+        FILE *op = NULL;
+        FILE *tp = NULL;
+        if ((op = fopen([opath UTF8String], "r")) == NULL) {
+            NSLog(@"failed to open viminfo file %@", opath);
+            return;
+        }
+        NSString *tpath = [NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
+        if ((tp = fopen([tpath UTF8String], "w")) == NULL) {
+            NSLog(@"failed to create temp viminfo file %@", tpath);
+            fclose(op);
+            return;
+        }
+        size_t len;
+        NSUInteger replaced = 0;
+        char *line = fgetln(op, &len);
+        const char *result = NULL;
+        BOOL decide_category = NO;
+        BOOL do_correct = NO;
+        while (len > 0) {
+            char str[len + 1];
+            strncpy(str, line, len);
+            str[len] = NUL;
+            if (str[0] == '\n') { // empty line
+                result = str;
+            } else {
+                if (decide_category) {
+                    switch (str[0]) {
+                        case '-': // jumplist
+                        case '\'': // file mark
+                        case '>': // history of mark
+                        case '%': // buffer list
+                            do_correct = YES;
+//                            NSLog(@"should do correction.");
+                            break;
+                    }
+                    decide_category = NO;
+                }
+                if (str[0] == '#') { // enter another category
+                    do_correct = NO;
+                    decide_category = YES;
+//                    NSLog(@"enter category %s", str);
+                }
+                if (do_correct) {
+                    result = correct_line(str, corrector, &replaced);
+//                    NSLog(@"\"%s\" -> \"%s\"", str, result);
+                } else {
+                    result = str;
+                }
+            }
+            // write to temp
+            // result contains newline if there is
+            fputs(result, tp);
+            // read next line
+            line = fgetln(op, &len);
+        }
+        fclose(op);
+        fclose(tp);
+        NSFileManager *fm = [NSFileManager defaultManager];
+        NSError *err;
+        if (replaced > 0) {
+            if ([fm removeItemAtPath:opath error:&err]) {
+                if ([fm moveItemAtPath:tpath toPath:opath error:&err]) {
+                    NSLog(@"%lu paths corrected in viminfo", (unsigned long)replaced);
+                } else {
+                    NSLog(@"failed to replace original viminfo file: %@",
+                          [err localizedDescription]);
+                }
+            } else {
+                NSLog(@"failed to remove original viminfo file: %@",
+                      [err localizedDescription]);
+            }
+        } else {
+            if (![fm removeItemAtPath:tpath error:&err]) {
+                NSLog(@"failed to remove temp viminfo file: %@",
+                      [err localizedDescription]);
+            }
+        }
+    });
 }
 
 /*
@@ -391,6 +649,11 @@ void scenes_keeper_stash(void) {
         }
     }
     fclose(slp);
+    record_last_app_prefix();
+    // write viminfo file
+    // because iVim rarely has "exit", need to do it manually here
+    record_last_viminfo_path();
+    do_cmdline_cmd((char_u *)"wviminfo");
     
     if (!should_restore) {
         return;
@@ -398,7 +661,6 @@ void scenes_keeper_stash(void) {
     fclose(bmlp);
     fclose(mflp);
     // make session
-    record_last_app_prefix();
     NSString *cmd = [NSString stringWithFormat:@"mksession! %@",
                      session_file_path()];
     do_cmdline_cmd(TOCHARS(cmd));
@@ -491,62 +753,9 @@ static void enumerate_buffer_mappings(void (*task)(NSString *bpath, NSString *op
 
 /*
  * correct file paths in session files
- *
- * absolute file paths may change due to
- * application re-installation, the old ones need correcting to
- * current application prefix to make session restoration work
- * properly
  */
-static NSString *uuid_regex = @"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}";
-
-static NSUInteger correct_content(NSMutableString *content, NSString *old, NSString *new) {
-    NSMutableString *regex = [NSMutableString stringWithString:old];
-    [regex replaceOccurrencesOfString:uuid_regex
-                           withString:uuid_regex
-                              options:NSRegularExpressionSearch
-                                range:NSMakeRange(0, [old length])];
-    
-    return [content replaceOccurrencesOfString:regex
-                                    withString:new
-                                       options:NSRegularExpressionSearch
-                                         range:NSMakeRange(0, [content length])];
-}
-
 static void correct_session_file(void) {
-    NSString *lap = last_app_prefix();
-    if (!lap) {
-        return;
-    }
-    NSString *cap = app_dir();
-    if ([lap isEqualToString:cap]) { // application prefix did not change
-        return;
-    }
-    
-    NSError *err;
-    NSString *spath = session_file_path();
-    NSMutableString *scontent = [NSMutableString stringWithContentsOfFile:spath
-                                                                 encoding:NSUTF8StringEncoding
-                                                                    error:&err];
-    if (!scontent) {
-        NSLog(@"failed to read session file: %@",
-              [err localizedDescription]);
-        return;
-    }
-    // corrent possible application data paths
-    NSUInteger replaced = correct_content(scontent, lap, cap);
-    
-    // correct possible runtime paths
-    NSString *crp = TONSSTRING(mch_getenv("VIMRUNTIME"));
-    replaced += correct_content(scontent, crp, crp);
-    
-    NSLog(@"%lu paths in session file corrected.", (unsigned long)replaced);
-    if (replaced > 0 && ![scontent writeToFile:spath
-                                    atomically:YES
-                                      encoding:NSUTF8StringEncoding
-                                         error:&err]) {
-        NSLog(@"failed to write session file: %@",
-              [err localizedDescription]);
-    }
+    correct_absolute_paths_in_file(session_file_path);
 }
 
 /*
@@ -617,6 +826,7 @@ static void temporarily_sub(NSString *bpath, NSString *opath) {
 
 void scenes_keeper_restore_prepare(void) {
     remove_swap_files();
+    correct_viminfo();
     if (should_auto_restore()) {
         correct_session_file();
         restore_pickinfos();
@@ -778,6 +988,17 @@ void scenes_keeper_restore_post(void) {
     }
 }
 
+static void clean_file(NSString *path) {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:path]) {
+        return; // not exist
+    }
+    NSError *err;
+    if (![fm removeItemAtPath:path error:&err]) {
+        NSLog(@"failed to clean file: %@", [err localizedDescription]);
+    }
+}
+
 void scenes_keeper_clear_all(void) {
     if (should_auto_restore()) { // do not clear if need to restore
         return;
@@ -785,7 +1006,14 @@ void scenes_keeper_clear_all(void) {
     NSFileManager *fm = [NSFileManager defaultManager];
     [fm cleanMirrorFiles];
     if ([fm fileExistsAtPath:session_file_path()]) {
-        clean_dir(scenes_dir());
+        // clean buffer dir
+        clean_dir(buffer_scenes_dir());
+        // clean temp dir
+        clean_dir(temp_scenes_dir());
+        // remove mirrored files list
+        clean_file(mirrored_files_list_path());
+        // remove session.vim file
+        clean_file(session_file_path());
     }
 }
 

@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2019 May 10
+*os_ios.txt*	For Vim version 7.4.	Last change: 2019 Sep 21
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -472,7 +472,11 @@ restore, delete them from the buffer list.
 c. unlike default vim sessions, opened directories by |netrw| will also be 
 restored. However, their cursor position information is not kept.
 
-d. `Auto-restore` can be disabled in |ios-settings|. Note that iVim will clear 
+d. other useful information such as marks or register contents is stored in
+the |viminfo-file|, and also restored. Its details can be customized via the 
+'viminfo' option.
+ 
+e. `Auto-restore` can be disabled in |ios-settings|. Note that iVim will clear 
 all the cached information when this happens.
 
 
@@ -500,6 +504,12 @@ Swap file cleaning ~
 Due to the sudden app termination mechanism of the iOS system, there would be
 leftover swap files in the filesystem. iVim will try and clean them on each
 launch automatically.
+
+The viminfo file ~
+
+The default writing timing for the |viminfo-file| is when vim exits. However,
+that does not happen so often in iVim. Therefore, iVim takes over and records
+the file when necessary.
 
 
  vim:tw=78:ts=8:ft=help:norl

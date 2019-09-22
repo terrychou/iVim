@@ -566,6 +566,8 @@ static void ex_idocuments(exarg_T * eap) {
         [shellViewController() pickDocument];
     } else if ([arg isEqualToString:@"import"]) {
         [shellViewController() importDocument];
+    } else if ([arg isEqualToString:@"dir"]) {
+        [shellViewController() openDir];
     } else if ([arg isEqualToString:@"session"]) {
         scenes_keeper_restore_post();
     }

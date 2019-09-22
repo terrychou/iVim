@@ -9,15 +9,21 @@
 import UIKit
 
 extension VimViewController: UIDocumentPickerDelegate {
-    private func showPicker(in mode: UIDocumentPickerMode) {
-        let types = ["public.item", "public.folder", "public.directory"]
-        let picker = UIDocumentPickerViewController(documentTypes: types, in: mode)
+    private func showPicker(with types: [String],
+                            in mode: UIDocumentPickerMode) {
+        let picker = UIDocumentPickerViewController(documentTypes: types,
+                                                    in: mode)
         if #available(iOS 11, *) {
             picker.allowsMultipleSelection = true
         }
         picker.delegate = self
         self.switchExtendedBarTemporarily(hide: true)
         self.present(picker, animated: true, completion: nil)
+    }
+    
+    private func showDocPicker(in mode: UIDocumentPickerMode) {
+        let types = ["public.item", "public.folder", "public.directory"]
+        self.showPicker(with: types, in: mode)
     }
     
     private func switchExtendedBarTemporarily(hide: Bool) {
@@ -29,11 +35,15 @@ extension VimViewController: UIDocumentPickerDelegate {
     }
     
     @objc func pickDocument() {
-        self.showPicker(in: .open)
+        self.showDocPicker(in: .open)
     }
     
     @objc func importDocument() {
-        self.showPicker(in: .import)
+        self.showDocPicker(in: .import)
+    }
+    
+    @objc func openDir() {
+        self.showPicker(with: ["public.folder"], in: .open)
     }
     
     private func handle(url: URL, in mode: UIDocumentPickerMode) {

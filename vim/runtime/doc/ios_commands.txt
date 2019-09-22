@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 7.4	Last change: 2018 May 26
+*ios_commands.txt*	For Vim version 7.4	Last change: 2019 Sep 21
 
 				iVim REFERENCE MANUAL	by Terry Chou
 
@@ -94,17 +94,25 @@ iVim has two commands for sharing |ios-share|.
 <
 		Note: only one file can be shared at a time.
 
-:idoc[uments] [open|import]				*:idoc* *:idocuments*
+:idoc[uments] [mode]				    *:idoc* *:idocuments*
 		Pick documents from iCloud Drive or other document provider
 		apps via the document picker.
 
-		When the option is `open` or omitted, the picked document will
+		When the mode is `open` or omitted, the picked document will
 		be edited in place, meaning that the modifications will be
 		saved back to the original document directly. Example: >
 			:idoc			"open the document picker
 						"and edit the picked file
 						"in place
-<		If the option is `import`, the picked document will be copied
+<		
+                Directories can also be opened in `open` mode. Before iOS 13,
+                this needs explicit support from the document provider app.
+                Since iOS 13, this becomes system-wide. However, it needs to
+                be done in the separate UI opened with mode `dir`: >
+                        :idoc dir               "open the document picker
+                                                "specific for picking dirs
+<
+                If the mode is `import`, the picked document will be copied
 		into iVim's `Documents` directory and opened for further
 		editing. 
 

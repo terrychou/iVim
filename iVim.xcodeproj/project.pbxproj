@@ -7425,6 +7425,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
@@ -7436,6 +7437,7 @@
 					"$(PROJECT_DIR)/vim/src/xpm/x64/lib",
 					"$(PROJECT_DIR)/vim/src/xpm/x86/lib",
 				);
+				MARKETING_VERSION = 1.53;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/iVim-Bridging-Header.h";
@@ -7449,6 +7451,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
@@ -7460,6 +7463,7 @@
 					"$(PROJECT_DIR)/vim/src/xpm/x64/lib",
 					"$(PROJECT_DIR)/vim/src/xpm/x86/lib",
 				);
+				MARKETING_VERSION = 1.53;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/iVim-Bridging-Header.h";
@@ -7529,10 +7533,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = iVimShare/iVimShare.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				INFOPLIST_FILE = iVimShare/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.53;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7544,10 +7550,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = iVimShare/iVimShare.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				INFOPLIST_FILE = iVimShare/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.53;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
