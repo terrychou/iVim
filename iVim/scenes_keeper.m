@@ -630,7 +630,9 @@ void scenes_keeper_stash(void) {
             continue;
         }
         // record mirrored file paths
-        if (buf->b_ffname && is_path_under(TONSSTRING(buf->b_ffname), mirrorDir)) {
+        if (buf->b_ffname &&
+            buf->b_p_bl && // is in buffer list
+            is_path_under(TONSSTRING(buf->b_ffname), mirrorDir)) {
             fputs((char *)path_relative_to_app(buf->b_ffname), mflp);
             fputc('\n', mflp);
         }
@@ -886,7 +888,7 @@ static void remove_leftover_items_under(NSArray<NSString *> *dirs) {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSMutableArray<NSString *> *bpaths = [NSMutableArray array];
     for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf->b_ffname) {
+        if (buf->b_ffname && (buf->b_p_bl || buf->b_nwindows > 0)) {
             [bpaths addObject:TONSSTRING(buf->b_ffname)];
         }
     }
@@ -909,8 +911,14 @@ static void remove_leftover_items_under(NSArray<NSString *> *dirs) {
             }
             if (to_delete) {
                 path = [dir stringByAppendingPathComponent:si];
-                if (![fm removeItemAtPath:path
-                                    error:&err]) {
+                if ([[fm currentDirectoryPath] hasPrefix:path]) {
+                    // do not delete path parenting cwd
+                    continue;
+                }
+                if ([fm removeItemAtPath:path
+                                   error:&err]) {
+                    NSLog(@"cleaned leftover %@", path);
+                } else {
                     NSLog(@"failed to remove item %@: %@",
                           path, [err localizedDescription]);
                 }

@@ -168,14 +168,33 @@ extension PickInfo {
         self.storeMirrorBookmark()
     }
     
-    func updateMirror() -> Bool {
-//        NSLog("origin date: \(self.origin.contentModifiedDate(secured: true)!)")
-//        NSLog("updated date: \(self.updatedDate)")
-        guard let oCntDate = self.origin.contentModifiedDate(secured: true),
-            oCntDate > self.updatedDate else { return false } //original content has been modified
-        self.read()
-        
-        return true
+    func updateMirror(completion: @escaping () -> ()) {
+        guard let ocmDate = self.origin.contentModifiedDate(secured: true)
+            else { return }
+        if ocmDate > self.updatedDate {
+            self.read()
+            completion()
+        } else if self.mirrorURL.isDirectory {
+            self.origin.coordinatedRead(for: self) { (url, err) in
+                guard let u = url,
+                    let list = FileManager.default.enumerator(at: u, includingPropertiesForKeys: [.contentModificationDateKey]) else {
+                    return
+                }
+                var shouldUpdate = false
+                let ud = self.updatedDate!
+                for case let file as URL in list {
+                    if let cmDate = file.contentModifiedDate(),
+                        cmDate > ud {
+                        shouldUpdate = true
+                        break
+                    }
+                }
+                if shouldUpdate {
+                    self.read()
+                    completion()
+                }
+            }
+        }
     }
     
     func updateOrigin(to newURL: URL) {
@@ -253,8 +272,15 @@ extension PickInfo {
             NSLog("write")
             let si = self.subitem(for: subpath)
             let src = self.mirrorURL.appendingPathComponent(si)
-            let dst = url?.appendingPathComponent(si)
+            var dst = url?.appendingPathComponent(si)
             self.update(from: src, to: dst, err: err)
+            // sync mtime
+            do {
+                let cmd = try src.resourceValues(forKeys: [.contentModificationDateKey])
+                try dst?.setResourceValues(cmd)
+            } catch {
+                NSLog("failed to sync mtime: \(error)")
+            }
         }
     }
     
@@ -338,7 +364,7 @@ extension PickInfo: NSFilePresenter {
     
     func presentedItemDidChange() {
         NSLog("presented did change")
-        if self.updateMirror() {
+        self.updateMirror {
             gPIM.reloadBufferForMirror(at: self.mirrorURL)
         }
     }
@@ -350,37 +376,47 @@ extension PickInfo: NSFilePresenter {
 }
 
 extension URL {
-    private func coordinated(for presenter: NSFilePresenter, completion: @escaping (URL?, Error?) -> Void, operation: (NSFileCoordinator, NSErrorPointer) -> Void) {
-        guard self.startAccessingSecurityScopedResource() else { return completion(nil, nil) }
+    typealias CoordCompletion = (URL?, Error?) -> Void
+    typealias CoordOperation = (NSFileCoordinator, NSErrorPointer) -> Void
+    private func coordinated(for presenter: NSFilePresenter,
+                             completion: @escaping CoordCompletion,
+                             operation: CoordOperation) {
+        guard self.startAccessingSecurityScopedResource() else {
+            return completion(nil, nil)
+        }
+        defer {
+            self.stopAccessingSecurityScopedResource()
+        }
         let coordinator = NSFileCoordinator(filePresenter: presenter)
         let error: NSErrorPointer = nil
         operation(coordinator, error)
         guard let err = error?.pointee else { return }
         completion(nil, err)
-        self.stopAccessingSecurityScopedResource()
     }
     
-    func coordinatedRead(for presenter: NSFilePresenter, completion: @escaping (URL?, Error?) -> Void) {
+    func coordinatedRead(for presenter: NSFilePresenter,
+                         completion: @escaping CoordCompletion) {
         self.coordinated(for: presenter, completion: completion) { coordinator, error in
-            coordinator.coordinate(readingItemAt: self, options: [], error: error) { url in
-                completion(url, nil)
-                self.stopAccessingSecurityScopedResource()
+            coordinator.coordinate(readingItemAt: self, error: error) {
+                completion($0, nil)
             }
         }
     }
     
-    func coordinatedWrite(for presenter: NSFilePresenter, completion: @escaping (URL?, Error?) -> Void) {
+    func coordinatedWrite(for presenter: NSFilePresenter,
+                          completion: @escaping CoordCompletion) {
         self.coordinated(for: presenter, completion: completion) { coordinator, error in
-            coordinator.coordinate(writingItemAt: self, options: [], error: error) { url in
-                completion(url, nil)
-                self.stopAccessingSecurityScopedResource()
+            coordinator.coordinate(writingItemAt: self, error: error) {
+                completion($0, nil)
             }
         }
     }
     
     var bookmark: Data? {
+        guard self.startAccessingSecurityScopedResource() else {
+            return nil
+        }
         defer { self.stopAccessingSecurityScopedResource() }
-        guard self.startAccessingSecurityScopedResource() else { return nil }
         do {
             return try self.bookmarkData()
         } catch {
@@ -389,20 +425,32 @@ extension URL {
         }
     }
     
-    func resourceValue(for key: URLResourceKey, secured: Bool = false) -> URLResourceValues? {
-        do {
-            if secured && !self.startAccessingSecurityScopedResource() {
-                return nil
-            }
-            let result = try self.resourceValues(forKeys: [key])
+    private func mapThrower<T>(_ thrower: () throws -> T,
+                               secured: Bool,
+                               name: String) -> T? {
+        if secured && !self.startAccessingSecurityScopedResource() {
+            return nil
+        }
+        defer {
             if secured {
                 self.stopAccessingSecurityScopedResource()
             }
-            return result
-        } catch {
-            NSLog("Failed to get resource value for key \(key): \(error)")
-            return nil
         }
+        var result: T?
+        do {
+            result = try thrower()
+        } catch {
+            NSLog("failed to \(name): \(error)")
+        }
+        
+        return result
+    }
+    
+    func resourceValue(for key: URLResourceKey,
+                       secured: Bool = false) -> URLResourceValues? {
+        return self.mapThrower({ try self.resourceValues(forKeys: [key]) },
+                               secured: secured,
+                               name: "get resource value for key '\(key)'")
     }
     
     var isDirectory: Bool {
@@ -410,19 +458,9 @@ extension URL {
     }
     
     func isReachable(secured: Bool = false) -> Bool {
-        do {
-            if secured && !self.startAccessingSecurityScopedResource() {
-                return false
-            }
-            let result = try self.checkResourceIsReachable()
-            if secured {
-                self.stopAccessingSecurityScopedResource()
-            }
-            return result
-        } catch {
-            NSLog("Failed to check reachability: \(error)")
-            return false
-        }
+        return self.mapThrower({ try self.checkResourceIsReachable() },
+                               secured: secured,
+                               name: "check reachability") ?? false
     }
     
     func contentModifiedDate(secured: Bool = false) -> Date? {

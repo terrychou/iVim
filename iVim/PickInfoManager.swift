@@ -76,8 +76,10 @@ extension PickInfoManager {
             pi.updatedDate = mtime
         }
         self.addPickInfo(pi)
-        if update && pi.updateMirror() {
-            NSLog("updated mirror \(ticket)")
+        if update {
+            pi.updateMirror {
+                NSLog("updated mirror \(ticket)")
+            }
         }
     }
     
@@ -123,7 +125,7 @@ extension PickInfoManager {
      */
     func updateInfo(_ info: PickInfo) {
         if info.origin.isReachable(secured: true) {
-            if info.updateMirror() {
+            info.updateMirror {
                 NSLog("RELOAD: \(info.mirrorURL)")
                 self.reloadBufferForMirror(at: info.mirrorURL)
             }

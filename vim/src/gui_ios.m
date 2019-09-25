@@ -241,12 +241,23 @@ static BOOL buf_belongs_to_path(buf_T * buf, NSString * path) {
 /*
  * reload buffer representing file in mirror *path*
  */
+static void clean_buffer(buf_T *buf) {
+    NSString *cmd = [NSString stringWithFormat:@"bdelete! %d",
+                     buf->b_fnum];
+    do_cmdline_cmd(TOCHARS(cmd));
+    close_buffer(nil, buf, DOBUF_WIPE, FALSE);
+}
+
 void ivim_reload_buffer_for_mirror(NSString * path) {
     buf_T * buf = nil;
     for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
         if (buf_belongs_to_path(buf, path) &&
             !mch_isdir(buf->b_ffname)) {
-            buf_reload(buf, buf->b_orig_mode);
+            if (mch_getperm(buf->b_ffname) == -1) { // not exist
+                clean_buffer(buf);
+            } else {
+                buf_reload(buf, buf->b_orig_mode);
+            }
         }
     }
 }
@@ -803,11 +814,7 @@ BOOL clean_buffer_for_mirror_path(NSString * path) {
     BOOL result = NO;
     for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
         if (buf_belongs_to_path(buf, path)) {
-            close_buffer(NULL, buf, DOBUF_DEL, 0);
-            close_windows(buf, TRUE);
-            if (buf == curbuf) {
-                do_cmdline_cmd((char_u *)"enew");
-            }
+            clean_buffer(buf);
             result = YES;
         }
     }
