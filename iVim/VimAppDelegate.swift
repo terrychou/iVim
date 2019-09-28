@@ -42,13 +42,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return !handleNow || VimURLHandler(url: url)?.open() ?? false
     }
     
-    func applicationWillResignActive(_ application: UIApplication) {
-        scenes_keeper_stash();
-        gPIM.willResignActive()
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        gPIM.willEnterForeground()
     }
     
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        gPIM.didBecomeActive()
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        scenes_keeper_stash();
+        gPIM.didEnterBackground()
     }
     
 //    private func logToFile() {

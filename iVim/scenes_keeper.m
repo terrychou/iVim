@@ -258,9 +258,14 @@ static int cache_temp_buffer(buf_T *buf) {
     }
     
     msg_silent++;
+    buf_T *curbuf_save = curbuf;
+    // need to make buf the current buf temporarily
+    // otherwise, it won't update
+    curbuf = buf;
     int ret = buf_write(buf, fname, sfname,
                         (linenr_T)1, buf->b_ml.ml_line_count,
                         NULL, FALSE, TRUE, TRUE, FALSE);
+    curbuf = curbuf_save;
     msg_silent--;
     
     return ret;
@@ -616,6 +621,29 @@ void scenes_keeper_stash(void) {
     }
     
     for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
+        if (should_restore) {
+            // record mirrored file paths
+            if (buf->b_ffname &&
+                buf->b_p_bl && // is in buffer list
+                is_path_under(TONSSTRING(buf->b_ffname), mirrorDir)) {
+                fputs((char *)path_relative_to_app(buf->b_ffname), mflp);
+                fputc('\n', mflp);
+            }
+            if (buf->b_ffname && mch_isdir(buf->b_ffname)) { // for dir
+                if (buf->b_nwindows > 0) {
+                    // NSLog(@"ddir %d %d", buf->b_p_bl, buf->b_p_swf);
+                    if (!buf->b_p_bl) {
+                        buf->b_p_bl = TRUE;
+                        [changed_bufs addObject:[NSValue valueWithPointer:buf]];
+                    }
+                }
+            } else if (buf->b_p_bl && buf->b_changed) { // for file
+                cache_buffer(buf, bmlp);
+            } else if (buf->b_help) {
+                // disable swap file for help buffer
+                buf->b_p_swf = FALSE;
+            }
+        }
         // record swap file paths
         if (buf->b_ml.ml_mfp && buf->b_ml.ml_mfp->mf_fname) {
             spath = buf->b_ml.ml_mfp->mf_fname;
@@ -625,29 +653,6 @@ void scenes_keeper_stash(void) {
             }
             fputs((char *)path_relative_to_app(spath), slp);
             fputc('\n', slp);
-        }
-        if (!should_restore) {
-            continue;
-        }
-        // record mirrored file paths
-        if (buf->b_ffname &&
-            buf->b_p_bl && // is in buffer list
-            is_path_under(TONSSTRING(buf->b_ffname), mirrorDir)) {
-            fputs((char *)path_relative_to_app(buf->b_ffname), mflp);
-            fputc('\n', mflp);
-        }
-        if (buf->b_ffname && mch_isdir(buf->b_ffname)) { // for dir
-            if (buf->b_nwindows > 0) {
-                // NSLog(@"ddir %d %d", buf->b_p_bl, buf->b_p_swf);
-                if (!buf->b_p_bl) {
-                    buf->b_p_bl = TRUE;
-                    [changed_bufs addObject:[NSValue valueWithPointer:buf]];
-                }
-            }
-        } else if (buf->b_p_bl && buf->b_changed) { // for file
-            cache_buffer(buf, bmlp);
-        } else if (buf->b_help) { // disable swap file for help buffer
-            buf->b_p_swf = FALSE;
         }
     }
     fclose(slp);

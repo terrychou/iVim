@@ -19,24 +19,20 @@ final class PickInfoManager: NSObject {
     
     private var localTable = [String: PickInfo]()
     private var table = [URL: PickInfo]()
-    private var isInit = true
 }
 
 extension PickInfoManager {
-    func didBecomeActive() {
-        guard !self.isInit else { // no need do it when it is the app init
-            self.isInit = false
-            return
-        }
-        NSLog("become active")
+    func willEnterForeground() {
+        // will NOT be called when app launches
+        NSLog("enter foreground")
         self.table.values.forEach {
             NSFileCoordinator.addFilePresenter($0)
             self.updateInfo($0)
         }
     }
     
-    func willResignActive() {
-        NSLog("resign active")
+    func didEnterBackground() {
+        NSLog("enter background")
         self.wrapUp()
     }
     
@@ -71,9 +67,6 @@ extension PickInfoManager {
             self.localTable[ticket] == nil,
             let pi = PickInfo(ticket: ticket) else {
                 return
-        }
-        if let mtime = URL(fileURLWithPath: path).contentModifiedDate() {
-            pi.updatedDate = mtime
         }
         self.addPickInfo(pi)
         if update {

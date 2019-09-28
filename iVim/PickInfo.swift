@@ -97,36 +97,34 @@ final class PickInfo: NSObject {
     var bookmark: Data?
     let ticket: String
     let subRootPath: String
-    var updatedDate: Date!
     lazy var mirrorURL: URL = FileManager.default.mirrorURL(for: self.subRootPath)
+    lazy var lastUpdatedURL: URL = self.mirrorURL
+        .deletingLastPathComponent()
+        .appendingPathComponent(".lastupdated")
     
-    init(origin: URL, task: MirrorReadyTask?) {
-        self.origin = origin
-        self.bookmark = origin.bookmark
-        self.ticket = UUID().uuidString
-        self.subRootPath = self.ticket + "/" + self.origin.lastPathComponent
-        super.init()
-        self.createMirror()
-        self.addTask(task)
-        self.updateUpdatedDate()
-    }
-    
-    init?(ticket: String) {
-        guard let bookmark = FileManager.default.mirrorBookmark(for: ticket),
-            let origin = bookmark.resolvedURL else {
-                return nil
-        }
+    private init(origin: URL, bookmark: Data?, ticket: String) {
         self.origin = origin
         self.bookmark = bookmark
         self.ticket = ticket
-        self.subRootPath = self.ticket + "/" +
-            self.origin.lastPathComponent
+        self.subRootPath = ticket + "/" + origin.lastPathComponent
         super.init()
-        self.updateUpdatedDate()
     }
     
-    deinit {
-        self.deleteMirror()
+    convenience init(origin: URL, task: MirrorReadyTask?) {
+        self.init(origin: origin,
+                  bookmark: origin.bookmark,
+                  ticket: UUID().uuidString)
+        self.createMirror()
+        self.addTask(task)
+    }
+    
+    convenience init?(ticket: String) {
+        if let bm = FileManager.default.mirrorBookmark(for: ticket),
+            let ori = bm.resolvedURL {
+            self.init(origin: ori, bookmark: bm, ticket: ticket)
+        } else {
+            return nil
+        }
     }
 }
 
@@ -144,16 +142,43 @@ extension PickInfo {
         }
     }
     
-    private func createMirror() {
-        self.origin.coordinatedRead(for: self) { [unowned self] url, err in
-            guard let oURL = url else {
-                var log = "failed to read original file"
-                if let e = err {
-                    log += ": \(e)"
-                }
-                NSLog(log)
-                return
+    private var lastUpdatedDate: Date? {
+        guard let ts = try? String(contentsOf: self.lastUpdatedURL,
+                                   encoding: .utf8),
+            let ti = TimeInterval(ts) else { return nil }
+        return Date(timeIntervalSince1970: ti)
+    }
+    
+    private func guessLastUpdatedDate() -> Date {
+        // this is called when no .lastupdated file exists
+        // use the content modification date of the mirror URL
+        // use current date even if the above is not available
+        let date = self.mirrorURL.contentModifiedDate() ?? Date()
+        self.updatedDate = date
+        
+        return date
+    }
+    
+    private var updatedDate: Date {
+        get {
+            return self.lastUpdatedDate ?? self.guessLastUpdatedDate()
+        }
+        set {
+            do {
+                try "\(newValue.timeIntervalSince1970)".write(
+                    to: self.lastUpdatedURL,
+                    atomically: true,
+                    encoding: .utf8)
+            } catch {
+                NSLog("failed to write last updated time: \(error)")
             }
+        }
+    }
+    
+    private func createMirror() {
+        self.origin.coordinatedRead(for: self, onError: {
+            NSLog("failed to create mirror: \($0)")
+        }) { [unowned self] oURL in
             let mURL = self.mirrorURL
             let fm = FileManager.default
             do {
@@ -168,30 +193,28 @@ extension PickInfo {
         self.storeMirrorBookmark()
     }
     
-    func updateMirror(completion: @escaping () -> ()) {
-        guard let ocmDate = self.origin.contentModifiedDate(secured: true)
-            else { return }
-        if ocmDate > self.updatedDate {
-            self.read()
-            completion()
-        } else if self.mirrorURL.isDirectory {
-            self.origin.coordinatedRead(for: self) { (url, err) in
-                guard let u = url,
-                    let list = FileManager.default.enumerator(at: u, includingPropertiesForKeys: [.contentModificationDateKey]) else {
-                    return
-                }
+    func updateMirror(completion: @escaping () -> Void) {
+        self.origin.coordinatedRead(for: self, onError: {
+            NSLog("failed to refer to origin url: \($0)")
+        }) { [unowned self] oURL in
+            guard let ocmDate = oURL.contentModifiedDate() else { return }
+            let ud = self.updatedDate
+            if ocmDate > ud {
+                self.read(completion: completion)
+            } else if self.mirrorURL.isDirectory {
+                guard let list = FileManager.default.enumerator(at: oURL,
+                    includingPropertiesForKeys: [.contentModificationDateKey]) else { return }
                 var shouldUpdate = false
-                let ud = self.updatedDate!
                 for case let file as URL in list {
                     if let cmDate = file.contentModifiedDate(),
                         cmDate > ud {
+//                        NSLog("newer file: \(file.path), date: \(cmDate.timeIntervalSince1970)")
                         shouldUpdate = true
                         break
                     }
                 }
                 if shouldUpdate {
-                    self.read()
-                    completion()
+                    self.read(completion: completion)
                 }
             }
         }
@@ -220,11 +243,9 @@ extension PickInfo {
 }
 
 extension PickInfo {
-    private func update(from src: URL?, to dst: URL?, err: Error?) {
-        if let e = err { return NSLog("Failed to update file: \(e)") }
-        guard let s = src, let d = dst else { return }
+    private func update(from src: URL, to dst: URL) {
         do {
-            try Data(contentsOf: s).write(to: d)
+            try Data(contentsOf: src).write(to: dst)
             self.updateUpdatedDate()
         } catch {
             NSLog("Failed to write file: \(error)")
@@ -235,13 +256,17 @@ extension PickInfo {
         self.updatedDate = Date()
     }
     
-    func read(_ completion: (() -> Void)? = nil) {
-        self.origin.coordinatedRead(for: self) { [unowned self] url, err in
-            guard let oURL = url else {
-                if let e = err { NSLog("Failed to read original file: \(e)") }
-                return
+    private func read(subpath: String? = nil,
+                      completion: (() -> Void)? = nil) {
+        self.origin.coordinatedRead(for: self, onError: {
+            NSLog("failed to read: \($0)")
+        }) { [unowned self] url in
+            var oURL = url
+            var mURL = self.mirrorURL
+            if let sp = subpath {
+                oURL = oURL.appendingPathComponent(sp)
+                mURL = mURL.appendingPathComponent(sp)
             }
-            let mURL = self.mirrorURL
             let fm = FileManager.default
             do {
                 if mURL.isDirectory {
@@ -249,12 +274,14 @@ extension PickInfo {
                     // the dir to be removed could be the currnt directory
                     // in that case, it needs to be restored manually
                     // afterwards, otherwise vim would work incorrectly
-                    try fm.removeItem(at: mURL)
+                    if mURL.isReachable() {
+                        try fm.removeItem(at: mURL)
+                    }
                     try fm.copyItem(at: oURL, to: mURL)
                     fm.changeCurrentDirectoryPath(oldCwd)
                     self.updateUpdatedDate()
                 } else {
-                    self.update(from: oURL, to: mURL, err: err)
+                    self.update(from: oURL, to: mURL)
                 }
             } catch {
                 NSLog("Failed to read file: \(error)")
@@ -268,19 +295,23 @@ extension PickInfo {
     }
     
     func write(for subpath: String) {
-        self.origin.coordinatedWrite(for: self) { [unowned self] url, err in
+        self.origin.coordinatedWrite(for: self, onError: {
+            NSLog("failed to write for subpath \(subpath): \($0)")
+        }) { [unowned self] url in
             NSLog("write")
             let si = self.subitem(for: subpath)
             let src = self.mirrorURL.appendingPathComponent(si)
-            var dst = url?.appendingPathComponent(si)
-            self.update(from: src, to: dst, err: err)
+            var dst = url.appendingPathComponent(si)
+            self.update(from: src, to: dst)
             // sync mtime
             do {
-                let cmd = try src.resourceValues(forKeys: [.contentModificationDateKey])
-                try dst?.setResourceValues(cmd)
+                try dst.setResourceValues(
+                    src.resourceValues(forKeys: [.contentModificationDateKey]))
+//                NSLog("src cmd: \(String(describing: src.contentModifiedDate()?.timeIntervalSince1970))")
             } catch {
                 NSLog("failed to sync mtime: \(error)")
             }
+//            NSLog("after write: \(self.updatedDate.timeIntervalSince1970)")
         }
     }
     
@@ -295,10 +326,11 @@ extension PickInfo {
     }
     
     func removeItem(for subpath: String) {
-        self.origin.coordinatedWrite(for: self) { [unowned self] url, err in
-            guard let bu = url else { return }
+        self.origin.coordinatedWrite(for: self, onError: {
+            NSLog("failed to remove item for subpath \(subpath): \($0)")
+        }) { [unowned self] url in
             let si = self.subitem(for: subpath)
-            self.removeSubitem(in: bu, for: si)
+            self.removeSubitem(in: url, for: si)
         }
     }
     
@@ -314,11 +346,12 @@ extension PickInfo {
     }
     
     func rename(from old: String, to new: String) {
-        self.origin.coordinatedWrite(for: self) { [unowned self] url, err in
-            guard let u = url else { return }
+        self.origin.coordinatedWrite(for: self, onError: {
+            NSLog("failed to rename item from \(old) to \(new): \($0)")
+        }) { [unowned self] url in
             let osi = self.subitem(for: old)
             let nsi = self.subitem(for: new)
-            self.renameSubitem(in: u, from: osi, to: nsi)
+            self.renameSubitem(in: url, from: osi, to: nsi)
         }
     }
     
@@ -338,10 +371,11 @@ extension PickInfo {
     }
     
     func addItem(for subpath: String) {
-        self.origin.coordinatedWrite(for: self) { [unowned self] url, err in
-            guard let u = url else { return }
+        self.origin.coordinatedWrite(for: self, onError: {
+            NSLog("failed to add item at subpath \(subpath): \($0)")
+        }) { [unowned self] url in
             let si = self.subitem(for: subpath)
-            self.addSubitem(in: u, for: si)
+            self.addSubitem(in: url, for: si)
         }
     }
 }
@@ -362,10 +396,70 @@ extension PickInfo: NSFilePresenter {
         gPIM.updateURL(self.origin, for: newURL)
     }
     
+    private func tryUpdate(subpath: String? = nil,
+                           completion: () -> Void) {
+        self.origin.coordinatedRead(for: self, onError: {
+            NSLog("failed to read while trying to update: \($0)")
+        }) { [unowned self] url in
+            var mURL = self.mirrorURL
+            var oURL = url
+            if let sp = subpath {
+                mURL.appendPathComponent(sp)
+                oURL.appendPathComponent(sp)
+            }
+            if let od = oURL.contentModifiedDate(),
+                let md = mURL.contentModifiedDate() {
+//                NSLog("od: \(od.timeIntervalSince1970), md: \(md.timeIntervalSince1970)")
+                if od > md {
+                    completion()
+                }
+            }
+        }
+        
+    }
+    
     func presentedItemDidChange() {
         NSLog("presented did change")
-        self.updateMirror {
+        // the content modification date not updated yet
+        // when entering this, may be due to the fact that
+        // this is called before the writing is done?
+        self.read {
             gPIM.reloadBufferForMirror(at: self.mirrorURL)
+        }
+    }
+    
+    private func subpathFrom(externalURL url: URL) -> String? {
+        let op = self.origin.path
+        var si = op.startIndex
+        var range: Range<String.Index>?
+        while let r = op.range(of: "/", range: si..<op.endIndex) {
+            if let fr = url.path.range(of: op[r.lowerBound...]) {
+                range = fr
+                break
+            }
+            si = r.upperBound
+        }
+        var result: String?
+        if let r = range {
+            result = url.path[r.upperBound...]
+                .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        } else {
+            NSLog("failed to get mirror path for \(url.path)")
+        }
+        
+        return result
+    }
+    
+    func presentedSubitemDidChange(at url: URL) {
+        NSLog("presented subitem did change \(url.path)")
+        if let sp = self.subpathFrom(externalURL: url) {
+            self.tryUpdate(subpath: sp) {
+                self.read(subpath: sp) {
+                    let mURL = self.mirrorURL.appendingPathComponent(sp)
+                    gPIM.reloadBufferForMirror(at: mURL)
+                    NSLog("reloaded \(mURL.path)")
+                }
+            }
         }
     }
     
@@ -376,39 +470,45 @@ extension PickInfo: NSFilePresenter {
 }
 
 extension URL {
-    typealias CoordCompletion = (URL?, Error?) -> Void
     typealias CoordOperation = (NSFileCoordinator, NSErrorPointer) -> Void
-    private func coordinated(for presenter: NSFilePresenter,
-                             completion: @escaping CoordCompletion,
+    typealias CoordError = (Error) -> Void
+    typealias CoordAccessor = (URL) -> Void
+    private func coordinated(presenter: NSFilePresenter,
+                             onError: CoordError?,
                              operation: CoordOperation) {
-        guard self.startAccessingSecurityScopedResource() else {
-            return completion(nil, nil)
-        }
-        defer {
-            self.stopAccessingSecurityScopedResource()
-        }
+        guard self.startAccessingSecurityScopedResource() else { return }
+        defer { self.stopAccessingSecurityScopedResource() }
         let coordinator = NSFileCoordinator(filePresenter: presenter)
         let error: NSErrorPointer = nil
         operation(coordinator, error)
-        guard let err = error?.pointee else { return }
-        completion(nil, err)
+        if let err = error?.pointee {
+            onError?(err)
+        }
     }
     
     func coordinatedRead(for presenter: NSFilePresenter,
-                         completion: @escaping CoordCompletion) {
-        self.coordinated(for: presenter, completion: completion) { coordinator, error in
-            coordinator.coordinate(readingItemAt: self, error: error) {
-                completion($0, nil)
-            }
+                         options: NSFileCoordinator.ReadingOptions = [],
+                         onError: CoordError? = nil,
+                         accessor: CoordAccessor) {
+        self.coordinated(presenter: presenter, onError: onError) {
+            coord, error in
+            coord.coordinate(readingItemAt: self,
+                             options: options,
+                             error: error,
+                             byAccessor: accessor)
         }
     }
     
     func coordinatedWrite(for presenter: NSFilePresenter,
-                          completion: @escaping CoordCompletion) {
-        self.coordinated(for: presenter, completion: completion) { coordinator, error in
-            coordinator.coordinate(writingItemAt: self, error: error) {
-                completion($0, nil)
-            }
+                          options: NSFileCoordinator.WritingOptions = [],
+                          onError: CoordError? = nil,
+                          accessor: CoordAccessor) {
+        self.coordinated(presenter: presenter, onError: onError) {
+            coord, error in
+            coord.coordinate(writingItemAt: self,
+                             options: options,
+                             error: error,
+                             byAccessor: accessor)
         }
     }
     
