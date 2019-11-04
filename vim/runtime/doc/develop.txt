@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.4.  Last change: 2014 Mar 27
+*develop.txt*   For Vim version 8.1.  Last change: 2019 Aug 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,7 +18,8 @@ See the file README.txt in the "src" directory for an overview of the source
 code.
 
 Vim is open source software.  Everybody is encouraged to contribute to help
-improving Vim.  For sending patches a context diff "diff -c" is preferred.
+improving Vim.  For sending patches a unified diff "diff -u" is preferred.
+You can create a pull request on github, but it's not required.
 Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
 ==============================================================================
@@ -143,9 +144,10 @@ and its environment.
 
 VIM IS... NOT						*design-not*
 
-- Vim is not a shell or an Operating System.  You will not be able to run a
-  shell inside Vim or use it to control a debugger.  This should work the
-  other way around: Use Vim as a component from a shell or in an IDE.
+- Vim is not a shell or an Operating System.  It does provide a terminal
+  window, in which you can run a shell or debugger.  E.g. to be able to do
+  this over an ssh connection.  But if you don't need a text editor with that
+  it is out of scope (use something like screen or tmux instead).
   A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
   everything but the kitchen sink, but some people say that you can clean one
   with it.  ;-)"
@@ -166,12 +168,58 @@ This list is not complete.  Look in the source code for more examples.
 MAKING CHANGES						*style-changes*
 
 The basic steps to make changes to the code:
-1. Adjust the documentation.  Doing this first gives you an impression of how
+1. Get the code from github.  That makes it easier to keep your changed
+   version in sync with the main code base (it may be a while before your
+   changes will be included).  You do need to spend some time learning git,
+   it's not the most user friendly tool.
+2. Adjust the documentation.  Doing this first gives you an impression of how
    your changes affect the user.
-2. Make the source code changes.
-3. Check ../doc/todo.txt if the change affects any listed item.
-4. Make a patch with "diff -c" against the unmodified code and docs.
-5. Make a note about what changed and include it with the patch.
+3. Make the source code changes.
+4. Check ../doc/todo.txt if the change affects any listed item.
+5. Make a patch with "git diff".  You can also create a pull request on
+   github, but it's the diff that matters.
+6. Make a note about what changed, preferably mentioning the problem and the
+   solution.  Send an email to the |vim-dev| maillist with an explanation and
+   include the diff. Or create a pull request on github.
+
+
+C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*
+
+The minimal C compiler version supported is C89, also known as ANSI C.
+Later standards, such as C99, are not widely supported, or at least not 100%
+supported.  Therefore we use only some of the C99 features and disallow some
+(at least for now).
+
+Please don't make changes everywhere to use the C99 features, it causes merge
+problems for existing patches.  Only use them for new and changed code.
+
+Comments ~
+
+Traditionally Vim uses /* comments */.  We intend to keep it that way,
+especially for file and function headers.  For new code or lines of code that
+change, it is allowed to use // comments.  Especially when it comes after
+code:
+	int some_var;  // single line comment useful here
+
+Enums ~
+
+The last item in an enum may have a trailing comma.  C89 didn't allow this.
+
+Types ~
+
+"long long" is allowed and can be expected to be 64 bits.  Use %lld in printf
+formats.  Also "long long unsigned" with %llu.
+
+Not to be used ~
+
+These C99 features are not to be used, because not enough compilers support
+them:
+- Declaration after Statements (MSVC 2012 does not support it).  All
+  declarations need to be at the start of the block.
+- Variable length arrays (even in C11 this is an optional feature).
+- _Bool and _Complex types.
+- "inline" (it's hardly ever needed, let the optimizer do its work)
+- flexible array members: Not supported by HP-UX C compiler (John Marriott)
 
 
 USE OF COMMON FUNCTIONS					*style-functions*
@@ -197,7 +245,7 @@ NAMES							*style-names*
 
 Function names can not be more than 31 characters long (because of VMS).
 
-Don't use "delete" as a variable name, C++ doesn't like it.
+Don't use "delete" or "this" as a variable name, C++ doesn't like it.
 
 Because of the requirement that Vim runs on as many systems as possible, we
 need to avoid using names that are already defined by the system.  This is a
@@ -230,7 +278,6 @@ wait		don't use as argument to a function, conflicts with types.h
 index		shadows global declaration
 time		shadows global declaration
 new		C++ reserved keyword
-try		Borland C++ doesn't like it to be used as a variable.
 
 clear		Mac curses.h
 echo		Mac curses.h
@@ -288,8 +335,45 @@ OK:	    do
 		a = 1;
 	    while (cond);
 
+Wrong:	    if (cond) {
+               cmd;
+               cmd;
+	    } else {
+               cmd;
+               cmd;
+	    }
 
-Functions start with:
+OK:	    if (cond)
+            {
+               cmd;
+               cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+
+When a block has one line the braces can be left out.  When an if/else has
+braces on one block, it usually looks better when the other block also has
+braces:
+OK:	    if (cond)
+	       cmd;
+	    else
+               cmd;
+
+OK:	    if (cond)
+	    {
+	       cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+
+Use ANSI (new style) function declarations with the return type on a separate
+indented line.
 
 Wrong:	int function_name(int arg1, int arg2)
 
@@ -299,16 +383,14 @@ OK:	/*
 	 * Return value explanation.
 	 */
 	    int
-	function_name(arg1, arg2)
-	    int		arg1;		/* short comment about arg1 */
-	    int		arg2;		/* short comment about arg2 */
+	function_name(
+	    int		arg1,		// short comment about arg1
+	    int		arg2)		// short comment about arg2
 	{
-	    int		local;		/* comment about local */
+	    int		local;		// comment about local
 
 	    local = arg1 * arg2;
 
-NOTE: Don't use ANSI style function declarations.  A few people still have to
-use a compiler that doesn't support it.
 
 
 SPACES AND PUNCTUATION					*style-spaces*
@@ -447,7 +529,7 @@ the best method is.  Alternatives:
    memory use, but takes a long time.  On a fast PC it takes a couple of
    seconds for English, which can be acceptable for interactive use.  But for
    some languages it takes more than ten seconds (e.g., German, Catalan),
-   which is unacceptable slow.  For batch processing (automatic corrections)
+   which is unacceptably slow.  For batch processing (automatic corrections)
    it's too slow for all languages.
 2. Use a trie for the soundfolded words, so that searching can be done just
    like how it works without soundfolding.  This requires remembering a list
@@ -498,4 +580,4 @@ long	    32 or 64 bit signed, can hold a pointer
 Note that some compilers cannot handle long lines or strings.  The C89
 standard specifies a limit of 509 characters.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

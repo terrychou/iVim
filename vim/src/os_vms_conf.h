@@ -6,6 +6,7 @@
 #define BINARY_FILE_IO		    /* Use binary fileio */
 #define USE_GETCWD
 #define USE_SYSTEM
+#define XPMATTRIBUTES_TYPE XpmAttributes
 
 /* Define when terminfo support found */
 #undef TERMINFO
@@ -23,7 +24,7 @@
 #define HAVE_DATE_TIME
 
 /* Defined to the size of an int */
-#define VIM_SIZEOF_INT 4
+#define VIM_SIZEOF_INT  4
 
 /* #undef USEBCOPY */
 #define USEMEMMOVE
@@ -101,7 +102,6 @@
 #define HAVE_STRTOL
 #define HAVE_TGETENT
 #define HAVE_MEMSET
-#define HAVE_MEMCMP
 #define HAVE_STRERROR
 #define HAVE_FCHOWN
 #define HAVE_RENAME
@@ -109,7 +109,6 @@
 #define HAVE_FSYNC
 #define HAVE_GETPWUID
 #define HAVE_GETPWNAM
-#define HAVE_STDARG_H
 #define	HAVE_STDLIB_H
 #define	HAVE_STRING_H
 #define	HAVE_ERRNO_H
@@ -119,8 +118,11 @@
 #define HAVE_SETJMP_H
 #define HAVE_MATH_H
 #define HAVE_FLOAT_FUNCS
+#define HAVE_GETTIMEOFDAY
+#define HAVE_PWD_H
+#define HAVE_NETDB_H
+#define	HAVE_DIRENT_H
 
-#undef	HAVE_DIRENT_H
 #undef	HAVE_SYS_NDIR_H
 #undef	HAVE_SYS_DIR_H
 #undef	HAVE_NDIR_H
@@ -140,8 +142,8 @@
 #undef	HAVE_LIBC_H
 #undef	HAVE_SYS_STATFS_H
 #undef	HAVE_SYS_POLL_H
-#undef	HAVE_PWD_H
 #undef  HAVE_FCHDIR
+#undef  HAVE_LSTAT
 
 /* Hardware specific */
 #ifdef  VAX
@@ -149,13 +151,18 @@
 #undef  HAVE_USLEEP
 #undef  HAVE_STRCASECMP
 #undef  HAVE_STRINGS_H
-#undef	HAVE_SIGSETJMP
-#else
+#undef  HAVE_SIGSETJMP
+#undef  HAVE_ISNAN
+#define HAVE_NO_LONG_LONG
+#define VIM_SIZEOF_LONG 4
+#else /* AXP and IA64 */
 #define HAVE_GETTIMEOFDAY
 #define HAVE_USLEEP
 #define HAVE_STRCASECMP
 #define HAVE_STRINGS_H
-#define	HAVE_SIGSETJMP
+#define HAVE_SIGSETJMP
+#define HAVE_ISNAN
+#define VIM_SIZEOF_LONG 8
 #endif
 
 /* Compiler specific */
@@ -190,6 +197,9 @@
 /* GUI support defines */
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK)
 #define HAVE_X11
+#ifdef HAVE_XPM
+#define HAVE_X11_XPM_H
+#endif
 #define USE_FONTSET
 #undef  X_LOCALE
 #endif

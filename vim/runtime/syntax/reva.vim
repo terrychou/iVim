@@ -1,19 +1,14 @@
 " Vim syntax file
 " Language:	Reva Forth
 " Version:	2011.2
-" Last Change:	2012/02/13
+" Last Change:	2019 Sep 27
 " Maintainer:	Ron Aaron <ron@ronware.org>
 " URL:		http://ronware.org/reva/
 " Filetypes:	*.rf *.frt
 " NOTE: 	You should also have the ftplugin/reva.vim file to set 'isk'
 
-" For version 5.x: Clear all syntax items and don't load
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-  echo "Reva syntax file requires version 6.0 or later of vim!"
-  finish
-elseif exists("b:current_syntax")
+" quit when a syntax file was already loaded
+if exists("b:current_syntax")
    finish
 endif
 
@@ -155,7 +150,7 @@ syn match revaInclude '\<\(include\|needs\)\s\+\S\+'
 " Define the default highlighting.
 if !exists("did_reva_syntax_inits")
     let did_reva_syntax_inits=1
-    " The default methods for highlighting. Can be overriden later.
+    " The default methods for highlighting. Can be overridden later.
     hi def link revaEOF cIf0
     hi def link revaHelpStuff  special
     hi def link revaHelpDesc Comment

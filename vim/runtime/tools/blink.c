@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-main()
+	int
+main(void)
 {
 	while (1)
 	{
@@ -19,4 +20,5 @@ main()
 		fflush(stdout);
 		usleep(250000);		/* off time */
 	}
+	return 0;
 }

@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	Tera Term Language (TTL)
-"		Based on Tera Term Version 4.86
+"		Based on Tera Term Version 4.100
 " Maintainer:	Ken Takata
 " URL:		https://github.com/k-takata/vim-teraterm
-" Last Change:	2015 Jun 24
+" Last Change:	2018-08-31
 " Filenames:	*.ttl
 " License:	VIM License
 
@@ -33,7 +33,7 @@ syn keyword ttlOperator	and or xor not
 
 syn match ttlVar	"\<groupmatchstr\d\>"
 syn match ttlVar	"\<param\d\>"
-syn keyword ttlVar	inputstr matchstr paramcnt result timeout mtimeout
+syn keyword ttlVar	inputstr matchstr paramcnt params result timeout mtimeout
 
 
 syn match ttlLine nextgroup=ttlStatement "^"
@@ -75,12 +75,13 @@ syn keyword ttlCommunicationCommand contained
 			\ logrotate logstart logwrite quickvanrecv
 			\ quickvansend recvln restoresetup scprecv scpsend
 			\ send sendbreak sendbroadcast sendfile sendkcode
-			\ sendln sendlnbroadcast sendmulticast setbaud
-			\ setdebug setdtr setecho setmulticastname setrts
-			\ setsync settitle showtt testlink unlink wait
-			\ wait4all waitevent waitln waitn waitrecv waitregex
-			\ xmodemrecv xmodemsend ymodemrecv ymodemsend
-			\ zmodemrecv zmodemsend
+			\ sendln sendlnbroadcast sendlnmulticast sendmulticast
+			\ setbaud setdebug setdtr setecho setflowctrl
+			\ setmulticastname setrts setspeed setsync settitle
+			\ showtt testlink unlink wait wait4all waitevent
+			\ waitln waitn waitrecv waitregex xmodemrecv
+			\ xmodemsend ymodemrecv ymodemsend zmodemrecv
+			\ zmodemsend
 syn keyword ttlStringCommand contained
 			\ code2str expandenv int2str regexoption sprintf
 			\ sprintf2 str2code str2int strcompare strconcat

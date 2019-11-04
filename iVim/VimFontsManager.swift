@@ -9,7 +9,9 @@
 import UIKit
 
 extension FileManager {
-    func url(for subdirectoryName: String?, under parentSearchPathDirectory: SearchPathDirectory, in parentSearchPathDomain: SearchPathDomainMask = .userDomainMask) -> URL? {
+    func url(for subdirectoryName: String?,
+             under parentSearchPathDirectory: SearchPathDirectory,
+             in parentSearchPathDomain: SearchPathDomainMask = .userDomainMask) -> URL? {
         do {
             let parent = try self.url(
                 for: parentSearchPathDirectory,
@@ -28,9 +30,10 @@ extension FileManager {
         }
     }
     
-    func createDirectoryIfNecessary(_ url: URL) throws -> URL? {
-        guard !self.fileExists(atPath: url.path) else { return url }
-        try self.createDirectory(at: url, withIntermediateDirectories: true)
+    func createDirectoryIfNecessary(_ url: URL) throws -> URL {
+        if !self.fileExists(atPath: url.path) {
+            try self.createDirectory(at: url, withIntermediateDirectories: true)
+        }
         
         return url
     }
@@ -268,53 +271,47 @@ extension VimFontsManager {
 }
 
 extension VimFontsManager {
-    private func showErrorForImportingFont(with fileName: String) -> Bool {
-        gSVO.showError("Failed to import font \\\"\(fileName)\\\"")
-        
-        return false
-    }
-    
     func importFont(from url: URL?, isMoving: Bool, removeOriginIfFailed: Bool) -> Bool {
-        guard let url = url else { return false }
-        let fileName = url.lastPathComponent
-        guard let dst = userFontsURL?.appendingPathComponent(fileName)
-            else { return self.showErrorForImportingFont(with: fileName) }
-        var err: Error?
-        if isMoving {
-            do {
-                try FileManager.default.moveItem(at: url, to: dst)
-            } catch {
-                err = error
-            }
-        } else {
-            do {
-                if url.startAccessingSecurityScopedResource() {
-                    try FileManager.default.copyItem(at: url, to: dst)
-                    url.stopAccessingSecurityScopedResource()
+        guard let src = url, let fontsDir = userFontsURL else { return false }
+        let fileName = src.lastPathComponent
+        let dst = fontsDir.appendingPathComponent(fileName)
+        let fm = FileManager.default
+        var succeeded = false
+        do {
+            if isMoving {
+                try fm.moveItem(at: src, to: dst)
+            } else {
+                if src.startAccessingSecurityScopedResource() {
+                    try fm.copyItem(at: src, to: dst)
+                    src.stopAccessingSecurityScopedResource()
                 } else {
                     NSLog("Failed to access security scoped resource")
                 }
-            } catch {
-                err = error
             }
+            if fm.fileExists(atPath: dst.path) {
+                let fi = FontInfo(name: fileName, type: .user)
+                self.fonts.append(fi)
+                succeeded = true
+            } else {
+                NSLog("failed to find font file '\(fileName)' after its manipulation")
+            }
+        } catch {
+            NSLog("failed to \(isMoving ? "MOVE" : "COPY") font: \(error)")
         }
-        if let e = err {
-            NSLog("Failed to \(isMoving ? "MOVE" : "COPY") font: \(e)")
+        if succeeded {
+            gSVO.showMessage("Imported font \\\"\(fileName)\\\"")
+        } else {
             if removeOriginIfFailed {
                 do {
-                    try FileManager.default.removeItem(at: url)
+                    try fm.removeItem(at: src)
                 } catch {
                     NSLog("Failed to delete font: \(error)")
                 }
             }
-            return self.showErrorForImportingFont(with: fileName)
+            gSVO.showError("Failed to import font \\\"\(fileName)\\\"")
         }
         
-        let fi = FontInfo(name: fileName, type: .user)
-        self.fonts.append(fi)
-        gSVO.showMessage("Imported font \\\"\(fileName)\\\"")
-        
-        return true
+        return succeeded
     }
 }
 

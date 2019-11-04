@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.4.  Last change: 2015 Aug 29
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -26,11 +26,8 @@ The basics are explained in chapter 7 and 8 of the user manual |usr_07.txt|
 11. Using hidden buffers			|buffer-hidden|
 12. Special kinds of buffers			|special-buffers|
 
-{Vi does not have any of these commands}
 {not able to use multiple windows when the |+windows| feature was disabled at
 compile time}
-{not able to use vertically split windows when the |+vertsplit| feature was
-disabled at compile time}
 
 ==============================================================================
 1. Introduction					*windows-intro* *window*
@@ -75,6 +72,20 @@ places where a Normal mode command can't be used or is inconvenient.
 
 The main Vim window can hold several split windows.  There are also tab pages
 |tab-page|, each of which can hold multiple windows.
+					*window-ID* *winid* *windowid*
+Each window has a unique identifier called the window ID.  This identifier
+will not change within a Vim session. The |win_getid()| and |win_id2tabwin()|
+functions can be used to convert between the window/tab number and the
+identifier.  There is also the window number, which may change whenever
+windows are opened or closed, see |winnr()|.
+The window number is only valid in one specific tab.  The window ID is valid
+across tabs.  For most functions that take a window ID or a window number, the
+window number only applies to the current tab, while the window ID can refer
+to a window in any tab.
+
+Each buffer has a unique number and the number will not change within a Vim
+session.  The |bufnr()| and |bufname()| functions can be used to convert
+between a buffer name and the buffer number.
 
 ==============================================================================
 2. Starting Vim						*windows-starting*
@@ -149,6 +160,10 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.
+							*E242*
+		Be careful when splitting a window in an autocommand, it may
+		mess up the window layout if this happens while making other
+		window layout changes.
 
 CTRL-W CTRL-V						*CTRL-W_CTRL-V*
 CTRL-W v						*CTRL-W_v*
@@ -203,14 +218,21 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 :[N]sv[iew] [++opt] [+cmd] {file}		*:sv* *:sview* *splitview*
 		Same as ":split", but set 'readonly' option for this buffer.
 
-:[N]sf[ind] [++opt] [+cmd] {file}		*:sf* *:sfind* *splitfind*
+:[N]sf[ind] [++opt] [+cmd] {file}	     *:sf* *:sfi* *:sfind* *splitfind*
 		Same as ":split", but search for {file} in 'path' like in
 		|:find|.  Doesn't split if {file} is not found.
 
 CTRL-W CTRL-^					*CTRL-W_CTRL-^* *CTRL-W_^*
-CTRL-W ^	Does ":split #", split window in two and edit alternate file.
-		When a count is given, it becomes ":split #N", split window
-		and edit buffer N.
+CTRL-W ^	Split the current window in two and edit the alternate file.
+		When a count N is given, split the current window and edit
+		buffer N.  Similar to ":sp #" and ":sp #N", but it allows the
+		other buffer to be unnamed.  This command matches the behavior
+		of |CTRL-^|, except that it splits a window first.
+
+						*CTRL-W_:*
+CTRL-W :	Does the same as typing |:| - enter a command line.  Useful in a
+		terminal window, where all Vim commands must be preceded with
+		CTRL-W or 'termwinkey'.
 
 Note that the 'splitbelow' and 'splitright' options influence where a new
 window will appear.
@@ -245,7 +267,7 @@ window will appear.
 		far left and occupies the full height of the Vim window.
 		Doesn't work for |:execute| and |:normal|.
 
-						*:botright*
+						*:bo* *:botright*
 :bo[tright] {cmd}
 		Execute {cmd}.  If it contains a command that splits a window,
 		it will appear at the bottom and occupy the full width of the
@@ -285,8 +307,8 @@ CTRL-W CTRL-Q						*CTRL-W_CTRL-Q*
 		    :1quit  " quit the first window
 		    :$quit  " quit the last window
 		    :9quit  " quit the last window
-			     " if there are less than 9 windows opened
-		    :-quit  " quit the previews window
+			    " if there are fewer than 9 windows opened
+		    :-quit  " quit the previous window
 		    :+quit  " quit the next window
 		    :+2quit " quit the second next window
 <
@@ -329,8 +351,9 @@ CTRL-W CTRL-C						*CTRL-W_CTRL-C*
 							*:hide*
 :hid[e]
 :{count}hid[e]
-		Quit the current window, unless it is the last window on the
-		screen.  For {count} see |:quit| command.
+		Without {count}: Quit the current window, unless it is the
+		last window on the screen.
+		If {count} is given quit the {count} window.
 		
 		The buffer becomes hidden (unless there is another window
 		editing it or 'bufhidden' is "unload", "delete" or "wipe").
@@ -486,7 +509,6 @@ CTRL-W H	Move the current window to be at the far left, using the
 		current window and then creating another one with
 		":vert topleft split", except that the current window contents
 		is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_L*
 CTRL-W L	Move the current window to be at the far right, using the full
@@ -494,7 +516,6 @@ CTRL-W L	Move the current window to be at the far right, using the full
 		current window and then creating another one with
 		":vert botright split", except that the current window
 		contents is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_T*
 CTRL-W T	Move the current window to a new tab page.  This fails if
@@ -603,7 +624,8 @@ The minimal height and width of a window is set with 'winminheight' and
 41. :buffers		list of buffers
 
 The meaning of [N] depends on the command:
- [N] is number of buffers to go forward/backward on ?2, ?3, and ?4
+ [N] is the number of buffers to go forward/backward on 2/12/22/32,
+     3/13/23/33, and 4/14/24/34
  [N] is an argument number, defaulting to current argument, for 1 and 21
  [N] is a buffer number, defaulting to current buffer, for 11 and 31
  [N] is a count for 19 and 39
@@ -645,6 +667,8 @@ can also get to them with the buffer list commands, like ":bnext".
 		|:vertical| was prepended).
 		Buf/Win Enter/Leave autocommands are not executed for the new
 		windows here, that's only done when they are really entered.
+		If autocommands change the window layout while this command is
+		busy an error will be given. *E249*
 
 :[N]sa[rgument][!] [++opt] [+cmd] [N]			*:sa* *:sargument*
 		Short for ":split | argument [N]": split window and go to Nth
@@ -686,13 +710,14 @@ can also get to them with the buffer list commands, like ":bnext".
 		- If the file is not open in a window edit the file in the
 		  current window.  If the current buffer can't be |abandon|ed,
 		  the window is split first.
+		- Windows that are not in the argument list or are not full
+		  width will be closed if possible.
 		The |argument-list| is set, like with the |:next| command.
 		The purpose of this command is that it can be used from a
 		program that wants Vim to edit another file, e.g., a debugger.
 		When using the |:tab| modifier each argument is opened in a
 		tab page.  The last window is used if it's empty.
 		Also see |++opt| and |+cmd|.
-		{only available when compiled with a GUI}
 
 ==============================================================================
 8. Do a command in all buffers or windows			*list-repeat*
@@ -713,15 +738,14 @@ can also get to them with the buffer list commands, like ":bnext".
 			the current window.
 			{cmd} can contain '|' to concatenate several commands.
 			{cmd} must not open or close windows or reorder them.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+
 			Also see |:tabdo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
 							*:bufdo*
 :[range]bufdo[!] {cmd}	Execute {cmd} in each buffer in the buffer list or if
 			[range] is given only for buffers for which their
-			buffer numer is in the [range].  It works like doing
+			buffer number is in the [range].  It works like doing
 			this: >
 				:bfirst
 				:{cmd}
@@ -742,8 +766,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			autocommand event is disabled by adding it to
 			'eventignore'.  This considerably speeds up editing
 			each buffer.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+
 			Also see |:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -820,6 +843,12 @@ CTRL-W gF						*CTRL-W_gF*
 		{not available when the |+file_in_path| feature was disabled
 		at compile time}
 
+CTRL-W gt						*CTRL-W_gt*
+		Go to next tab page, same as `gt`.
+
+CTRL-W gT						*CTRL-W_gT*
+		Go to previous tab page, same as `gT`.
+
 Also see |CTRL-W_CTRL-I|: open window for an included file that includes
 the keyword under the cursor.
 
@@ -837,6 +866,24 @@ height of the preview window when it's opened.  The 'previewwindow' option is
 set in the preview window to be able to recognize it.  The 'winfixheight'
 option is set to have it keep the same height when opening/closing other
 windows.
+						*preview-popup*
+Alternatively, a popup window can be used by setting the 'previewpopup'
+option.  When set, it overrules the 'previewwindow' and 'previewheight'
+settings.  The option is a comma separated list of values:
+	height		maximum height of the popup
+	width		maximum width of the popup
+	highlight	highlight group of the popup (default is Pmenu)
+Example: >
+	:set previewpopup=height:10,width:60
+
+A few peculiarities:
+- If the file is in a buffer already, it will be re-used.  This will allow for
+  editing the file while it's visible in the popup window.
+- No ATTENTION dialog will be used, since you can't edit the file in the popup
+  window.  However, if you later open the same buffer in a normal window, you
+  may not notice it's edited elsewhere.  And when then using ":edit" to
+  trigger the ATTENTION and responding "A" for Abort, the preview window will
+  become empty.
 
 						*:pta* *:ptag*
 :pta[g][!] [tagname]
@@ -863,7 +910,7 @@ CTRL-W CTRL-Z					*CTRL-W_CTRL-Z* *:pc* *:pclose*
 							*:pp* *:ppop*
 :[count]pp[op][!]
 		Does ":[count]pop[!]" in the preview window.  See |:pop| and
-		|:ptag|.  {not in Vi}
+		|:ptag|.
 
 CTRL-W }						*CTRL-W_}*
 		Use identifier under cursor as a tag and perform a :ptag on
@@ -956,7 +1003,6 @@ is no word under the cursor, and a few other things: >
 A hidden buffer is not displayed in a window, but is still loaded into memory.
 This makes it possible to jump from file to file, without the need to read or
 write the file every time you get another buffer in a window.
-{not available when compiled without the |+listcmds| feature}
 
 							*:buffer-!*
 If the option 'hidden' ('hid') is set, abandoned buffers are kept for all
@@ -1004,6 +1050,13 @@ list of buffers. |unlisted-buffer|
 		thus you can always go to a specific buffer with ":buffer N"
 		or "N CTRL-^", where N is the buffer number.
 
+		For the file name these special values are used:
+			[Prompt]	|prompt-buffer|
+			[Popup]		buffer of a |popup-window|
+			[Scratch]	'buftype' is "nofile"
+			[No Name]	no file name specified
+		For a |terminal-window| buffer the status is used.
+
 		Indicators (chars in the same column are mutually exclusive):
 		u	an unlisted buffer (only displayed when [!] is used)
 			   |unlisted-buffer|
@@ -1014,6 +1067,9 @@ list of buffers. |unlisted-buffer|
 			   displayed in a window |hidden-buffer|
 		   -	a buffer with 'modifiable' off
 		   =	a readonly buffer
+		   R	a terminal buffer with a running job
+		   F	a terminal buffer with a finished job
+		   ?    a terminal buffer without a job: `:terminal NONE`
 		    +	a modified buffer
 		    x   a buffer with read errors
 
@@ -1023,15 +1079,22 @@ list of buffers. |unlisted-buffer|
 		     -   buffers with 'modifiable' off
 		     =   readonly buffers
 		     a   active buffers
-		     u   unloaded buffers (overrides the "!")
+		     u   unlisted buffers (overrides the "!")
 		     h   hidden buffers
 		     x   buffers with a read error
 		     %   current buffer
 		     #   alternate buffer
+		     R	 terminal buffers with a running job
+		     F	 terminal buffers with a finished job
+		     ?   terminal buffers without a job: `:terminal NONE`
 		Combining flags means they are "and"ed together, e.g.:
 		     h+   hidden buffers which are modified
 		     a+   active buffers which are modified
 
+		When using |:filter| the pattern is matched against the
+		displayed buffer name, e.g.: >
+			filter /\.vim/ ls
+<
 						*:bad* *:badd*
 :bad[d]	[+lnum] {fname}
 		Add file name {fname} to the buffer list, without loading it.
@@ -1058,10 +1121,8 @@ list of buffers. |unlisted-buffer|
 <
 
 :bdelete[!] {bufname}						*E93* *E94*
-		Like ":bdelete[!] [N]", but buffer given by name.  Note that a
-		buffer whose name is a number cannot be referenced by that
-		name; use the buffer number instead.  Insert a backslash
-		before a space in a buffer name.
+		Like ":bdelete[!] [N]", but buffer given by name, see
+		|{bufname}|.
 
 :bdelete[!] N1 N2 ...
 		Do ":bdelete[!]" for buffer N1, N2, etc.  The arguments can be
@@ -1098,10 +1159,8 @@ list of buffers. |unlisted-buffer|
 		into a loaded buffer.
 
 :bunload[!] {bufname}
-		Like ":bunload[!] [N]", but buffer given by name.  Note that a
-		buffer whose name is a number cannot be referenced by that
-		name; use the buffer number instead.  Insert a backslash
-		before a space in a buffer name.
+		Like ":bunload[!] [N]", but buffer given by name.
+		Also see |{bufname}|.
 
 :N,Mbunload[!]	Do ":bunload[!]" for all buffers in the range N to M
 		|inclusive|.
@@ -1119,10 +1178,16 @@ list of buffers. |unlisted-buffer|
 		list, without setting the 'buflisted' flag.
 		Also see |+cmd|.
 
-:[N]b[uffer][!] [+cmd] {bufname}
-		Edit buffer for {bufname} from the buffer list.  See
-		|:buffer-!| for [!].  This will also edit a buffer that is not
-		in the buffer list, without setting the 'buflisted' flag.
+:[N]b[uffer][!] [+cmd] {bufname}				*{bufname}*
+		Edit buffer for {bufname} from the buffer list.  A partial
+		name also works, so long as it is unique in the list of
+		buffers.
+		Note that a buffer whose name is a number cannot be referenced
+		by that name; use the buffer number instead.
+		Insert a backslash before a space in a buffer name.
+		See |:buffer-!| for [!].
+		This will also edit a buffer that is not in the buffer list,
+		without setting the 'buflisted' flag.
 		Also see |+cmd|.
 
 :[N]sb[uffer] [+cmd] [N]				*:sb* *:sbuffer*
@@ -1134,7 +1199,7 @@ list of buffers. |unlisted-buffer|
 		Also see |+cmd|.
 
 :[N]sb[uffer] [+cmd] {bufname}
-		Split window and edit buffer for {bufname} from the buffer
+		Split window and edit buffer for |{bufname}| from the buffer
 		list.  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
 		Note: If what you want to do is split the buffer, make a copy
@@ -1153,7 +1218,6 @@ list of buffers. |unlisted-buffer|
 		This is so that if you have invoked help, it doesn't get in
 		the way when you're browsing code/text buffers.  The next three
 		commands also work like this.
-
 
 							*:sbn* *:sbnext*
 :[N]sbn[ext] [+cmd] [N]
@@ -1175,7 +1239,7 @@ list of buffers. |unlisted-buffer|
 		Uses 'switchbuf'.
 		Also see |+cmd|.
 
-:br[ewind][!] [+cmd]					*:br* *:brewind*
+:br[ewind][!] [+cmd]					*:br* *:bre* *:brewind*
 		Go to first buffer in buffer list.  If the buffer list is
 		empty, go to the first unlisted buffer.
 		See |:buffer-!| for [!].
@@ -1256,6 +1320,9 @@ help		Contains a help file.  Will only be created with the |:help|
 		and can't be changed.  The 'buflisted' option will be reset
 		for a help buffer.
 
+terminal	A terminal window buffer, see |terminal|. The contents cannot
+		be read or changed until the job ends.
+
 directory	Displays directory contents.  Can be used by a file explorer
 		plugin.  The buffer is created with these settings: >
 			:setlocal buftype=nowrite
@@ -1281,4 +1348,4 @@ unlisted	The buffer is not in the buffer list.  It is not used for
 			:setlocal nobuflisted
 <
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

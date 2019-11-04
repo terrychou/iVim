@@ -1,9 +1,33 @@
-"System vimrc file for iVim
+" System vimrc file for iVim
 
-syntax on
+" use vim, rather than vi, settings
 set nocompatible
-set guioptions-=rm
 
-set guioptions=
-set backspace=start,eol,indent
+" set default encoding to UTF-8
 set encoding=utf-8
+
+" enable syntax highlighting
+syntax on
+" enable file type detection
+filetype plugin indent on
+
+" avoid unnecessary space on the right
+set guioptions=
+" allow backspacing over everything
+set backspace=start,eol,indent
+
+" show cursor position
+set ruler
+" display incomplete commands
+set showcmd
+" display completion matches in a status line
+set wildmenu
+" display a few lines of context around the cursor
+" while scrolling
+set scrolloff=5
+
+" make netrw adapt cwd automatically
+let g:netrw_keepdir=0
+
+" skip defaults.vim
+let skip_defaults_vim=1

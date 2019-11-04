@@ -1,6 +1,6 @@
 /*
- * config.h.in.  Generated automatically from configure.in by autoheader, and
- * manually changed after that.
+ * config.h.in.  Originally generated automatically from configure.ac by
+ * autoheader and manually changed after that.
  */
 
 /* Define if we have EBCDIC code */
@@ -113,6 +113,9 @@
 /* Define if you can safely include both <sys/time.h> and <sys/select.h>.  */
 #undef SYS_SELECT_WITH_SYS_TIME
 
+/* Define to a typecast for select() arguments 2, 3 and 4. */
+#undef SELECT_TYPE_ARG234
+
 /* Define if you have /dev/ptc */
 #undef HAVE_DEV_PTC
 
@@ -154,12 +157,15 @@
 #undef BAD_GETCWD
 
 /* Define if you the function: */
-#undef HAVE_BCMP
 #undef HAVE_FCHDIR
 #undef HAVE_FCHOWN
+#undef HAVE_FCHMOD
+#undef HAVE_FLOAT_FUNCS
 #undef HAVE_FSEEKO
 #undef HAVE_FSYNC
+#undef HAVE_FTRUNCATE
 #undef HAVE_GETCWD
+#undef HAVE_GETPGID
 #undef HAVE_GETPSEUDOTTY
 #undef HAVE_GETPWENT
 #undef HAVE_GETPWNAM
@@ -168,14 +174,14 @@
 #undef HAVE_GETTIMEOFDAY
 #undef HAVE_GETWD
 #undef HAVE_ICONV
-#undef HAVE_NL_LANGINFO_CODESET
+#undef HAVE_LOCALTIME_R
 #undef HAVE_LSTAT
-#undef HAVE_MEMCMP
 #undef HAVE_MEMSET
 #undef HAVE_MKDTEMP
 #undef HAVE_NANOSLEEP
+#undef HAVE_NL_LANGINFO_CODESET
 #undef HAVE_OPENDIR
-#undef HAVE_FLOAT_FUNCS
+#undef HAVE_POSIX_OPENPT
 #undef HAVE_PUTENV
 #undef HAVE_QSORT
 #undef HAVE_READLINK
@@ -190,6 +196,7 @@
 #undef HAVE_SIGSET
 #undef HAVE_SIGSETJMP
 #undef HAVE_SIGSTACK
+#undef HAVE_SIGPROCMASK
 #undef HAVE_SIGVEC
 #undef HAVE_SMACK
 #undef HAVE_STRCASECMP
@@ -200,6 +207,7 @@
 #undef HAVE_STRNICMP
 #undef HAVE_STRPBRK
 #undef HAVE_STRTOL
+#undef HAVE_CANBERRA
 #undef HAVE_ST_BLKSIZE
 #undef HAVE_SYSCONF
 #undef HAVE_SYSCTL
@@ -209,9 +217,12 @@
 #undef HAVE_TOWLOWER
 #undef HAVE_TOWUPPER
 #undef HAVE_ISWUPPER
+#undef HAVE_TZSET
+#undef HAVE_UNSETENV
 #undef HAVE_USLEEP
 #undef HAVE_UTIME
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
+#undef HAVE_MBLEN
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES
@@ -251,6 +262,7 @@
 #undef HAVE_SYS_PARAM_H
 #undef HAVE_SYS_POLL_H
 #undef HAVE_SYS_PTEM_H
+#undef HAVE_SYS_PTMS_H
 #undef HAVE_SYS_RESOURCE_H
 #undef HAVE_SYS_SELECT_H
 #undef HAVE_SYS_STATFS_H
@@ -296,7 +308,6 @@
 /* #undef STDC_HEADERS */
 
 /* instead, we check a few STDC things ourselves */
-#undef HAVE_STDARG_H
 #undef HAVE_STDLIB_H
 #undef HAVE_STRING_H
 
@@ -360,8 +371,8 @@
 /* Define if you want to include the Tcl interpreter. */
 #undef FEAT_TCL
 
-/* Define if you want to include the Sniff interface. */
-#undef FEAT_SNIFF
+/* Define for linking via dlopen() or LoadLibrary() */
+#undef DYNAMIC_TCL
 
 /* Define if you want to add support for ACL */
 #undef HAVE_POSIX_ACL
@@ -381,8 +392,14 @@
 /* Define if you want to include the Cscope interface. */
 #undef FEAT_CSCOPE
 
-/* Define if you want to include multibyte support. */
-#undef FEAT_MBYTE
+/* Define if you don't want to include right-left support. */
+#undef DISABLE_RIGHTLEFT
+
+/* Define if you don't want to include Arabic support. */
+#undef DISABLE_ARABIC
+
+/* Define if you want to always define a server name at vim startup. */
+#undef FEAT_AUTOSERVERNAME
 
 /* Define if you want to include fontset support. */
 #undef FEAT_XFONTSET
@@ -398,9 +415,6 @@
 
 /* Define if you use KDE and want KDE Toolbar support. */
 #undef FEAT_KDETOOLBAR
-
-/* Define if GTK+ multihead support is available (requires GTK+ >= 2.1.1). */
-#undef HAVE_GTK_MULTIHEAD
 
 /* Define if your X has own locale library */
 #undef X_LOCALE
@@ -426,14 +440,20 @@
 /* Define if we have shl_load() */
 #undef HAVE_SHL_LOAD
 
-/* Define if you want to include Sun Visual Workshop support. */
-#undef FEAT_SUN_WORKSHOP
-
 /* Define if you want to include NetBeans integration. */
 #undef FEAT_NETBEANS_INTG
 
-/* Define default global runtime path */
+/* Define if you want to include process communication. */
+#undef FEAT_JOB_CHANNEL
+
+/* Define if you want to include terminal emulator support. */
+#undef FEAT_TERMINAL
+
+// Define default global runtime path.
 #undef RUNTIME_GLOBAL
+
+// Define default global runtime after path.
+#undef RUNTIME_GLOBAL_AFTER
 
 /* Define name of who modified a released Vim */
 #undef MODIFIED_BY
@@ -444,6 +464,9 @@
 /* Define if fcntl()'s F_SETFD command knows about FD_CLOEXEC */
 #undef HAVE_FD_CLOEXEC
 
+/* Define if /proc/self/exe or similar can be read */
+#undef PROC_EXE_LINK
+
 /* Define if you want Cygwin to use the WIN32 clipboard, not compatible with X11*/
 #undef FEAT_CYGWIN_WIN32_CLIPBOARD
 
@@ -452,3 +475,18 @@
 
 /* Define if Xutf8SetWMProperties() is in an X library. */
 #undef HAVE_XUTF8SETWMPROPERTIES
+
+/* Define if GResource is used to load icons */
+#undef USE_GRESOURCE
+
+/* Define if GTK+ GUI is to be linked against GTK+ 3 */
+#undef USE_GTK3
+
+/* Define if we have isinf() */
+#undef HAVE_ISINF
+
+/* Define if we have isnan() */
+#undef HAVE_ISNAN
+
+/* Define to inline symbol or empty */
+#undef inline

@@ -141,11 +141,13 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.changeCursor(after: self.blink_wait)
     }
     
-    @objc func stopBlink() {
-        self.blinkTimer?.invalidate()
+    @objc func stopBlink(_ updateCursor: Bool) {
+        if self.state == .off && updateCursor {
+            self.blinkTimer?.invalidate()
+            gui_update_cursor(1, 0)
+            self.blinkTimer = nil
+        }
         self.state = .none
-        gui_update_cursor(1, 0)
-        self.blinkTimer = nil
     }
 
     

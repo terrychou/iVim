@@ -118,6 +118,8 @@ extension VimViewController {
         switch direction {
         case .left, .up: newOffset = offset
         case .right, .down: newOffset = -offset
+        @unknown default:
+            fatalError("unhandled text layout direction: \(direction)")
         }
         
         return self.position(from: position, offset: newOffset)
@@ -165,6 +167,8 @@ extension VimViewController {
         switch direction {
         case .up, .left: newLoc = r.location
         case .down, .right: newLoc = r.location + r.length
+        @unknown default:
+            fatalError("unhandled text layout direction: \(direction)")
         }
         
         return VimTextPosition(location: newLoc)
@@ -178,6 +182,8 @@ extension VimViewController {
         switch direction {
         case .up, .left: newLoc = oldLoc - 1
         case .down, .right: newLoc = oldLoc
+        @unknown default:
+            fatalError("unhandled text layout direction: \(direction)")
         }
         
         return VimTextRange(location: newLoc, length: 1)

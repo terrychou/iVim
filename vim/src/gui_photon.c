@@ -1,4 +1,4 @@
-/* vi:set ts=8 sw=4 sts=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *			Photon GUI support by Julian Kinraid
@@ -212,10 +212,6 @@ static PtCallbackF_t gui_ph_handle_menu_unrealized;
 static void gui_ph_get_panelgroup_margins(short*, short*, short*, short*);
 #endif
 
-#ifdef FEAT_TOOLBAR
-static PhImage_t *gui_ph_toolbar_find_icon(vimmenu_T *menu);
-#endif
-
 static void gui_ph_draw_start(void);
 static void gui_ph_draw_end(void);
 
@@ -383,7 +379,7 @@ gui_ph_handle_window_cb(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	    else
 	    {
 		gui_focus_change(FALSE);
-		gui_mch_stop_blink();
+		gui_mch_stop_blink(TRUE);
 	    }
 	    break;
 
@@ -455,9 +451,7 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 
     /* We're a good lil photon program, aren't we? yes we are, yeess wee arrr */
     if (key->key_flags & Pk_KF_Compose)
-    {
 	return Pt_CONTINUE;
-    }
 
     if ((key->key_flags & Pk_KF_Cap_Valid) &&
 	    PkIsKeyDown(key->key_flags))
@@ -517,13 +511,8 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	if (special_keys[i].key_sym == 0)
 	{
 	    ch = PhTo8859_1(key);
-	    if (ch == -1
-#ifdef FEAT_MBYTE
-		|| (enc_utf8 && ch > 127)
-#endif
-		)
+	    if (ch == -1 || (enc_utf8 && ch > 127))
 	    {
-#ifdef FEAT_MBYTE
 		len = PhKeyToMb(string, key);
 		if (len > 0)
 		{
@@ -550,7 +539,6 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		    return Pt_CONSUME;
 		}
 		len = 0;
-#endif
 		ch = key->key_cap;
 		if (ch < 0xff)
 		{
@@ -988,7 +976,7 @@ gui_ph_pg_add_buffer(char *name)
 {
     char **new_titles = NULL;
 
-    new_titles = (char **) alloc((num_panels + 1) * sizeof(char **));
+    new_titles = ALLOC_MULT(char *, (num_panels + 1));
     if (new_titles != NULL)
     {
 	if (num_panels > 0)
@@ -1013,7 +1001,7 @@ gui_ph_pg_remove_buffer(char *name)
     /* If there is only 1 panel, we just use the temporary place holder */
     if (num_panels > 1)
     {
-	new_titles = (char **) alloc((num_panels - 1) * sizeof(char **));
+	new_titles = ALLOC_MULT(char *, num_panels - 1);
 	if (new_titles != NULL)
 	{
 	    char **s = new_titles;
@@ -1021,9 +1009,7 @@ gui_ph_pg_remove_buffer(char *name)
 	    for (i = 0; i < num_panels; i++)
 	    {
 		if (STRCMP(panel_titles[ i ], name) != 0)
-		{
 		    *s++ = panel_titles[ i ];
-		}
 	    }
 	    num_panels--;
 
@@ -1040,8 +1026,7 @@ gui_ph_pg_remove_buffer(char *name)
 	PtSetResource(gui.vimPanelGroup, Pt_ARG_PG_PANEL_TITLES, &empty_title,
 		1);
 
-	vim_free(panel_titles);
-	panel_titles = NULL;
+	VIM_CLEAR(panel_titles);
     }
 }
 
@@ -1079,7 +1064,6 @@ gui_ph_pane_resize(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 
 /****************************************************************************/
 
-#ifdef FEAT_MBYTE
     void
 gui_ph_encoding_changed(int new_encoding)
 {
@@ -1105,15 +1089,12 @@ gui_ph_encoding_changed(int new_encoding)
 
     charset_translate = PxTranslateSet(charset_translate, charset);
 }
-#endif
 
 /****************************************************************************/
 /****************************************************************************/
 
     void
-gui_mch_prepare(argc, argv)
-    int	    *argc;
-    char    **argv;
+gui_mch_prepare(int *argc, char **argv)
 {
     PtInit(NULL);
 }
@@ -1127,7 +1108,7 @@ gui_mch_init(void)
     PhDim_t	window_size = {100, 100}; /* Arbitrary values */
     PhPoint_t	pos = {0, 0};
 
-    gui.event_buffer = (PhEvent_t *) alloc(EVENT_BUFFER_SIZE);
+    gui.event_buffer = alloc(EVENT_BUFFER_SIZE);
     if (gui.event_buffer == NULL)
 	return FAIL;
 
@@ -1349,9 +1330,7 @@ gui_mch_update(void)
 
     PtAppAddWorkProc(NULL, exit_gui_mch_update, &working);
     while ((working == TRUE) && !vim_is_input_buf_full())
-    {
 	PtProcessEvent();
-    }
 }
 
     int
@@ -1359,8 +1338,9 @@ gui_mch_wait_for_chars(int wtime)
 {
     is_timeout = FALSE;
 
-    if (wtime > 0)
-	PtSetResource(gui_ph_timer_timeout, Pt_ARG_TIMER_INITIAL, wtime, 0);
+    if (wtime >= 0)
+	PtSetResource(gui_ph_timer_timeout, Pt_ARG_TIMER_INITIAL,
+						    wtime == 0 ? 1 : wtime, 0);
 
     while (1)
     {
@@ -1539,7 +1519,7 @@ gui_mch_dialog(
 	title = "Vim";
 
     buttons_copy = alloc(len + 1);
-    button_array = (char_u **) alloc(button_count * sizeof(char_u *));
+    button_array = ALLOC_MULT(char_u *, button_count);
     if (buttons_copy != NULL && button_array != NULL)
     {
 	STRCPY(buttons_copy, buttons);
@@ -1720,7 +1700,7 @@ gui_mch_iconify(void)
  * Bring the Vim window to the foreground.
  */
     void
-gui_mch_set_foreground()
+gui_mch_set_foreground(void)
 {
     PhWindowEvent_t event;
 
@@ -1860,8 +1840,7 @@ static int mshape_ids[] =
 };
 
     void
-mch_set_mouse_shape(shape)
-    int	shape;
+mch_set_mouse_shape(int shape)
 {
     int	    id;
 
@@ -1936,10 +1915,11 @@ gui_mch_setmouse(int x, int y)
 /*
  * Return the RGB value of a pixel as a long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
-    return PgRGB(PgRedValue(pixel), PgGreenValue(pixel), PgBlueValue(pixel));
+    return (guicolor_T)(PgRGB(PgRedValue(pixel),
+				     PgGreenValue(pixel), PgBlueValue(pixel)));
 }
 
     void
@@ -1974,18 +1954,6 @@ gui_mch_new_colors(void)
     PtSetResource(gui.vimTextArea, Pt_ARG_FILL_COLOR, gui.back_pixel, 0);
 }
 
-    static int
-hex_digit(int c)
-{
-    if (VIM_ISDIGIT(c))
-	return c - '0';
-    c = TOLOWER_ASC(c);
-    if (c >= 'a' && c <= 'f')
-	return c - 'a' + 10;
-    return -1000;
-}
-
-
 /*
  * This should be split out into a separate file,
  * every port does basically the same thing.
@@ -1997,136 +1965,13 @@ hex_digit(int c)
     guicolor_T
 gui_mch_get_color(char_u *name)
 {
-    int i;
-    int r, g, b;
+    return gui_get_color_cmn(name);
+}
 
-
-    typedef struct GuiColourTable
-    {
-	char	    *name;
-	guicolor_T     colour;
-    } GuiColourTable;
-
-    static GuiColourTable table[] =
-    {
-	{"Black",	    RGB(0x00, 0x00, 0x00)},
-	{"DarkGray",	    RGB(0xA9, 0xA9, 0xA9)},
-	{"DarkGrey",	    RGB(0xA9, 0xA9, 0xA9)},
-	{"Gray",	    RGB(0xC0, 0xC0, 0xC0)},
-	{"Grey",	    RGB(0xC0, 0xC0, 0xC0)},
-	{"LightGray",	    RGB(0xD3, 0xD3, 0xD3)},
-	{"LightGrey",	    RGB(0xD3, 0xD3, 0xD3)},
-	{"Gray10",	    RGB(0x1A, 0x1A, 0x1A)},
-	{"Grey10",	    RGB(0x1A, 0x1A, 0x1A)},
-	{"Gray20",	    RGB(0x33, 0x33, 0x33)},
-	{"Grey20",	    RGB(0x33, 0x33, 0x33)},
-	{"Gray30",	    RGB(0x4D, 0x4D, 0x4D)},
-	{"Grey30",	    RGB(0x4D, 0x4D, 0x4D)},
-	{"Gray40",	    RGB(0x66, 0x66, 0x66)},
-	{"Grey40",	    RGB(0x66, 0x66, 0x66)},
-	{"Gray50",	    RGB(0x7F, 0x7F, 0x7F)},
-	{"Grey50",	    RGB(0x7F, 0x7F, 0x7F)},
-	{"Gray60",	    RGB(0x99, 0x99, 0x99)},
-	{"Grey60",	    RGB(0x99, 0x99, 0x99)},
-	{"Gray70",	    RGB(0xB3, 0xB3, 0xB3)},
-	{"Grey70",	    RGB(0xB3, 0xB3, 0xB3)},
-	{"Gray80",	    RGB(0xCC, 0xCC, 0xCC)},
-	{"Grey80",	    RGB(0xCC, 0xCC, 0xCC)},
-	{"Gray90",	    RGB(0xE5, 0xE5, 0xE5)},
-	{"Grey90",	    RGB(0xE5, 0xE5, 0xE5)},
-	{"White",	    RGB(0xFF, 0xFF, 0xFF)},
-	{"DarkRed",	    RGB(0x80, 0x00, 0x00)},
-	{"Red",		    RGB(0xFF, 0x00, 0x00)},
-	{"LightRed",	    RGB(0xFF, 0xA0, 0xA0)},
-	{"DarkBlue",	    RGB(0x00, 0x00, 0x80)},
-	{"Blue",	    RGB(0x00, 0x00, 0xFF)},
-	{"LightBlue",	    RGB(0xAD, 0xD8, 0xE6)},
-	{"DarkGreen",	    RGB(0x00, 0x80, 0x00)},
-	{"Green",	    RGB(0x00, 0xFF, 0x00)},
-	{"LightGreen",	    RGB(0x90, 0xEE, 0x90)},
-	{"DarkCyan",	    RGB(0x00, 0x80, 0x80)},
-	{"Cyan",	    RGB(0x00, 0xFF, 0xFF)},
-	{"LightCyan",	    RGB(0xE0, 0xFF, 0xFF)},
-	{"DarkMagenta",	    RGB(0x80, 0x00, 0x80)},
-	{"Magenta",	    RGB(0xFF, 0x00, 0xFF)},
-	{"LightMagenta",    RGB(0xFF, 0xA0, 0xFF)},
-	{"Brown",	    RGB(0x80, 0x40, 0x40)},
-	{"Yellow",	    RGB(0xFF, 0xFF, 0x00)},
-	{"LightYellow",	    RGB(0xFF, 0xFF, 0xE0)},
-	{"SeaGreen",	    RGB(0x2E, 0x8B, 0x57)},
-	{"Orange",	    RGB(0xFF, 0xA5, 0x00)},
-	{"Purple",	    RGB(0xA0, 0x20, 0xF0)},
-	{"SlateBlue",	    RGB(0x6A, 0x5A, 0xCD)},
-	{"Violet",	    RGB(0xEE, 0x82, 0xEE)},
-    };
-
-    /* is name #rrggbb format? */
-    if (name[0] == '#' && STRLEN(name) == 7)
-    {
-	r = hex_digit(name[1]) * 16 + hex_digit(name[2]);
-	g = hex_digit(name[3]) * 16 + hex_digit(name[4]);
-	b = hex_digit(name[5]) * 16 + hex_digit(name[6]);
-	if (r < 0 || g < 0 || b < 0)
-	    return INVALCOLOR;
-	return RGB(r, g, b);
-    }
-
-    for (i = 0; i < ARRAY_LENGTH(table); i++)
-    {
-	if (STRICMP(name, table[i].name) == 0)
-	    return table[i].colour;
-    }
-
-    /*
-     * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
-     */
-    {
-#define LINE_LEN 100
-	FILE	*fd;
-	char	line[LINE_LEN];
-	char_u	*fname;
-
-	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-	if (fname == NULL)
-	    return INVALCOLOR;
-
-	fd = fopen((char *)fname, "rt");
-	vim_free(fname);
-	if (fd == NULL)
-	    return INVALCOLOR;
-
-	while (!feof(fd))
-	{
-	    int	    len;
-	    int	    pos;
-	    char    *color;
-
-	    fgets(line, LINE_LEN, fd);
-	    len = STRLEN(line);
-
-	    if (len <= 1 || line[len-1] != '\n')
-		continue;
-
-	    line[len-1] = '\0';
-
-	    i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
-	    if (i != 3)
-		continue;
-
-	    color = line + pos;
-
-	    if (STRICMP(color, name) == 0)
-	    {
-		fclose(fd);
-		return (guicolor_T)RGB(r, g, b);
-	    }
-	}
-
-	fclose(fd);
-    }
-
-
-    return INVALCOLOR;
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
 }
 
     void
@@ -2184,7 +2029,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
 }
 
     void
-gui_mch_clear_all()
+gui_mch_clear_all(void)
 {
     PhRect_t text_rect = {
 	{ gui.border_width, gui.border_width },
@@ -2283,11 +2128,7 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
     if (flags & DRAW_UNDERL)
 	PgSetUnderline(gui.norm_pixel, Pg_TRANSPARENT, 0);
 
-    if (charset_translate != NULL
-#ifdef FEAT_MBYTE
-	    && enc_utf8 == 0
-#endif
-	   )
+    if (charset_translate != NULL && enc_utf8 == 0)
     {
 	int src_taken, dst_made;
 
@@ -2376,6 +2217,18 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     DRAW_END;
 }
 
+    int
+gui_mch_is_blinking(void)
+{
+    return blink_state != BLINK_NONE;
+}
+
+    int
+gui_mch_is_blink_off(void)
+{
+    return blink_state == BLINK_OFF;
+}
+
     void
 gui_mch_set_blinking(long wait, long on, long off)
 {
@@ -2398,11 +2251,11 @@ gui_mch_start_blink(void)
 }
 
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
     PtSetResource(gui_ph_timer_cursor, Pt_ARG_TIMER_INITIAL, 0, 0);
 
-    if (blink_state == BLINK_OFF)
+    if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
 	gui_update_cursor(TRUE, FALSE);
 
     blink_state = BLINK_NONE;
@@ -2549,9 +2402,7 @@ gui_ph_toolbar_find_icon(vimmenu_T *menu)
 
     if (menu->iconidx >= 0 &&
 	    (menu->iconidx < ARRAY_LENGTH(gui_ph_toolbar_images)))
-    {
 	return gui_ph_toolbar_images[menu->iconidx];
-    }
 
     return NULL;
 }
@@ -3067,7 +2918,7 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
     }
 
     if (report_error)
-	EMSG2(e_font, vim_font_name);
+	semsg(e_font, vim_font_name);
 
     return FAIL;
 }
@@ -3078,9 +2929,7 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
  * Don't know how to get the actual name, thus use the provided name.
  */
     char_u *
-gui_mch_get_fontname(font, name)
-    GuiFont font;
-    char_u  *name;
+gui_mch_get_fontname(GuiFont font, char_u *name)
 {
     if (name == NULL)
 	return NULL;

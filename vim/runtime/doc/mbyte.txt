@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.4.  Last change: 2013 May 18
+*mbyte.txt*     For Vim version 8.1.  Last change: 2019 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -14,9 +14,6 @@ For an introduction to the most common features, see |usr_45.txt| in the user
 manual.
 For changing the language of messages and menus see |mlang.txt|.
 
-{not available when compiled without the |+multi_byte| feature}
-
-
 1.  Getting started			|mbyte-first|
 2.  Locale				|mbyte-locale|
 3.  Encoding				|mbyte-encoding|
@@ -26,8 +23,9 @@ For changing the language of messages and menus see |mlang.txt|.
 7.  Input on X11			|mbyte-XIM|
 8.  Input on MS-Windows			|mbyte-IME|
 9.  Input with a keymap			|mbyte-keymap|
-10. Using UTF-8				|mbyte-utf8|
-11. Overview of options			|mbyte-options|
+10. Input with imactivatefunc()		|mbyte-func|
+11. Using UTF-8				|mbyte-utf8|
+12. Overview of options			|mbyte-options|
 
 NOTE: This file contains UTF-8 characters.  These may show up as strange
 characters or boxes when using another encoding.
@@ -41,16 +39,6 @@ doesn't work you will have to read the rest.  Don't be surprised if it takes
 quite a bit of work and experimenting to make Vim use all the multi-byte
 features.  Unfortunately, every system has its own way to deal with multibyte
 languages and it is quite complicated.
-
-
-COMPILING
-
-If you already have a compiled Vim program, check if the |+multi_byte| feature
-is included.  The |:version| command can be used for this.
-
-If +multi_byte is not included, you should compile Vim with "normal", "big" or
-"huge" features.  You can further tune what features are included.  See the
-INSTALL files in the source directory.
 
 
 LOCALE
@@ -632,6 +620,21 @@ windows maintains a table of which groups of characters are required for a
 locale.  You have to specify all the fonts that a locale requires in the
 'guifontset' option.
 
+Setting the 'guifontset' option also means that all font names will be handled
+as a fontset name.  Also the ones used for the "font" argument of the
+|:highlight| command.
+
+Note the difference between 'guifont' and 'guifontset': In 'guifont'
+the comma-separated names are alternative names, one of which will be
+used.  In 'guifontset' the whole string is one fontset name,
+including the commas.  It is not possible to specify alternative
+fontset names.
+This example works on many X11 systems: >
+	:set guifontset=-*-*-medium-r-normal--16-*-*-*-c-*-*-*
+<
+The fonts must match with the current locale.  If fonts for the character sets
+that the current locale uses are not included, setting 'guifontset' will fail.
+
 NOTE: The fontset always uses the current locale, even though 'encoding' may
 be set to use a different charset.  In that situation you might want to use
 'guifont' and 'guifontwide' instead of 'guifontset'.
@@ -832,6 +835,9 @@ Use the RPM or port for your system.
 
   Currently, GUI Vim supports three styles, |OverTheSpot|, |OffTheSpot| and
   |Root|.
+  When compiled with |+GUI_GTK| feature, GUI Vim supports two styles,
+  |OnTheSpot| and |OverTheSpot|.  You can select the style with the 'imstyle'
+  option.
 
 *.  on-the-spot						*OnTheSpot*
     Preedit Area and Status Area are performed by the client application in
@@ -937,11 +943,12 @@ To input multibyte characters on Windows, you can use an Input Method Editor
 IME many many many times.  Because IME with status on is hooking all of your
 key inputs, you cannot input 'j', 'k', or almost all of keys to Vim directly.
 
-This |+multi_byte_ime| feature help this.  It reduce times of switch status of
-IME manually.  In normal mode, there are almost no need working IME, even
-editing multibyte text.  So exiting insert mode with ESC, Vim memorize last
-status of IME and force turn off IME.  When re-enter insert mode, Vim revert
-IME status to that memorized automatically.
+The |+multi_byte_ime| feature helps for this.  It reduces the number of times
+the IME status has to be switched manually.  In Normal mode, there is almost
+no need to use IME, even when editing multibyte text.  So when exiting Insert
+mode, Vim memorizes the last status of IME and turns off IME.  When
+re-entering Insert mode, Vim sets the IME status to that memorized status
+automatically.
 
 This works on not only insert-normal mode, but also search-command input and
 replace mode.
@@ -1010,6 +1017,7 @@ text, you can use the 'keymap' option.  This will translate one or more
 (English) characters to another (non-English) character.  This only happens
 when typing text, not when typing Vim commands.  This avoids having to switch
 between two keyboard settings.
+{only available when compiled with the |+keymap| feature}
 
 The value of the 'keymap' option specifies a keymap file to use.  The name of
 this file is one of these two:
@@ -1250,7 +1258,35 @@ Combining forms:
 ﭏ    0xfb4f  Xal  alef-lamed
 
 ==============================================================================
-10. Using UTF-8				*mbyte-utf8* *UTF-8* *utf-8* *utf8*
+10.  Input with imactivatefunc()				*mbyte-func*
+
+Vim has the 'imactivatefunc' and 'imstatusfunc' options. These are useful to
+activate/deactivate the input method from Vim in any way, also with an external
+command. For example, fcitx provide fcitx-remote command: >
+
+	set iminsert=2
+	set imsearch=2
+	set imcmdline
+
+	set imactivatefunc=ImActivate
+	function! ImActivate(active)
+	  if a:active
+	    call system('fcitx-remote -o')
+	  else
+	    call system('fcitx-remote -c')
+	  endif
+	endfunction
+
+	set imstatusfunc=ImStatus
+	function! ImStatus()
+	  return system('fcitx-remote')[0] is# '2'
+	endfunction
+
+Using this script, you can activate/deactivate XIM via Vim even when it is not
+compiled with |+xim|.
+
+==============================================================================
+11. Using UTF-8				*mbyte-utf8* *UTF-8* *utf-8* *utf8*
 							*Unicode* *unicode*
 The Unicode character set was designed to include all characters from other
 character sets.  Therefore it is possible to write text in any language using
@@ -1398,7 +1434,7 @@ not everybody is able to type a composing character.
 
 
 ==============================================================================
-11. Overview of options					*mbyte-options*
+12. Overview of options					*mbyte-options*
 
 These options are relevant for editing multi-byte files.  Check the help in
 options.txt for detailed information.
@@ -1434,4 +1470,4 @@ Contributions specifically for the multi-byte features by:
 	Taro Muraoka  <koron@tka.att.ne.jp>
 	Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:
