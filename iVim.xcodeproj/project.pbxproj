@@ -96,6 +96,18 @@
 		DE863AD120A18297000FC5F8 /* FileLineReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863AD020A18297000FC5F8 /* FileLineReader.swift */; };
 		DEAF4E8A226EEEDB0037E0F7 /* scenes_keeper.m in Sources */ = {isa = PBXBuildFile; fileRef = DEAF4E89226EEEDB0037E0F7 /* scenes_keeper.m */; };
 		DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41F1F209661007AFD63 /* VimFunctions.swift */; };
+		DEBE7EB723711DD100FC887E /* channel.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4962347275E00F3E794 /* channel.c */; };
+		DEBE7EB82371258A00FC887E /* terminal.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3B62347275D00F3E794 /* terminal.c */; };
+		DEBE7EB92371295C00FC887E /* vterm.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80A2347276C00F3E794 /* vterm.c */; };
+		DEBE7EBA237137CB00FC887E /* harness.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C7E02347276B00F3E794 /* harness.c */; };
+		DEBE7EBB237137EE00FC887E /* termscreen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80B2347276C00F3E794 /* termscreen.c */; };
+		DEBE7EBC2371380F00FC887E /* pen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8122347276C00F3E794 /* pen.c */; };
+		DEBE7EBD2371383200FC887E /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8092347276C00F3E794 /* state.c */; };
+		DEBE7EBE2371385000FC887E /* unicode.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8052347276C00F3E794 /* unicode.c */; };
+		DEBE7EBF2371386A00FC887E /* keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8082347276C00F3E794 /* keyboard.c */; };
+		DEBE7EC02371388100FC887E /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8152347276C00F3E794 /* encoding.c */; };
+		DEBE7EC1237138EA00FC887E /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8132347276C00F3E794 /* parser.c */; };
+		DEBE7EC2237138F700FC887E /* termmouse.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8072347276C00F3E794 /* termmouse.c */; };
 		DEBEBDB923540FD700CDAD9C /* FilesystemItemWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBEBDB823540FD700CDAD9C /* FilesystemItemWatcher.swift */; };
 		DEC1D02F23474577008DB801 /* gui_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DEC1D02E2347455A008DB801 /* gui_ios.m */; };
 		DEC1D0322347565A008DB801 /* viminfo.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3A92347275C00F3E794 /* viminfo.c */; };
@@ -8615,6 +8627,7 @@
 				DEC1D02F23474577008DB801 /* gui_ios.m in Sources */,
 				DEC1D07A2347841B008DB801 /* termlib.c in Sources */,
 				DEC1D06F23477AD2008DB801 /* ex_docmd.c in Sources */,
+				DEBE7EBA237137CB00FC887E /* harness.c in Sources */,
 				DEC1D08D234788EC008DB801 /* memfile.c in Sources */,
 				DE5C51AB1F6E16A000373B92 /* perl.c in Sources */,
 				DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */,
@@ -8628,8 +8641,10 @@
 				DEC1D060234777A7008DB801 /* findfile.c in Sources */,
 				DE5C51B01F6E16C500373B92 /* verilog.c in Sources */,
 				DEC1D06423477846008DB801 /* tag.c in Sources */,
+				DEBE7EB723711DD100FC887E /* channel.c in Sources */,
 				DEC1D03623475B34008DB801 /* move.c in Sources */,
 				DEC1D067234778D5008DB801 /* indent.c in Sources */,
+				DEBE7EB92371295C00FC887E /* vterm.c in Sources */,
 				DE5C51891F6E153A00373B92 /* routines.c in Sources */,
 				DEC1D0652347786C008DB801 /* syntax.c in Sources */,
 				DEC1D05D2347773B008DB801 /* popupwin.c in Sources */,
@@ -8646,11 +8661,13 @@
 				DE5C51B91F6E172000373B92 /* asp.c in Sources */,
 				DE7BA7921F21A75400705E67 /* VimView.swift in Sources */,
 				DEC1D04B234774B6008DB801 /* evalbuffer.c in Sources */,
+				DEBE7EC02371388100FC887E /* encoding.c in Sources */,
 				DEC1D04D2347750B008DB801 /* filepath.c in Sources */,
 				DE5C51B51F6E16FD00373B92 /* sh.c in Sources */,
 				DEC1D079234783DB008DB801 /* term.c in Sources */,
 				DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */,
 				DE5C519A1F6E160200373B92 /* scheme.c in Sources */,
+				DEBE7EBB237137EE00FC887E /* termscreen.c in Sources */,
 				DE5C51981F6E15EA00373B92 /* slang.c in Sources */,
 				DE5C51B21F6E16D700373B92 /* ant.c in Sources */,
 				DEC1D07F23478776008DB801 /* ex_cmds.c in Sources */,
@@ -8660,6 +8677,7 @@
 				DE5C51B81F6E171B00373B92 /* rexx.c in Sources */,
 				DEE31E961F4BF712000CA9E8 /* Stack.swift in Sources */,
 				DEC1D07523478373008DB801 /* popupmenu.c in Sources */,
+				DEBE7EBD2371383200FC887E /* state.c in Sources */,
 				DE5C51921F6E15A600373B92 /* lua.c in Sources */,
 				DEC1D08823478862008DB801 /* xutils.c in Sources */,
 				DEC1D04123476A82008DB801 /* os_unix.c in Sources */,
@@ -8685,6 +8703,7 @@
 				DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */,
 				DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */,
 				DEC1D03423475940008DB801 /* misc2.c in Sources */,
+				DEBE7EBE2371385000FC887E /* unicode.c in Sources */,
 				DE33BF87214F724B009A5D5F /* VimViewBackend.swift in Sources */,
 				DEC1D07423478359008DB801 /* cmdexpand.c in Sources */,
 				DEC1D07623478390008DB801 /* mouse.c in Sources */,
@@ -8696,6 +8715,7 @@
 				DEC1D08E23478904008DB801 /* session.c in Sources */,
 				DE5C51A21F6E164500373B92 /* jscript.c in Sources */,
 				DE5C51881F6E152B00373B92 /* tex.c in Sources */,
+				DEBE7EBF2371386A00FC887E /* keyboard.c in Sources */,
 				DEC1D06E23477A9F008DB801 /* ui.c in Sources */,
 				DE5C51A71F6E167A00373B92 /* python.c in Sources */,
 				DEC1D05723477673008DB801 /* cmdhist.c in Sources */,
@@ -8731,6 +8751,7 @@
 				DE5C51941F6E15BE00373B92 /* entry.c in Sources */,
 				DE7BA7981F21A76400705E67 /* OptionalButtonsBar.swift in Sources */,
 				DEF17D8720B3BD3A00FE0693 /* CoreDataExtension.swift in Sources */,
+				DEBE7EC1237138EA00FC887E /* parser.c in Sources */,
 				DEC1D078234783BE008DB801 /* spellsuggest.c in Sources */,
 				DEC1D085234787F8008DB801 /* hashtab.c in Sources */,
 				DEC1D03A23475D3D008DB801 /* buffer.c in Sources */,
@@ -8766,6 +8787,7 @@
 				DEC1D07B234785FD008DB801 /* digraph.c in Sources */,
 				DE5C51B71F6E171100373B92 /* parse.c in Sources */,
 				DEC1D0582347768E008DB801 /* dict.c in Sources */,
+				DEBE7EBC2371380F00FC887E /* pen.c in Sources */,
 				DEC1D059234776AB008DB801 /* json.c in Sources */,
 				DE5C51A51F6E166500373B92 /* get.c in Sources */,
 				DE7BA7A01F21A78E00705E67 /* VimFontsManager.swift in Sources */,
@@ -8773,12 +8795,14 @@
 				DE5C518E1F6E157600373B92 /* flex.c in Sources */,
 				DEBEBDB923540FD700CDAD9C /* FilesystemItemWatcher.swift in Sources */,
 				DEC1D06923477959008DB801 /* normal.c in Sources */,
+				DEBE7EB82371258A00FC887E /* terminal.c in Sources */,
 				DEC1D04E2347752B008DB801 /* insexpand.c in Sources */,
 				DEC1D06A2347798F008DB801 /* register.c in Sources */,
 				DEF17D8120B3BA2600FE0693 /* OldDocument+CoreDataClass.swift in Sources */,
 				DE5C51961F6E15DF00373B92 /* make.c in Sources */,
 				DE5C518D1F6E157100373B92 /* vstring.c in Sources */,
 				DE5C51AF1F6E16BE00373B92 /* sql.c in Sources */,
+				DEBE7EC2237138F700FC887E /* termmouse.c in Sources */,
 				DEC1D06623477899008DB801 /* regexp.c in Sources */,
 				DEEB2EB623482FDE00C8EF70 /* drawline.c in Sources */,
 				DEC1D047234772A6008DB801 /* mbyte.c in Sources */,
@@ -8991,6 +9015,7 @@
 					"$(PROJECT_DIR)/vim/src/proto",
 					"$(PROJECT_DIR)/vim/src",
 					"$(PROJECT_DIR)/vim/src/xdiff",
+					"$(PROJECT_DIR)/vim/src/libvterm/include",
 				);
 				INFOPLIST_FILE = iVim/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
@@ -9021,6 +9046,7 @@
 					"$(PROJECT_DIR)/vim/src/proto",
 					"$(PROJECT_DIR)/vim/src",
 					"$(PROJECT_DIR)/vim/src/xdiff",
+					"$(PROJECT_DIR)/vim/src/libvterm/include",
 				);
 				INFOPLIST_FILE = iVim/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;

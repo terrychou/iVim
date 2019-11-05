@@ -1176,6 +1176,12 @@ gui_mch_insert_lines(int row, int num_lines)
                     row + num_lines - 1, gui.scroll_region_right);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
 /*
  * Set the current text foreground color.
  */

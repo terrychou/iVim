@@ -15,6 +15,10 @@ extern "C" {
 #define TRUE 1
 #define FALSE 0
 
+#ifdef FEAT_GUI_IOS
+# define INLINE
+#endif
+
 // from stdint.h
 typedef unsigned char		uint8_t;
 typedef unsigned int		uint32_t;

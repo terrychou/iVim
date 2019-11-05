@@ -28,6 +28,9 @@
 #define FEAT_GUI_SCROLL_WHEEL_FORCE 1
 #define FEAT_GUI_IOS 1
 #define FEAT_BROWSE
+#define FEAT_JOB_CHANNEL 1
+#define FEAT_TERMINAL 1
+#define HAVE_SYS_POLL_H 1
 #define TARGET_OS_IPHONE 1
 #define MODIFIED_BY "Boogaloo"
 

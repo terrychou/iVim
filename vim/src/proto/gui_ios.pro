@@ -15,6 +15,7 @@ void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags);
 void gui_mch_delete_lines(int row, int num_lines);
 void gui_mch_insert_lines(int row, int num_lines);
+guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
