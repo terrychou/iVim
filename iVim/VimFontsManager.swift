@@ -187,8 +187,11 @@ extension VimFontsManager {
     
     private func uncacheUserFont(with name: String) {
         guard let font = self.cache[name]?.cgFont else { return }
-        if !CTFontManagerUnregisterGraphicsFont(font, nil) {
-            NSLog("Failed to unregistered font \(name)")
+        var err: Unmanaged<CFError>?
+        if !CTFontManagerUnregisterGraphicsFont(font, &err) {
+            let e = err?.nsError
+            NSLog("failed to unregister font '\(name)': " +
+                "\(e?.localizedDescription ?? "unknown reason")")
         }
         self.cache[name] = nil
     }
@@ -226,12 +229,25 @@ extension VimFontsManager {
     
     private func prepareUserFont(with name: String) -> String? {
         guard let path = userFontsURL?.appendingPathComponent(name),
-            let dp = CGDataProvider(url: path as CFURL)
-            else { return nil }
+            let dp = CGDataProvider(url: path as CFURL) else {
+                NSLog("failed to get data for font '\(name)'")
+                return nil
+        }
         _ = UIFont() //to overcome the CGFontCreate hanging bug: http://stackoverflow.com/a/40256390/723851
-        let font = CGFont(dp)
-        guard let psName = font?.postScriptName as String?,
-            CTFontManagerRegisterGraphicsFont(font!, nil) else { return nil }
+        guard let font = CGFont(dp),
+            let psName = font.postScriptName as String? else {
+                NSLog("failed to generate font '\(name)'")
+                return nil
+        }
+        var err: Unmanaged<CFError>?
+        if !CTFontManagerRegisterGraphicsFont(font, &err) {
+            let e = err?.nsError
+            if e?.isCTFontManagerError(.alreadyRegistered) != true {
+                NSLog("failed to register font '\(name)': " +
+                    "\(e?.localizedDescription ?? "unknown reason")")
+                return nil
+            }
+        }
         self.cache[name] = FontCache(postScriptName: psName, cgFont: font)
         
         return psName
@@ -267,6 +283,19 @@ extension VimFontsManager {
         
         return (CTFontCreateCopyWithAttributes(rawFont, fs, &transform, nil),
                 char_ascent, descent, char_width, char_height)
+    }
+}
+
+private extension Unmanaged where Instance == CFError {
+    var nsError: NSError? {
+        return (self.takeRetainedValue() as Error) as NSError
+    }
+}
+
+private extension NSError {
+    func isCTFontManagerError(_ err: CTFontManagerError) -> Bool {
+        return (self.domain == kCTFontManagerErrorDomain as String) &&
+            self.code == err.rawValue
     }
 }
 
