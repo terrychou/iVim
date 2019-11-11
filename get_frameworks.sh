@@ -12,11 +12,12 @@ curl -OL $HHROOT/ios_system/releases/download/v$IOS_SYSTEM_VER/release.tar.gz
 echo "Downloading header file:"
 curl -OL $HHROOT/ios_system/releases/download/v$IOS_SYSTEM_VER/ios_error.h 
 # We need the sources for Python and Lua, for the headers
+# Do not do this is python3_ios and lua_ios are already present
 # included by if_lua and if_python.
 ( # Python_ios
 cd "${PWD}/.."
-git clone https://github.com/holzschu/python_ios
-cd "python_ios"
+git clone https://github.com/holzschu/python3_ios
+cd "python3_ios"
 sh ./getPackages.sh
 )
 ( # lua_ios 
