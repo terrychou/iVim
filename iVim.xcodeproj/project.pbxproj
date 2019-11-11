@@ -317,49 +317,41 @@
 
 /* Begin PBXFileReference section */
 		2241B4082379C2230041FE28 /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
-		2241B40B2379C3B70041FE28 /* luatex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = luatex.framework; sourceTree = "<group>"; };
-		2241B40C2379C3B70041FE28 /* kpathsea.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = kpathsea.framework; sourceTree = "<group>"; };
-		2241B40D2379C3B70041FE28 /* openssl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = openssl.framework; sourceTree = "<group>"; };
-		2241B40E2379C3B70041FE28 /* libssh2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = libssh2.framework; sourceTree = "<group>"; };
-		2241B40F2379C3B80041FE28 /* pdftex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = pdftex.framework; sourceTree = "<group>"; };
-		2241B4102379C3B80041FE28 /* bibtex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = bibtex.framework; sourceTree = "<group>"; };
-		2241B4112379C3B80041FE28 /* texlua52.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = texlua52.framework; sourceTree = "<group>"; };
-		2241B4192379C41A0041FE28 /* libctags.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctags.dylib; path = Frameworks/libctags.dylib; sourceTree = "<group>"; };
-		2241B41A2379C41A0041FE28 /* tar.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = tar.framework; sourceTree = "<group>"; };
-		2241B41B2379C41A0041FE28 /* ssh_cmd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ssh_cmd.framework; sourceTree = "<group>"; };
-		2241B41C2379C41B0041FE28 /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = lua_ios.framework; sourceTree = "<group>"; };
-		2241B41D2379C41B0041FE28 /* PythonA.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = PythonA.framework; sourceTree = "<group>"; };
-		2241B41E2379C41B0041FE28 /* Python3_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Python3_ios.framework; sourceTree = "<group>"; };
-		2241B41F2379C41B0041FE28 /* files.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = files.framework; sourceTree = "<group>"; };
-		2241B4202379C41C0041FE28 /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ios_system.framework; sourceTree = "<group>"; };
-		2241B4212379C41C0041FE28 /* text.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = text.framework; sourceTree = "<group>"; };
-		2241B4222379C41C0041FE28 /* network_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = network_ios.framework; sourceTree = "<group>"; };
-		2241B4232379C41C0041FE28 /* awk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = awk.framework; sourceTree = "<group>"; };
-		2241B4242379C41D0041FE28 /* shell.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = shell.framework; sourceTree = "<group>"; };
-		2241B4252379C41D0041FE28 /* PythonI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = PythonI.framework; sourceTree = "<group>"; };
-		2241B4262379C41D0041FE28 /* curl_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = curl_ios.framework; sourceTree = "<group>"; };
-		2241B4352379C4420041FE28 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = harfbuzz.framework; sourceTree = "<group>"; };
-		2241B4362379C4420041FE28 /* openblas.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = openblas.framework; sourceTree = "<group>"; };
-		2241B4372379C4420041FE28 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = freetype.framework; sourceTree = "<group>"; };
-		2241B43B2379C45A0041FE28 /* bc_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = bc_ios.framework; sourceTree = "<group>"; };
+		2241B40B2379C3B70041FE28 /* luatex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/luatex.framework; sourceTree = "<group>"; };
+		2241B40C2379C3B70041FE28 /* kpathsea.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/kpathsea.framework; sourceTree = "<group>"; };
+		2241B40D2379C3B70041FE28 /* openssl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/openssl.framework; sourceTree = "<group>"; };
+		2241B40E2379C3B70041FE28 /* libssh2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/libssh2.framework; sourceTree = "<group>"; };
+		2241B40F2379C3B80041FE28 /* pdftex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/pdftex.framework; sourceTree = "<group>"; };
+		2241B4102379C3B80041FE28 /* bibtex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/bibtex.framework; sourceTree = "<group>"; };
+		2241B4112379C3B80041FE28 /* texlua52.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/texlua52.framework; sourceTree = "<group>"; };
+		2241B4192379C41A0041FE28 /* libctags.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = Frameworks/libctags.dylib; path = Frameworks/libctags.dylib; sourceTree = "<group>"; };
+		2241B41A2379C41A0041FE28 /* tar.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/tar.framework; sourceTree = "<group>"; };
+		2241B41B2379C41A0041FE28 /* ssh_cmd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/ssh_cmd.framework; sourceTree = "<group>"; };
+		2241B41C2379C41B0041FE28 /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
+		2241B41D2379C41B0041FE28 /* PythonA.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/PythonA.framework; sourceTree = "<group>"; };
+		2241B41E2379C41B0041FE28 /* Python3_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/Python3_ios.framework; sourceTree = "<group>"; };
+		2241B41F2379C41B0041FE28 /* files.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/files.framework; sourceTree = "<group>"; };
+		2241B4202379C41C0041FE28 /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
+		2241B4212379C41C0041FE28 /* text.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/text.framework; sourceTree = "<group>"; };
+		2241B4222379C41C0041FE28 /* network_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/network_ios.framework; sourceTree = "<group>"; };
+		2241B4232379C41C0041FE28 /* awk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/awk.framework; sourceTree = "<group>"; };
+		2241B4242379C41D0041FE28 /* shell.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/shell.framework; sourceTree = "<group>"; };
+		2241B4262379C41D0041FE28 /* curl_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/curl_ios.framework; sourceTree = "<group>"; };
+		2241B4352379C4420041FE28 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
+		2241B4362379C4420041FE28 /* openblas.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/openblas.framework; sourceTree = "<group>"; };
+		2241B4372379C4420041FE28 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/freetype.framework; sourceTree = "<group>"; };
+		2241B43B2379C45A0041FE28 /* bc_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Frameworks/bc_ios.framework; sourceTree = "<group>"; };
 		229F09D42186194A00A05CAE /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
-		229F09D62186196900A05CAE /* Python_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python_ios.framework; path = Frameworks/Python_ios.framework; sourceTree = "<group>"; };
 		229F09D82186197900A05CAE /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua_ios.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
 		22CA86DB20C1DE2A00A4E25B /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua_ios.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
-		22CA86DD20C1DE3700A4E25B /* Python_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python_ios.framework; path = Frameworks/Python_ios.framework; sourceTree = "<group>"; };
 		22CA86DF20C1DE4700A4E25B /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
 		22CA86E120C1DE9900A4E25B /* commandDictionary.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = commandDictionary.plist; path = Resources/commandDictionary.plist; sourceTree = "<group>"; };
 		22CA86E220C1DE9A00A4E25B /* extraCommandsDictionary.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = extraCommandsDictionary.plist; path = Resources/extraCommandsDictionary.plist; sourceTree = "<group>"; };
 		22CA86E520C1DEB600A4E25B /* curl_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = curl_ios.framework; path = Frameworks/curl_ios.framework; sourceTree = "<group>"; };
 		22CA86E620C1DEB600A4E25B /* awk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = awk.framework; path = Frameworks/awk.framework; sourceTree = "<group>"; };
 		22CA86E720C1DEB600A4E25B /* files.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = files.framework; path = Frameworks/files.framework; sourceTree = "<group>"; };
-		22CA86E820C1DEC500A4E25B /* libbibtex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbibtex.dylib; path = Frameworks/libbibtex.dylib; sourceTree = "<group>"; };
 		22CA86E920C1DEC500A4E25B /* libctags.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctags.dylib; path = Frameworks/libctags.dylib; sourceTree = "<group>"; };
 		22CA86EA20C1DEC500A4E25B /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = Frameworks/libcrypto.a; sourceTree = "<group>"; };
-		22CA86EB20C1DEC500A4E25B /* libkpathsea.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libkpathsea.6.dylib; path = Frameworks/libkpathsea.6.dylib; sourceTree = "<group>"; };
-		22CA86EC20C1DEC500A4E25B /* libluatex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libluatex.dylib; path = Frameworks/libluatex.dylib; sourceTree = "<group>"; };
-		22CA86ED20C1DED700A4E25B /* libpdftex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpdftex.dylib; path = Frameworks/libpdftex.dylib; sourceTree = "<group>"; };
-		22CA86EE20C1DED800A4E25B /* libtexlua52.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtexlua52.5.dylib; path = Frameworks/libtexlua52.5.dylib; sourceTree = "<group>"; };
 		22CA86EF20C1DED800A4E25B /* libssh2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libssh2.framework; path = Frameworks/libssh2.framework; sourceTree = "<group>"; };
 		22CA86F120C1DEE400A4E25B /* openssl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = openssl.framework; path = Frameworks/openssl.framework; sourceTree = "<group>"; };
 		22CA86F220C1DEE400A4E25B /* network_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = network_ios.framework; path = Frameworks/network_ios.framework; sourceTree = "<group>"; };
@@ -367,7 +359,6 @@
 		22CA86F420C1DEF000A4E25B /* text.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = text.framework; path = Frameworks/text.framework; sourceTree = "<group>"; };
 		22CA86F520C1DEF000A4E25B /* tar.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = tar.framework; path = Frameworks/tar.framework; sourceTree = "<group>"; };
 		22CA86F620C1DEF000A4E25B /* shell.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = shell.framework; path = Frameworks/shell.framework; sourceTree = "<group>"; };
-		22E0543C21865E5B008ECC05 /* libpdftex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpdftex.dylib; path = Frameworks/libpdftex.dylib; sourceTree = "<group>"; };
 		DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArgumentToken.swift; path = iVim/ArgumentToken.swift; sourceTree = "<group>"; };
 		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = URLRealizer.swift; path = iVim/URLRealizer.swift; sourceTree = "<group>"; };
 		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
@@ -3802,14 +3793,9 @@
 				22CA86F420C1DEF000A4E25B /* text.framework */,
 				22CA86F220C1DEE400A4E25B /* network_ios.framework */,
 				22CA86F120C1DEE400A4E25B /* openssl.framework */,
-				22CA86ED20C1DED700A4E25B /* libpdftex.dylib */,
 				22CA86EF20C1DED800A4E25B /* libssh2.framework */,
-				22CA86EE20C1DED800A4E25B /* libtexlua52.5.dylib */,
-				22CA86E820C1DEC500A4E25B /* libbibtex.dylib */,
 				22CA86EA20C1DEC500A4E25B /* libcrypto.a */,
 				22CA86E920C1DEC500A4E25B /* libctags.dylib */,
-				22CA86EB20C1DEC500A4E25B /* libkpathsea.6.dylib */,
-				22CA86EC20C1DEC500A4E25B /* libluatex.dylib */,
 				22CA86E620C1DEB600A4E25B /* awk.framework */,
 				22CA86E520C1DEB600A4E25B /* curl_ios.framework */,
 				22CA86E720C1DEB600A4E25B /* files.framework */,
@@ -8354,7 +8340,6 @@
 		DEA0C7A32347276B00F3E794 /* x86 */ = {
 			isa = PBXGroup;
 			children = (
-				22E0543C21865E5B008ECC05 /* libpdftex.dylib */,
 				229F09D82186197900A05CAE /* lua_ios.framework */,
 				229F09D62186196900A05CAE /* Python_ios.framework */,
 				229F09D42186194A00A05CAE /* ios_system.framework */,
