@@ -14,7 +14,7 @@ final class VimMainView: UIView {
     private var left: NSLayoutConstraint!
     private var right: NSLayoutConstraint!
     
-    private func constraint(for subview: UIView, attribute: NSLayoutAttribute) -> NSLayoutConstraint {
+    private func constraint(for subview: UIView, attribute: NSLayoutConstraint.Attribute) -> NSLayoutConstraint {
         let c = NSLayoutConstraint(item: subview, attribute: attribute,
                                    relatedBy: .equal, toItem: self,
                                    attribute: attribute, multiplier: 1.0,

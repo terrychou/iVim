@@ -53,7 +53,7 @@ extension OldDocumentsManager {
         let nfc = NotificationCenter.default
         nfc.addObserver(self,
                         selector: #selector(self.willResignActive),
-                        name: .UIApplicationWillResignActive,
+                        name: UIApplication.willResignActiveNotification,
                         object: nil)
     }
     
@@ -83,7 +83,7 @@ extension OldDocumentsManager {
     }
     
     func addURL(_ url: URL) {
-        let index = self.documents.index { $0.path == url.path }
+        let index = self.documents.firstIndex { $0.path == url.path }
         let top: OldDocument
         if let i = index { //existing one
             top = self.documents.remove(at: i)

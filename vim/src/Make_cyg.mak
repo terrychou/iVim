@@ -37,16 +37,17 @@
 #RUBY=/cygdribe/c/ruby
 
 
-# Use MinGW(-w64) cross compiler.
-# There are three MinGW packages in Cygwin:
-#   32-bit: mingw-gcc-g++ and mingw64-i686-gcc-g++
+# Use MinGW-w64 cross compiler.
+# There are two MinGW-w64 packages in Cygwin:
+#   32-bit: mingw64-i686-gcc-g++
 #   64-bit: mingw64-x86_64-gcc-g++
 # You may also need to set 'ARCH' in Make_cyg_ming.mak.
-CROSS_COMPILE = i686-pc-mingw32-
-#CROSS_COMPILE = i686-w64-mingw32-
+CROSS_COMPILE = i686-w64-mingw32-
 #CROSS_COMPILE = x86_64-w64-mingw32-
 
 
 # Do not change this.
 UNDER_CYGWIN = yes
 include Make_cyg_ming.mak
+
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:

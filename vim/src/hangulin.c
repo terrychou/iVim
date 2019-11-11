@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -20,9 +20,9 @@
 #define AUTOMATA_ERROR		4
 #define AUTOMATA_NULL		5
 
-#define F_F	0x1	/* ÃÊ¼º (initial sound) */
-#define F_M	0x2	/* Áß¼º (medial vowel) */
-#define F_L	0x4	/* Á¾¼º (final consonant) */
+#define F_F	0x1	/* ì´ˆì„± (initial sound) */
+#define F_M	0x2	/* ì¤‘ì„± (medial vowel) */
+#define F_L	0x4	/* ì¢…ì„± (final consonant) */
 #define F_A	0x8	/* ASCII */
 #define F_NULL 1
 #define M_NULL 2
@@ -35,10 +35,8 @@ static char_u stack[20] = {0};
 static int last_l = -1, last_ll = -1;
 static int hangul_keyboard_type = HANGUL_DEFAULT_KEYBOARD;
 
-static void convert_ks_to_3 __ARGS((const char_u *src, int *fp, int *mp, int *lp));
-static int convert_3_to_ks __ARGS((int fv, int mv, int lv, char_u *des));
-static int hangul_automata2 __ARGS((char_u *buf, unsigned int *c));
-static int hangul_automata3 __ARGS((char_u *buf, unsigned int *c));
+static void convert_ks_to_3(const char_u *src, int *fp, int *mp, int *lp);
+static int convert_3_to_ks(int fv, int mv, int lv, char_u *des);
 
 #define push(x)	 {stack[ sp++ ] = *(x); stack[sp++] = *((x)+1);}
 #define pop(x)	 {*((x) + 1) = stack[--sp]; *(x) = stack[--sp];}
@@ -48,10 +46,10 @@ static int hangul_automata3 __ARGS((char_u *buf, unsigned int *c));
 
 
 /**********************************************************************/
-/****** 3 ¹ú½ÄÀÚÆÇÀ» À§ÇÑ ·çÆ¾  (Routines for 3 bulsik keyboard) ******/
+/****** 3 ë²Œì‹ìžíŒì„ ìœ„í•œ ë£¨í‹´  (Routines for 3 bulsik keyboard) ******/
 /**********************************************************************/
 
-/* 3 ¹ú½Ä¿¡¼­ ÀÚÆÇ º¯È¯ (3 bulsik keyboard conversion) */
+/* 3 ë²Œì‹ì—ì„œ ìžíŒ ë³€í™˜ (3 bulsik keyboard conversion) */
 
 static char_u value_table_for_3[] =
 {
@@ -91,14 +89,12 @@ static short_u kind_table_for_3[] =
     F_F, F_M, F_L, F_L, F_F, F_L,	/* u v w x y z */
 };
 
-/* 3 ¹ú½Ä¿¡¼­ (ÇöÀçÃÊ¼º, ÀÔ·Â¿µ¹®) -> º¹ÇÕÃÊ¼º Ã³¸®
+/* 3 ë²Œì‹ì—ì„œ (í˜„ìž¬ì´ˆì„±, ìž…ë ¥ì˜ë¬¸) -> ë³µí•©ì´ˆì„± ì²˜ë¦¬
  * 3 bulsik: (current initial sound, input english) -> compound initial sound.
  */
 
     static int
-comfcon3(v, c)
-    int	v;
-    int c;
+comfcon3(int v, int c)
 {
     if (v == 2 && c == 2)
 	return 3;
@@ -113,45 +109,43 @@ comfcon3(v, c)
     return 0;
 }
 
-/* 3 ¹ú½Ä¿¡¼­ (ÇöÀç¸ðÀ½, ÀÔ·Â ¿µ¹®) -> º¹ÇÕ ¸ðÀ½ Ã³¸®
+/* 3 ë²Œì‹ì—ì„œ (í˜„ìž¬ëª¨ìŒ, ìž…ë ¥ ì˜ë¬¸) -> ë³µí•© ëª¨ìŒ ì²˜ë¦¬
  * 3 bulsik: (current vowel, input english) -> compound vowel.
  */
 
     static int
-comvow3(v, c)
-    int v;
-    int c;
+comvow3(int v, int c)
 {
     switch (v)
     {
-	case 13:					/* ¤Ç */
+	case 13:					/* ã…— */
 	    switch (c) {
-		case 3:					/* ¤Ç¤¿ */
+		case 3:					/* ã…—ã… */
 		    return 14;
-		case 4:					/* ¤Ç¤À */
+		case 4:					/* ã…—ã… */
 		    return 15;
-		case 29:				/* ¤Ç¤Ó */
+		case 29:				/* ã…—ã…£ */
 		    return 18;
 	    }
 	    break;
 
-	case 20:					/* ¤Ì */
+	case 20:					/* ã…œ */
 	    switch (c) {
-		case 7:					/* ¤Ì¤Ã */
+		case 7:					/* ã…œã…“ */
 		    return 21;
-		case 10:				/* ¤Ì¤Ä */
+		case 10:				/* ã…œã…” */
 		    return 22;
-		case 29:				/* ¤Ì¤Ó */
+		case 29:				/* ã…œã…£ */
 		    return 23;
 	    }
 	    break;
 
-	    /* 3 ¹ú½Ä ÀÚÆÇÀº ¤Ñ¤Ó °¡ ÀÖÀ¸¹Ç·Î ... */
+	    /* 3 ë²Œì‹ ìžíŒì€ ã…¡ã…£ ê°€ ìžˆìœ¼ë¯€ë¡œ ... */
     }
     return 0;
 }
 
-/* 3 ¹ú½Ä¿¡¼­ (ÇöÀç ¹ÞÄ§, ¿µ¹®ÀÚ ÀÔ·Â) -> ¹ÞÄ§
+/* 3 ë²Œì‹ì—ì„œ (í˜„ìž¬ ë°›ì¹¨, ì˜ë¬¸ìž ìž…ë ¥) -> ë°›ì¹¨
  * 3 bulsik: (current prop(?), input english) -> prop(?).
  * I want to say, the 'prop' is similar to 'final consonant', but not vowel.
  * (I cannot find the real english from my dictionary. Sorry!)
@@ -159,52 +153,50 @@ comvow3(v, c)
  */
 
     static int
-comcon3(k, c)
-    int k;
-    int c;
+comcon3(int k, int c)
 {
     switch (k)
     {
-	case 2:						/* ¤¡ */
+	case 2:						/* ã„± */
 	    switch (c) {
 		case 2:
-		    return 3;				/* ¤¡¤¡ */
+		    return 3;				/* ã„±ã„± */
 		case 21:
-		    return 4;				/* ¤¡¤µ */
+		    return 4;				/* ã„±ã…… */
 	    }
 	    break;
 
-	case 5:						/* ¤¤ */
+	case 5:						/* ã„´ */
 	    switch (c) {
-		case 24:				/* ¤¤¤¸ */
+		case 24:				/* ã„´ã…ˆ */
 		    return 6;
 		case 29:
-		    return 7;				/* ¤¤¤¾ */
+		    return 7;				/* ã„´ã…Ž */
 	    }
 	    break;
 
-	case 9:						/* ¤© */
+	case 9:						/* ã„¹ */
 	    switch (c) {
-		case 2:					/* ¤©¤¡ */
+		case 2:					/* ã„¹ã„± */
 		    return 10;
-		case 17:				/* ¤©¤± */
+		case 17:				/* ã„¹ã… */
 		    return 11;
-		case 19:				/* ¤©¤² */
+		case 19:				/* ã„¹ã…‚ */
 		    return 12;
-		case 21:				/* ¤©¤µ */
+		case 21:				/* ã„¹ã…… */
 		    return 13;
-		case 27:				/* ¤©¤¼ */
+		case 27:				/* ã„¹ã…Œ */
 		    return 14;
-		case 28:				/* ¤©¤½ */
+		case 28:				/* ã„¹ã… */
 		    return 15;
-		case 29:				/* ¤©¤¾ */
+		case 29:				/* ã„¹ã…Ž */
 		    return 16;
 	    }
 	    break;
 
 	case 19:
 	    switch (c) {
-		case 21:				/* ¤²¤µ */
+		case 21:				/* ã…‚ã…… */
 		    return 20;
 	    }
 	    break;
@@ -213,12 +205,11 @@ comcon3(k, c)
 }
 
 /**********************************************************************/
-/****** 2 ¹ú½ÄÀÚÆÇÀ» À§ÇÑ ·çÆ¾  (Routines for 2 bulsik keyboard) ******/
+/****** 2 ë²Œì‹ìžíŒì„ ìœ„í•œ ë£¨í‹´  (Routines for 2 bulsik keyboard) ******/
 /**********************************************************************/
 
     static int
-kind_table_for_2(c)
-    int c;
+kind_table_for_2(int c)
 {
     static char_u table[] =
     {
@@ -236,13 +227,12 @@ kind_table_for_2(c)
     return table[c];
 }
 
-/* 2 ¹ú½Ä¿¡¼­ ¿µ¹®ÀÚ -> Á¶ÇÕÇü ÃÊ¼º º¯È¯
+/* 2 ë²Œì‹ì—ì„œ ì˜ë¬¸ìž -> ì¡°í•©í˜• ì´ˆì„± ë³€í™˜
  * (2 bulsik: conversion english char. to initial sound of compound type)
- * °á°ú: ÃÊ¼ºÀÌ ¾Æ´Ï¸é 0 (If it is not initial sound, return 0).
+ * ê²°ê³¼: ì´ˆì„±ì´ ì•„ë‹ˆë©´ 0 (If it is not initial sound, return 0).
  */
     static int
-fcon(c)
-    int c;
+fcon(int c)
 {
     static char_u table[] =
     {
@@ -261,13 +251,12 @@ fcon(c)
     return table[c - 'E'];
 }
 
-/* 2 ¹ú½Ä¿¡¼­ ¿µ¹®ÀÚ -> Áß¼º º¯È¯
+/* 2 ë²Œì‹ì—ì„œ ì˜ë¬¸ìž -> ì¤‘ì„± ë³€í™˜
  * (2 bulsik: conversion english char. to medial vowel)
- * °á°ú: Áß¼ºÀÌ ¾Æ´Ï¸é 0 (If it is not medial vowel, return 0).
+ * ê²°ê³¼: ì¤‘ì„±ì´ ì•„ë‹ˆë©´ 0 (If it is not medial vowel, return 0).
  */
     static int
-vow(c)
-    int c;
+vow(int c)
 {
     static char_u table[] =
     {
@@ -284,13 +273,12 @@ vow(c)
     return table[c - 'O'];
 }
 
-/* 2¹ú½Ä¿¡¼­ ¿µ¹®ÀÚ -> ¹ÞÄ§ º¯È¯
+/* 2ë²Œì‹ì—ì„œ ì˜ë¬¸ìž -> ë°›ì¹¨ ë³€í™˜
  * (2 bulsik: conversion english char. to prop)
- * °á°ú: ¹ÞÄ§ÀÌ ¾Æ´Ï¸é 0 (If not prop, return 0)
+ * ê²°ê³¼: ë°›ì¹¨ì´ ì•„ë‹ˆë©´ 0 (If not prop, return 0)
  */
     static int
-lcon(c)
-    int c;
+lcon(int c)
 {
     static char_u table[] =
     {
@@ -307,55 +295,53 @@ lcon(c)
     return table[c - 'R'];
 }
 
-/* 2 ¹ú½Ä¿¡¼­ (ÇöÀç ¹ÞÄ§, ¿µ¹®ÀÚ ÀÔ·Â) -> ¹ÞÄ§ º¯È¯
+/* 2 ë²Œì‹ì—ì„œ (í˜„ìž¬ ë°›ì¹¨, ì˜ë¬¸ìž ìž…ë ¥) -> ë°›ì¹¨ ë³€í™˜
  * (2 bulsik: conversion (curr. prop, input english) to prop)
  */
 
     static int
-comcon2(k, c)
-    int k;
-    int c;
+comcon2(int k, int c)
 {
     switch (k)
     {
-	case 2:					/* ¤¡ */
+	case 2:					/* ã„± */
 	    switch (c) {
 		case 't':
-		    return 4;			/* ¤¡¤µ */
+		    return 4;			/* ã„±ã…… */
 	    }
 	    break;
 
-	case 5:					/* ¤¤ */
+	case 5:					/* ã„´ */
 	    switch (c) {
-		case 'w':			/* ¤¤¤¸ */
+		case 'w':			/* ã„´ã…ˆ */
 		    return 6;
-		case 'g':			/* ¤¤¤¾ */
+		case 'g':			/* ã„´ã…Ž */
 		    return 7;
 	    }
 	    break;
 
-	case 9:					/* ¤© */
+	case 9:					/* ã„¹ */
 	    switch (c) {
-		case 'r':			/* ¤©¤¡ */
+		case 'r':			/* ã„¹ã„± */
 		    return 10;
-		case 'a':			/* ¤©¤± */
+		case 'a':			/* ã„¹ã… */
 		    return 11;
-		case 'q':			/* ¤©¤² */
+		case 'q':			/* ã„¹ã…‚ */
 		    return 12;
-		case 't':			/* ¤©¤µ */
+		case 't':			/* ã„¹ã…… */
 		    return 13;
-		case 'x':			/* ¤©¤¼ */
+		case 'x':			/* ã„¹ã…Œ */
 		    return 14;
-		case 'v':			/* ¤©¤½ */
+		case 'v':			/* ã„¹ã… */
 		    return 15;
-		case 'g':			/* ¤©¤¾ */
+		case 'g':			/* ã„¹ã…Ž */
 		    return 16;
 	    }
 	    break;
 
-	case 19:				/* ¤² */
+	case 19:				/* ã…‚ */
 	    switch (c) {
-		case 't':			/* ¤²¤µ */
+		case 't':			/* ã…‚ã…… */
 		    return 20;
 	    }
 	    break;
@@ -363,43 +349,41 @@ comcon2(k, c)
     return 0;
 }
 
-/* 2¹ú½Ä¿¡¼­ (ÇöÀç Áß¼º, ¿µ¹® ÀÔ·Â) -> Áß¼º º¯È¯
+/* 2ë²Œì‹ì—ì„œ (í˜„ìž¬ ì¤‘ì„±, ì˜ë¬¸ ìž…ë ¥) -> ì¤‘ì„± ë³€í™˜
  * (2 bulsik: conversion (curr. medial vowel, input english) to medial
  * vowel)
  */
 
     static int
-comvow2(v, c)
-    int v;
-    int c;
+comvow2(int v, int c)
 {
     switch (v)
     {
-	case 13:					/* ¤Ç */
+	case 13:					/* ã…— */
 	    switch (c) {
-		case 'k':				/* ¤Ç¤¿ */
+		case 'k':				/* ã…—ã… */
 		    return 14;
-		case 'o':				/* ¤Ç¤À */
+		case 'o':				/* ã…—ã… */
 		    return 15;
-		case 'l':				/* ¤Ç¤Ó */
+		case 'l':				/* ã…—ã…£ */
 		    return 18;
 	    }
 	    break;
 
-	case 20:					/* ¤Ì */
+	case 20:					/* ã…œ */
 	    switch (c) {
-		case 'j':				/* ¤Ì¤Ã */
+		case 'j':				/* ã…œã…“ */
 		    return 21;
-		case 'p':				/* ¤Ì¤Ä */
+		case 'p':				/* ã…œã…” */
 		    return 22;
-		case 'l':				/* ¤Ì¤Ó */
+		case 'l':				/* ã…œã…£ */
 		    return 23;
 	    }
 	    break;
 
-	case 27:					/* ¤Ñ */
+	case 27:					/* ã…¡ */
 	    switch (c) {
-		case 'l':				/* ¤Ñ¤Ó */
+		case 'l':				/* ã…¡ã…£ */
 		    return 28;
 	    }
 	    break;
@@ -408,27 +392,28 @@ comvow2(v, c)
 }
 
     int
-hangul_input_state_get()
+hangul_input_state_get(void)
 {
     return hangul_input_state;
 }
 
     void
-hangul_input_state_set(state)
-    int state;
+hangul_input_state_set(int state)
 {
     hangul_input_state = state;
     hangul_input_clear();
 }
 
+#if (!defined(FEAT_XIM) && !defined(FEAT_GUI_GTK)) || defined(PROTO)
     int
-im_get_status()
+im_get_status(void)
 {
     return hangul_input_state_get();
 }
+#endif
 
     void
-hangul_input_state_toggle()
+hangul_input_state_toggle(void)
 {
     if (hangul_input_state_get())
     {
@@ -452,9 +437,7 @@ hangul_input_state_toggle()
 }
 
     static int
-hangul_automata2(buf, c)
-    char_u  *buf;
-    int_u   *c;
+hangul_automata2(char_u *buf, int_u *c)
 {
     int t,t2;
 
@@ -482,7 +465,7 @@ hangul_automata2(buf, c)
     t = *c;
     switch (kind_table_for_2(t))
     {
-	case 0: /* ÀÚÀ½ (consonant) */
+	case 0: /* ìžìŒ (consonant) */
 	    if (f == F_NULL)
 	    {
 		if (m != M_NULL)
@@ -498,7 +481,7 @@ hangul_automata2(buf, c)
 	    if (l == L_NULL)
 	    {
 		t2 = lcon(t);
-		if (!t2)    /* ¹ÞÄ§À¸·Î ÀûÇÕÇÏÁö¾Ê´Ù (cannot use it as a prop) */
+		if (!t2)    /* ë°›ì¹¨ìœ¼ë¡œ ì í•©í•˜ì§€ì•Šë‹¤ (cannot use it as a prop) */
 		{
 		    hangul_input_clear();
 		    last_ll = last_l = -1;
@@ -515,7 +498,7 @@ hangul_automata2(buf, c)
 		    push(buf);
 		    return AUTOMATA_CORRECT;
 		}
-		else	/* ¹ÞÄ§À¸·Î ¾²·ÁÇÏ¿´À¸³ª code¿¡ ¾ø´Â ±ÛÀÚÀÌ´Ù */
+		else	/* ë°›ì¹¨ìœ¼ë¡œ ì“°ë ¤í•˜ì˜€ìœ¼ë‚˜ codeì— ì—†ëŠ” ê¸€ìžì´ë‹¤ */
 		{	/* cannot find such a prop in the code table */
 		    last_ll = last_l = -1;
 		    hangul_input_clear();
@@ -525,7 +508,7 @@ hangul_automata2(buf, c)
 		    return AUTOMATA_NEW;
 		}
 	    }
-	    /* ÃÊ Áß Á¾¼ºÀÌ ¸ðµÎ °®Ãß¾îÁ® ÀÖ´Ù
+	    /* ì´ˆ ì¤‘ ì¢…ì„±ì´ ëª¨ë‘ ê°–ì¶”ì–´ì ¸ ìžˆë‹¤
 	     * I have all the 'initial sound' and 'medial vowel' and 'final
 	     * consonant'.
 	     */
@@ -590,7 +573,7 @@ hangul_automata2(buf, c)
 	    sp = 0;
 	    if (last_l == -1)
 	    {
-		/* À½... ÀÌ°Ô ÇÊ¿äÇÏ³ª?? (Hmm... Is it needed?) */
+		/* ìŒ... ì´ê²Œ í•„ìš”í•˜ë‚˜?? (Hmm... Is it needed?) */
 		convert_ks_to_3(buf, &f, &m, &l);
 	    }
 	    else
@@ -607,16 +590,14 @@ hangul_automata2(buf, c)
 	    return AUTOMATA_CORRECT_NEW;
 
 	default:
-	    EMSG(_("E256: Hangul automata ERROR"));
+	    iemsg(_("E256: Hangul automata ERROR"));
 	    break;
     }
     return AUTOMATA_ERROR; /* RrEeAaLlLlYy EeRrRrOoRr */
 }
 
     static int
-hangul_automata3(buf, c)
-    char_u  *buf;
-    int_u   *c;
+hangul_automata3(char_u *buf, int_u *c)
 {
     int t, t2;
 
@@ -626,10 +607,10 @@ hangul_automata3(buf, c)
 	t = value_table_for_3[*c];
 	switch (kind_table_for_3[*c])
 	{
-	    case F_F: /* ÃÊ¼º¹®ÀÚ (char. of an initial sound) */
+	    case F_F: /* ì´ˆì„±ë¬¸ìž (char. of an initial sound) */
 		if (m != M_NULL || sp == 0)
 		{
-		    /* ÃÊ¼ºÀÌ ºñ¾ú°Å³ª ´ÙÀ½ ±ÛÀÚ ¸ðÀ¸±â ½ÃÀÛ
+		    /* ì´ˆì„±ì´ ë¹„ì—ˆê±°ë‚˜ ë‹¤ìŒ ê¸€ìž ëª¨ìœ¼ê¸° ì‹œìž‘
 		     * Empty 'initial sound', so starting automata.
 		     */
 		    hangul_input_clear();
@@ -638,7 +619,7 @@ hangul_automata3(buf, c)
 		    push(buf);
 		    return AUTOMATA_NEW;
 		}
-		if ((t2 = comfcon3(f,t)) != 0)	/* º¹ÀÚÀ½ (double? consonant) */
+		if ((t2 = comfcon3(f,t)) != 0)	/* ë³µìžìŒ (double? consonant) */
 		{
 		    f=t2;
 		    convert_3_to_code(f, M_NULL, L_NULL, buf);
@@ -647,7 +628,7 @@ hangul_automata3(buf, c)
 		}
 		return AUTOMATA_ERROR;
 
-	    case F_M:	/* ¸ðÀ½ (vowel) */
+	    case F_M:	/* ëª¨ìŒ (vowel) */
 		if (m == M_NULL)
 		{
 		    if (2 != convert_3_to_code(f, t, L_NULL,buf))
@@ -660,7 +641,7 @@ hangul_automata3(buf, c)
 		    else
 			return AUTOMATA_CORRECT;
 		}
-		if ((t2 = comvow3(m,t)))    /* º¹¸ðÀ½ (a diphthong) */
+		if ((t2 = comvow3(m,t)))    /* ë³µëª¨ìŒ (a diphthong) */
 		{
 		    m = t2;
 		    convert_3_to_code(f, m, L_NULL, buf);
@@ -669,9 +650,9 @@ hangul_automata3(buf, c)
 		}
 		return AUTOMATA_ERROR;
 
-	    case F_L:	/* ¹ÞÄ§ (prop?) */
+	    case F_L:	/* ë°›ì¹¨ (prop?) */
 		if (m == M_NULL)
-		    return AUTOMATA_ERROR; /* Áß¼º¾ø´Â Á¾¼º */
+		    return AUTOMATA_ERROR; /* ì¤‘ì„±ì—†ëŠ” ì¢…ì„± */
 		if (l == L_NULL)
 		{
 		    if (2 != convert_3_to_code(f, m, t, buf))
@@ -683,7 +664,7 @@ hangul_automata3(buf, c)
 		    l = t;
 		    return AUTOMATA_CORRECT;
 		}
-		if ((t2 = comcon3(l,t)) != 0)	/* º¹ ¹ÞÄ§ ?? (double prop?) */
+		if ((t2 = comcon3(l,t)) != 0)	/* ë³µ ë°›ì¹¨ ?? (double prop?) */
 		{
 		    if (2 != convert_3_to_code(f, m, t2, buf))
 			return AUTOMATA_ERROR;
@@ -694,7 +675,7 @@ hangul_automata3(buf, c)
 		}
 		return AUTOMATA_ERROR;
 
-	    case F_A: /* Æ¯¼ö¹®ÀÚ³ª ¼ýÀÚ (special char. or number) */
+	    case F_A: /* íŠ¹ìˆ˜ë¬¸ìžë‚˜ ìˆ«ìž (special char. or number) */
 		hangul_input_clear();
 		*c = t;
 		return AUTOMATA_SPECIAL;
@@ -725,7 +706,7 @@ hangul_automata3(buf, c)
 }
 
     void
-hangul_keyboard_set()
+hangul_keyboard_set(void)
 {
     int	    keyboard;
     char    *s;
@@ -746,9 +727,7 @@ hangul_keyboard_set()
 }
 
     int
-hangul_input_process(s, len)
-    char_u  *s;
-    int	    len;
+hangul_input_process(char_u *s, int len)
 {
     int n;
     unsigned int c;
@@ -830,8 +809,8 @@ hangul_input_process(s, len)
     return len;
 }
 
-    void
-hangul_input_clear()
+    static void
+hangul_input_clear(void)
 {
     sp = 0;
     f = F_NULL;
@@ -1458,56 +1437,56 @@ static const unsigned short ks_table2[][4] =
     {0xa4bd, 19,  2,  1},  {0xa4be, 20,  2,  1},
 };
 
-/* Á¶ÇÕÇü ÃÊ¼º - ¿Ï¼ºÇü ³¹ÀÚ º¯È¯
+/* ì¡°í•©í˜• ì´ˆì„± - ì™„ì„±í˜• ë‚±ìž ë³€í™˜
  * conversion: initial sound of compound type - ??? of completion type
  */
 
 static const char_u johab_fcon_to_wan[] =
 {
     0,
-    0xd4, 0xa1, 0xa2, 0xa4, 0xa7,    /* (Ã¤¿ò),¤¡,¤¢,¤¤,¤§ */
-    0xa8, 0xa9, 0xb1, 0xb2, 0xb3,    /* ¤¨,¤©,¤±,¤²,¤³ */
-    0xb5, 0xb6, 0xb7, 0xb8, 0xb9,    /* ¤µ,¤¶,¤·,¤¸,¤¹ */
-    0xba, 0xbb, 0xbc, 0xbd, 0xbe     /* ¤º,¤»,¤¼,¤½,¤¾ */
+    0xd4, 0xa1, 0xa2, 0xa4, 0xa7,    /* (ì±„ì›€),ã„±,ã„²,ã„´,ã„· */
+    0xa8, 0xa9, 0xb1, 0xb2, 0xb3,    /* ã„¸,ã„¹,ã…,ã…‚,ã…ƒ */
+    0xb5, 0xb6, 0xb7, 0xb8, 0xb9,    /* ã……,ã…†,ã…‡,ã…ˆ,ã…‰ */
+    0xba, 0xbb, 0xbc, 0xbd, 0xbe     /* ã…Š,ã…‹,ã…Œ,ã…,ã…Ž */
 };
 
-/* Á¶ÇÕÇü Áß¼º -> ¿Ï¼ºÇü ³¹ÀÚ º¯È¯
+/* ì¡°í•©í˜• ì¤‘ì„± -> ì™„ì„±í˜• ë‚±ìž ë³€í™˜
  * conversion: medial vowel of compound type - ??? of completion type
  */
 
 static const char_u johab_vow_to_wan[] =
 {
     0, 0,
-    0xd4, 0xbf, 0xc0, 0xc1, 0xc2, 0xc3,	/* (Ã¤¿ò),¤¿,¤À,¤Á,¤Â,¤Ã */
+    0xd4, 0xbf, 0xc0, 0xc1, 0xc2, 0xc3,	/* (ì±„ì›€),ã…,ã…,ã…‘,ã…’,ã…“ */
     0, 0,
-    0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, /* ¤Ä,¤Å,¤Æ,¤Ç,¤Ç¤¿,¤Ç¤À */
+    0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, /* ã…”,ã…•,ã…–,ã…—,ã…—ã…,ã…—ã… */
     0, 0,
-    0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, /* ¤Ç¤Ó,¤Ë,¤Ì,¤Ì¤Ã,¤Ì¤Ä,¤Ì¤Ó */
+    0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, /* ã…—ã…£,ã…›,ã…œ,ã…œã…“,ã…œã…”,ã…œã…£ */
     0, 0,
-    0xd0, 0xd1, 0xd2, 0xd3	     /* ¤Ð,¤Ñ,¤Ñ¤Ó,¤Ó */
+    0xd0, 0xd1, 0xd2, 0xd3	     /* ã… ,ã…¡,ã…¡ã…£,ã…£ */
 };
 
-/* Á¶ÇÕÇü Á¾¼º -> ¿Ï¼ºÇü ³¹ÀÚ º¯È¯
+/* ì¡°í•©í˜• ì¢…ì„± -> ì™„ì„±í˜• ë‚±ìž ë³€í™˜
  * conversion: final consonant of compound type - ??? of completion type
  */
 
 static const char_u johab_lcon_to_wan[] =
 {
     0,
-    0xd4, 0xa1, 0xa2, 0xa3, 0xa4,    /* (Ã¤¿ò), ¤¡, ¤¢, ¤¡¤µ, ¤¤ */
-    0xa5, 0xa6, 0xa7, 0xa9, 0xaa,    /* ¤¤¤¸, ¤¤¤¾, ¤§, ¤©, ¤©¤¡ */
-    0xab, 0xac, 0xad, 0xae, 0xaf,    /* ¤©¤±, ¤©¤², ¤©¤µ, ¤©¤¼, ¤©¤½ */
-    0xb0, 0xb1, 0,    0xb2, 0xb4,    /* ¤©¤¾, ¤±, 0, ¤², ¤²¤µ */
-    0xb5, 0xb6, 0xb7, 0xb8, 0xba,    /* ¤µ, ¤¶, ¤·, ¤¸, ¤º */
-    0xbb, 0xbc, 0xbd, 0xbe	     /* ¤», ¤¼, ¤½, ¤¾ */
+    0xd4, 0xa1, 0xa2, 0xa3, 0xa4,    /* (ì±„ì›€), ã„±, ã„², ã„±ã……, ã„´ */
+    0xa5, 0xa6, 0xa7, 0xa9, 0xaa,    /* ã„´ã…ˆ, ã„´ã…Ž, ã„·, ã„¹, ã„¹ã„± */
+    0xab, 0xac, 0xad, 0xae, 0xaf,    /* ã„¹ã…, ã„¹ã…‚, ã„¹ã……, ã„¹ã…Œ, ã„¹ã… */
+    0xb0, 0xb1, 0,    0xb2, 0xb4,    /* ã„¹ã…Ž, ã…, 0, ã…‚, ã…‚ã…… */
+    0xb5, 0xb6, 0xb7, 0xb8, 0xba,    /* ã……, ã…†, ã…‡, ã…ˆ, ã…Š */
+    0xbb, 0xbc, 0xbd, 0xbe	     /* ã…‹, ã…Œ, ã…, ã…Ž */
 };
 
     static void
-convert_ks_to_3(src, fp, mp, lp)
-    const char_u    *src;
-    int		    *fp;
-    int		    *mp;
-    int		    *lp;
+convert_ks_to_3(
+    const char_u    *src,
+    int		    *fp,
+    int		    *mp,
+    int		    *lp)
 {
     int h = *src;
     int low = *(src + 1);
@@ -1515,7 +1494,7 @@ convert_ks_to_3(src, fp, mp, lp)
     int i;
 
     if ((i = han_index(h, low)) >= 0
-	&& i < sizeof(ks_table1)/sizeof(ks_table1[0]))
+	&& i < (int)(sizeof(ks_table1)/sizeof(ks_table1[0])))
     {
 	*fp = ks_table1[i][0];
 	*mp = ks_table1[i][1];
@@ -1532,18 +1511,18 @@ convert_ks_to_3(src, fp, mp, lp)
 		*lp = ks_table2[i][3];
 		return;
 	    }
-	*fp = 0xff;	/* ±×·¡ÇÈ ÄÚµå (graphic code) */
+	*fp = 0xff;	/* ê·¸ëž˜í”½ ì½”ë“œ (graphic code) */
 	*mp = h;
 	*lp = low;
     }
 }
 
     static int
-convert_3_to_ks(fv, mv, lv, des)
-    int	    fv;
-    int	    mv;
-    int	    lv;
-    char_u  *des;
+convert_3_to_ks(
+    int	    fv,
+    int	    mv,
+    int	    lv,
+    char_u  *des)
 {
     char_u key[3];
     register int hi, lo, mi = 0, result, found;
@@ -1605,17 +1584,60 @@ convert_3_to_ks(fv, mv, lv, des)
 	return 2;		/* found */
     }
 
-    /* ¿Ï¼ºÇü Ç¥¿¡ ¾ø´Ù. ``KS C 5601 - 1992 Á¤º¸ ±³È¯¿ë ºÎÈ£ ÇØ¼³''
-     * 3.3 Àý¿¡ ¼³¸íµÈ ¹æ¹ýÀ¸·Î encoding ÇÑ´Ù.
+    /* ì™„ì„±í˜• í‘œì— ì—†ë‹¤. ``KS C 5601 - 1992 ì •ë³´ êµí™˜ìš© ë¶€í˜¸ í•´ì„¤''
+     * 3.3 ì ˆì— ì„¤ëª…ëœ ë°©ë²•ìœ¼ë¡œ encoding í•œë‹¤.
      */
 
-    *des++ = 0xa4;		     /* Ã¤¿ò */
+    *des++ = 0xa4;		     /* ì±„ì›€ */
     *des++ = 0xd4;
-    *des++ = 0xa4;		     /* ³¹ÀÚ´Â ¸ðµÎ a4 Çà¿¡ ÀÖ´Ù. */
+    *des++ = 0xa4;		     /* ë‚±ìžëŠ” ëª¨ë‘ a4 í–‰ì— ìžˆë‹¤. */
     *des++ = johab_fcon_to_wan[fv];
     *des++ = 0xa4;
     *des++ = johab_vow_to_wan[mv];
     *des++ = 0xa4;
     *des++ = johab_lcon_to_wan[lv];
     return 8;
+}
+
+    char_u *
+hangul_string_convert(char_u *buf, int *p_len)
+{
+    char_u *tmpbuf = NULL;
+    vimconv_T vc;
+
+    if (enc_utf8)
+    {
+	vc.vc_type = CONV_NONE;
+	if (convert_setup(&vc, (char_u *)"euc-kr", p_enc) == OK)
+	{
+	    tmpbuf = string_convert(&vc, buf, p_len);
+	    convert_setup(&vc, NULL, NULL);
+	}
+    }
+
+    return tmpbuf;
+}
+
+    char_u *
+hangul_composing_buffer_get(int *p_len)
+{
+    char_u *tmpbuf = NULL;
+
+    if (composing_hangul)
+    {
+	int len = 2;
+
+	tmpbuf = hangul_string_convert(composing_hangul_buffer, &len);
+	if (tmpbuf != NULL)
+	{
+	    *p_len = len;
+	}
+	else
+	{
+	    tmpbuf = vim_strnsave(composing_hangul_buffer, 2);
+	    *p_len = 2;
+	}
+    }
+
+    return tmpbuf;
 }

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -24,9 +24,6 @@
 #define NUL		'\000'
 #define BELL		'\007'
 #define BS		'\010'
-#ifdef TAB
-#undef TAB
-#endif
 #define TAB		'\011'
 #define NL		'\012'
 #define NL_STR		(char_u *)"\012"

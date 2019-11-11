@@ -2,7 +2,7 @@
 " Header: "{{{
 " Maintainer:	Bram Moolenaar
 " Original Author: Andy Wokula <anwoku@yahoo.de>
-" Last Change:	2015 Sep 25
+" Last Change:	2019 Mar 20
 " Version:	1.0
 " Description:	HTML indent script with cached state for faster indenting on a
 "		range of lines.
@@ -25,27 +25,22 @@
 if exists("b:did_indent") "{{{
   finish
 endif
+
+" Load the Javascript indent script first, it defines GetJavascriptIndent().
+" Undo the rest.
+" Load base python indent.
+if !exists('*GetJavascriptIndent')
+  runtime! indent/javascript.vim
+endif
 let b:did_indent = 1
 
 setlocal indentexpr=HtmlIndent()
 setlocal indentkeys=o,O,<Return>,<>>,{,},!^F
 
-" "j1" is included to make cindent() work better with Javascript.
-setlocal cino=j1
-" "J1" should be included, but it doen't work properly before 7.4.355.
-if has("patch-7.4.355")
-  setlocal cino+=J1
-endif
-" Before patch 7.4.355 indenting after "(function() {" does not work well, add
-" )2 to limit paren search.
-if !has("patch-7.4.355")
-  setlocal cino+=)2
-endif
-
 " Needed for % to work when finding start/end of a tag.
 setlocal matchpairs+=<:>
 
-let b:undo_indent = "setlocal inde< indk< cino<"
+let b:undo_indent = "setlocal inde< indk<"
 
 " b:hi_indent keeps state to speed up indenting consecutive lines.
 let b:hi_indent = {"lnum": -1}
@@ -56,19 +51,13 @@ if exists("*HtmlIndent") && !exists('g:force_reload_html')
   finish
 endif
 
-" shiftwidth() exists since patch 7.3.694
-if exists('*shiftwidth')
-  let s:ShiftWidth = function('shiftwidth')
-else
-  func! s:ShiftWidth()
-    return &shiftwidth
-  endfunc
-endif
-
 " Allow for line continuation below.
 let s:cpo_save = &cpo
 set cpo-=C
 "}}}
+
+" Pattern to match the name of a tag, including custom elements.
+let s:tagname = '\w\+\(-\w\+\)*'
 
 " Check and process settings from b:html_indent and g:html_indent... variables.
 " Prefer using buffer-local settings over global settings, so that there can
@@ -128,7 +117,7 @@ func! HtmlIndent_CheckUserSettings()
 
   let indone = {"zero": 0
               \,"auto": "indent(prevnonblank(v:lnum-1))"
-              \,"inc": "b:hi_indent.blocktagind + s:ShiftWidth()"}
+              \,"inc": "b:hi_indent.blocktagind + shiftwidth()"}
 
   let script1 = ''
   if exists("b:html_indent_script1")
@@ -228,6 +217,8 @@ endfunc "}}}
 " Self-closing tags and tags that are sometimes {{{
 " self-closing (e.g., <p>) are not here (when encountering </p> we can find
 " the matching <p>, but not the other way around).
+" Known self-closing tags: " 'p', 'img', 'source', 'area', 'keygen', 'track',
+" 'wbr'.
 " Old HTML tags:
 call s:AddITags(s:indent_tags, [
     \ 'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big',
@@ -240,13 +231,13 @@ call s:AddITags(s:indent_tags, [
     \ 'sup', 'table', 'textarea', 'title', 'tt', 'u', 'ul', 'var', 'th', 'td',
     \ 'tr', 'tbody', 'tfoot', 'thead'])
 
-" Tags added 2011 Sep 09 (especially HTML5 tags):
+" New HTML5 elements:
 call s:AddITags(s:indent_tags, [
-    \ 'area', 'article', 'aside', 'audio', 'bdi', 'canvas',
-    \ 'command', 'datalist', 'details', 'embed', 'figure', 'footer',
-    \ 'header', 'group', 'keygen', 'mark', 'math', 'meter', 'nav', 'output',
-    \ 'progress', 'ruby', 'section', 'svg', 'texture', 'time', 'video',
-    \ 'wbr', 'text'])
+    \ 'article', 'aside', 'audio', 'bdi', 'canvas', 'command', 'data',
+    \ 'datalist', 'details', 'dialog', 'embed', 'figcaption', 'figure',
+    \ 'footer', 'header', 'hgroup', 'main', 'mark', 'meter', 'nav', 'output',
+    \ 'picture', 'progress', 'rp', 'rt', 'ruby', 'section', 'summary',
+    \ 'svg', 'time', 'video'])
 
 " Tags added for web components:
 call s:AddITags(s:indent_tags, [
@@ -294,7 +285,7 @@ func! s:CountITags(text)
   let s:nextrel = 0  " relative indent steps for next line [unit &sw]:
   let s:block = 0		" assume starting outside of a block
   let s:countonly = 1	" don't change state
-  call substitute(a:text, '<\zs/\=\w\+\(-\w\+\)*\>\|<!--\[\|\[endif\]-->\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
+  call substitute(a:text, '<\zs/\=' . s:tagname . '\>\|<!--\[\|\[endif\]-->\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
   let s:countonly = 0
 endfunc "}}}
 
@@ -306,7 +297,7 @@ func! s:CountTagsAndState(text)
   let s:nextrel = 0  " relative indent steps for next line [unit &sw]:
 
   let s:block = b:hi_newstate.block
-  let tmp = substitute(a:text, '<\zs/\=\w\+\(-\w\+\)*\>\|<!--\[\|\[endif\]-->\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
+  let tmp = substitute(a:text, '<\zs/\=' . s:tagname . '\>\|<!--\[\|\[endif\]-->\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
   if s:block == 3
     let b:hi_newstate.scripttype = s:GetScriptType(matchstr(tmp, '\C.*<SCRIPT\>\zs[^>]*'))
   endif
@@ -363,7 +354,7 @@ func! s:CheckBlockTag(blocktag, ind)
     endif
     let b:hi_newstate.blocklnr = v:lnum
     " save allover indent for the endtag
-    let b:hi_newstate.blocktagind = b:hi_indent.baseindent + (s:nextrel + s:curind) * s:ShiftWidth()
+    let b:hi_newstate.blocktagind = b:hi_indent.baseindent + (s:nextrel + s:curind) * shiftwidth()
     if a:ind == 3
       return "SCRIPT"    " all except this must be lowercase
       " line is to be checked again for the type attribute
@@ -485,7 +476,7 @@ func! s:FreshState(lnum)
       let state.blocklnr = stopline
       " check preceding tags in the line:
       call s:CountITags(tagline[: stopcol-2])
-      let state.blocktagind = indent(stopline) + (s:curind + s:nextrel) * s:ShiftWidth()
+      let state.blocktagind = indent(stopline) + (s:curind + s:nextrel) * shiftwidth()
       return state
     elseif stopline == state.lnum
       " handle special case: previous line (= state.lnum) contains a
@@ -495,7 +486,7 @@ func! s:FreshState(lnum)
       if !swendtag
         let [bline, bcol] = searchpos('<'.blocktag[1:].'\>', "bnW")
         call s:CountITags(tolower(getline(bline)[: bcol-2]))
-        let state.baseindent = indent(bline) + (s:curind + s:nextrel) * s:ShiftWidth()
+        let state.baseindent = indent(bline) + (s:curind + s:nextrel) * shiftwidth()
         return state
       endif
     endif
@@ -516,7 +507,7 @@ func! s:FreshState(lnum)
     if found == 2
       let state.baseindent = b:hi_indent.baseindent
     endif
-    let state.blocktagind = indent(comlnum) + (s:curind + s:nextrel) * s:ShiftWidth()
+    let state.blocktagind = indent(comlnum) + (s:curind + s:nextrel) * shiftwidth()
     return state
   endif
 
@@ -535,7 +526,7 @@ func! s:FreshState(lnum)
       let text = tolower(getline(comlnum)[: comcol-2])
     endif
     call s:CountITags(text)
-    let state.baseindent = indent(comlnum) + (s:curind + s:nextrel) * s:ShiftWidth()
+    let state.baseindent = indent(comlnum) + (s:curind + s:nextrel) * shiftwidth()
     " TODO check tags that follow "-->"
     return state
   endif
@@ -544,7 +535,7 @@ func! s:FreshState(lnum)
   let swendtag = match(text, '^\s*</') >= 0
 
   " If previous line ended in a closing tag, line up with the opening tag.
-  if !swendtag && text =~ '</\w\+\s*>\s*$'
+  if !swendtag && text =~ '</' . s:tagname . '\s*>\s*$'
     call cursor(state.lnum, 99999)
     normal! F<
     let start_lnum = HtmlIndent_FindStartTag()
@@ -555,9 +546,9 @@ func! s:FreshState(lnum)
         let text = getline(start_lnum)
         let swendtag = match(text, '^\s*</') >= 0
         call s:CountITags(text[: col('.') - 2])
-        let state.baseindent += s:nextrel * s:ShiftWidth()
+        let state.baseindent += s:nextrel * shiftwidth()
         if !swendtag
-          let state.baseindent += s:curind * s:ShiftWidth()
+          let state.baseindent += s:curind * shiftwidth()
         endif
       endif
       return state
@@ -570,9 +561,9 @@ func! s:FreshState(lnum)
   let text = getline(state.lnum)
   let swendtag = match(text, '^\s*</') >= 0
   call s:CountITags(tolower(text))
-  let state.baseindent = indent(state.lnum) + s:nextrel * s:ShiftWidth()
+  let state.baseindent = indent(state.lnum) + s:nextrel * shiftwidth()
   if !swendtag
-    let state.baseindent += s:curind * s:ShiftWidth()
+    let state.baseindent += s:curind * shiftwidth()
   endif
   return state
 endfunc "}}}
@@ -596,7 +587,7 @@ func! s:Alien3()
     return eval(b:hi_js1indent)
   endif
   if b:hi_indent.scripttype == "javascript"
-    return cindent(v:lnum)
+    return GetJavascriptIndent()
   else
     return -1
   endif
@@ -635,7 +626,7 @@ func! s:CSSIndent()
     return eval(b:hi_css1indent)
   endif
 
-  " If the current line starts with "}" align with it's match.
+  " If the current line starts with "}" align with its match.
   if curtext =~ '^\s*}'
     call cursor(v:lnum, 1)
     try
@@ -651,7 +642,7 @@ func! s:CSSIndent()
 
   " add indent after {
   let brace_counts = HtmlIndent_CountBraces(prev_lnum)
-  let extra = brace_counts.c_open * s:ShiftWidth()
+  let extra = brace_counts.c_open * shiftwidth()
 
   let prev_text = getline(prev_lnum)
   let below_end_brace = prev_text =~ '}\s*$'
@@ -668,22 +659,22 @@ func! s:CSSIndent()
       " if the current line is not a comment or starts with @ (used by template
       " systems) reduce indent if previous line is a continuation line
       if !prev_hasfield && !prev_special
-        let extra = -s:ShiftWidth()
+        let extra = -shiftwidth()
       endif
     else
       let cur_hasfield = curtext =~ '^\s*[a-zA-Z0-9-]\+:'
       let prev_unfinished = s:CssUnfinished(prev_text)
-      if !cur_hasfield && (prev_hasfield || prev_unfinished)
+      if prev_unfinished
         " Continuation line has extra indent if the previous line was not a
         " continuation line.
-        let extra = s:ShiftWidth()
+        let extra = shiftwidth()
         " Align with @if
         if prev_text =~ '^\s*@if '
           let extra = 4
         endif
       elseif cur_hasfield && !prev_hasfield && !prev_special
         " less indent below a continuation line
-        let extra = -s:ShiftWidth()
+        let extra = -shiftwidth()
       endif
     endif
   endif
@@ -704,10 +695,10 @@ func! s:CSSIndent()
     if special
       " do not reduce indent below @{ ... }
       if extra < 0
-        let extra += s:ShiftWidth()
+        let extra += shiftwidth()
       endif
     else
-      let extra -= (brace_counts.c_close - (prev_text =~ '^\s*}')) * s:ShiftWidth()
+      let extra -= (brace_counts.c_close - (prev_text =~ '^\s*}')) * shiftwidth()
     endif
   endif
 
@@ -715,10 +706,10 @@ func! s:CSSIndent()
   if extra == 0
     if brace_counts.p_open > brace_counts.p_close
       " previous line has more ( than ): add a shiftwidth
-      let extra = s:ShiftWidth()
+      let extra = shiftwidth()
     elseif brace_counts.p_open < brace_counts.p_close
       " previous line has more ) than (: subtract a shiftwidth
-      let extra = -s:ShiftWidth()
+      let extra = -shiftwidth()
     endif
   endif
 
@@ -726,9 +717,13 @@ func! s:CSSIndent()
 endfunc "}}}
 
 " Inside <style>: Whether a line is unfinished.
+" 	tag:
+" 	tag: blah
+" 	tag: blah &&
+" 	tag: blah ||
 func! s:CssUnfinished(text)
   "{{{
-  return a:text =~ '\s\(||\|&&\|:\)\s*$'
+  return a:text =~ '\(||\|&&\|:\|\k\)\s*$'
 endfunc "}}}
 
 " Search back for the first unfinished line above "lnum".
@@ -749,7 +744,7 @@ func! s:CssPrevNonComment(lnum, stopline)
   while 1
     let ccol = match(getline(lnum), '\*/')
     if ccol < 0
-      " No comment end thus its something else.
+      " No comment end thus it's something else.
       return lnum
     endif
     call cursor(lnum, ccol + 1)
@@ -821,7 +816,7 @@ func! s:Alien5()
   let idx = match(prevtext, '^\s*\zs<!--')
   if idx >= 0
     " just below comment start, add a shiftwidth
-    return idx + s:ShiftWidth()
+    return idx + shiftwidth()
   endif
 
   " Some files add 4 spaces just below a TODO line.  It's difficult to detect
@@ -842,7 +837,7 @@ func! s:Alien6()
       return indent(lnum)
     endif
   endif
-  return b:hi_indent.baseindent + s:ShiftWidth()
+  return b:hi_indent.baseindent + shiftwidth()
 endfunc "}}}
 
 " When the "lnum" line ends in ">" find the line containing the matching "<".
@@ -874,7 +869,7 @@ func! HtmlIndent_FindStartTag()
   " The cursor must be on or before a closing tag.
   " If found, positions the cursor at the match and returns the line number.
   " Otherwise returns 0.
-  let tagname = matchstr(getline('.')[col('.') - 1:], '</\zs\w\+\ze')
+  let tagname = matchstr(getline('.')[col('.') - 1:], '</\zs' . s:tagname . '\ze')
   let start_lnum = searchpair('<' . tagname . '\>', '', '</' . tagname . '\>', 'bW')
   if start_lnum > 0
     return start_lnum
@@ -890,7 +885,7 @@ func! HtmlIndent_FindTagEnd()
   " a self-closing tag, to the matching ">".
   " Limited to look up to b:html_indent_line_limit lines away.
   let text = getline('.')
-  let tagname = matchstr(text, '\w\+\|!--', col('.'))
+  let tagname = matchstr(text, s:tagname . '\|!--', col('.'))
   if tagname == '!--'
     call search('--\zs>')
   elseif s:get_tag('/' . tagname) != 0
@@ -907,11 +902,18 @@ func! s:InsideTag(foundHtmlString)
   "{{{
   if a:foundHtmlString
     " Inside an attribute string.
-    " Align with the previous line or use an external function.
+    " Align with the opening quote or use an external function.
     let lnum = v:lnum - 1
     if lnum > 1
       if exists('b:html_indent_tag_string_func')
         return b:html_indent_tag_string_func(lnum)
+      endif
+      " If there is a double quote in the previous line, indent with the
+      " character after it.
+      if getline(lnum) =~ '"'
+	call cursor(lnum, 0)
+	normal f"
+	return virtcol('.')
       endif
       return indent(lnum)
     endif
@@ -935,9 +937,22 @@ func! s:InsideTag(foundHtmlString)
     else
       let idx = match(text, '\s\zs[_a-zA-Z0-9-]\+="')
     endif
+    if idx == -1
+      " try <tag attr
+      let idx = match(text, '<' . s:tagname . '\s\+\zs\w')
+    endif
+    if idx == -1
+      " after just "<tag" indent one level more
+      let idx = match(text, '<' . s:tagname . '$')
+      if idx >= 0
+	call cursor(lnum, idx)
+	return virtcol('.') + shiftwidth()
+      endif
+    endif
     if idx > 0
-      " Found the attribute.  TODO: assumes spaces, no Tabs.
-      return idx
+      " Found the attribute to align with.
+      call cursor(lnum, idx)
+      return virtcol('.')
     endif
   endwhile
   return -1
@@ -952,7 +967,7 @@ func! HtmlIndent()
   endif
 
   let curtext = tolower(getline(v:lnum))
-  let indentunit = s:ShiftWidth()
+  let indentunit = shiftwidth()
 
   let b:hi_newstate = {}
   let b:hi_newstate.lnum = v:lnum
@@ -1035,9 +1050,9 @@ func! HtmlIndent()
         if col('.') > 2
           let swendtag = match(text, '^\s*</') >= 0
           call s:CountITags(text[: col('.') - 2])
-          let indent += s:nextrel * s:ShiftWidth()
+          let indent += s:nextrel * shiftwidth()
           if !swendtag
-            let indent += s:curind * s:ShiftWidth()
+            let indent += s:curind * shiftwidth()
           endif
         endif
       else

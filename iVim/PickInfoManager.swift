@@ -12,54 +12,31 @@ let gPIM = PickInfoManager.shared
 
 final class PickInfoManager: NSObject {
     @objc static let shared = PickInfoManager()
-    static let serialQ = DispatchQueue(label: "com.terrychou.ivim.pickinfomanager",
-                                       qos: .background)
-    private override init() {
-        super.init()
-        self.setup()
-    }
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+    private override init() {}
     
     private var localTable = [String: PickInfo]()
     private var table = [URL: PickInfo]()
 }
 
 extension PickInfoManager {
-    private func setup() {
-        self.registerNotifications()
-    }
-    
-    private func registerNotifications() {
-        let nfc = NotificationCenter.default
-        nfc.addObserver(self,
-                        selector: #selector(self.didBecomeActive),
-                        name: .UIApplicationDidBecomeActive,
-                        object: nil)
-        nfc.addObserver(self,
-                        selector: #selector(self.willResignActive),
-                        name: .UIApplicationWillResignActive,
-                        object: nil)
-    }
-}
-
-extension PickInfoManager {
-    @objc func didBecomeActive() {
-        NSLog("become active")
+    func willEnterForeground() {
+        // will NOT be called when app launches
+        NSLog("enter foreground")
         self.table.values.forEach {
             NSFileCoordinator.addFilePresenter($0)
+            $0.startWatchingMirror()
             self.updateInfo($0)
         }
     }
     
-    @objc func willResignActive() {
-        NSLog("resign active")
+    func didEnterBackground() {
+        NSLog("enter background")
         self.wrapUp()
     }
     
     @objc func wrapUp() {
         self.table.values.forEach {
+            $0.stopWatchingMirror()
             NSFileCoordinator.removeFilePresenter($0)
         }
     }
@@ -68,16 +45,49 @@ extension PickInfoManager {
 private let mirrorDirectoryPath = FileManager.default.mirrorDirectoryURL.path
 
 extension PickInfoManager {
+    private func addPickInfo(_ pi: PickInfo) {
+        self.localTable[pi.ticket] = pi
+        self.table[pi.origin] = pi
+        NSFileCoordinator.addFilePresenter(pi)
+    }
+    
     func addPickInfo(for url: URL, task: MirrorReadyTask?) {
         if let existing = self.table[url] {
             existing.addTask(task)
         } else {
-            let pi = PickInfo(origin: url)
-            pi.addTask(task)
-            self.localTable[pi.ticket] = pi
-            self.table[url] = pi
-            NSFileCoordinator.addFilePresenter(pi)
+            let pi = PickInfo(origin: url, task: task)
+            self.addPickInfo(pi)
         }
+    }
+    
+    private func ticket(for path: String) -> String? {
+        guard let subpath = FileManager.default.mirrorSubpath(for: path)
+            else { return nil }
+        var result = ""
+        for c in subpath {
+            if c == "/" { break }
+            result.append(c)
+        }
+
+        return result
+    }
+    
+    @objc func addPickInfo(at path: String, update: Bool) {
+        guard let ticket = self.ticket(for: path),
+            self.localTable[ticket] == nil,
+            let pi = PickInfo(ticket: ticket) else {
+                return
+        }
+        self.addPickInfo(pi)
+        if update {
+            pi.updateMirror {
+                NSLog("updated mirror \(ticket)")
+            }
+        }
+    }
+    
+    @objc func activeMirrorPaths() -> [String] {
+        return self.table.values.map { $0.mirrorURL.path }
     }
     
     func removePickInfo(for url: URL, updateUI: Bool = false) {
@@ -102,7 +112,7 @@ extension PickInfoManager {
     func reloadBufferForMirror(at url: URL) {
         DispatchQueue.main.async {
             ivim_reload_buffer_for_mirror(url.path)
-            do_cmdline_cmd("redraw!")
+//            do_cmdline_cmd("redraw!")
         }
     }
     
@@ -121,8 +131,8 @@ extension PickInfoManager {
      *   3. origin deleted: delete the related entry and remove the associated mirror
      */
     func updateInfo(_ info: PickInfo) {
-        if info.origin.isReachable(secured: true) {
-            if info.updateMirror() {
+        if info.origin.fileExists(secured: true) {
+            info.updateMirror {
                 NSLog("RELOAD: \(info.mirrorURL)")
                 self.reloadBufferForMirror(at: info.mirrorURL)
             }
@@ -138,68 +148,16 @@ extension PickInfoManager {
 }
 
 extension PickInfoManager {
-    @objc func write(for path: String) {
-        PickInfoManager.serialQ.async {
-            guard let i = self.info(
-                for: path,
-                isRootEditable: true) else { return }
-            i.info.write(for: i.subpath)
+    @objc func handleTrash(at path: String?, with args: [String]) {
+        guard let p = path, let ticket = self.ticket(for: p), let pi = self.localTable[ticket] else {
+            gSVO.showError("current buffer is not a mirroring buffer.")
+            return
         }
-    }
-    
-    @objc func remove(for path: String) {
-        PickInfoManager.serialQ.async {
-            guard let i = self.info(for: path) else { return }
-            i.info.removeItem(for: i.subpath)
+        let subargs = Array(args[1...])
+        if args[0] == "trash" { // list trash items
+            pi.listTrashContents(with: subargs)
+        } else if args[0] == "trash!" {
+            pi.restoreTrash(with: subargs)
         }
-    }
-    
-    @objc func rename(from old: String, to new: String) {
-        PickInfoManager.serialQ.async {
-            let oi = self.info(for: old)
-            let ni = self.info(for: new)
-            if oi?.info === ni?.info { //within the same mirror or none
-                oi?.info.rename(from: oi!.subpath, to: ni!.subpath)
-            } else {
-                ni?.info.addItem(for: ni!.subpath) //move into new mirror
-                oi?.info.removeItem(for: oi!.subpath) //move out of old mirror
-            }
-        }
-    }
-    
-    @objc func mkdir(for path: String) {
-        PickInfoManager.serialQ.async {
-            guard let i = self.info(for: path) else { return }
-            i.info.addItem(for: i.subpath)
-        }
-    }
-    
-    @objc func rmdir(for path: String) {
-        PickInfoManager.serialQ.async {
-            guard let i = self.info(for: path) else { return }
-            i.info.removeItem(for: i.subpath)
-        }
-    }
-    
-    private func ticket(for subpath: String) -> String? {
-        var result = ""
-        for c in subpath {
-            if c == "/" { break }
-            result.append(c)
-        }
-        
-        return result
-    }
-    
-    private func info(for path: String, isRootEditable: Bool = false) -> (info: PickInfo, subpath: String)? {
-        guard let subpath = FileManager.default.mirrorSubpath(for: path),
-            let ticket = self.ticket(for: subpath),
-            let info = self.localTable[ticket] else { return nil }
-        let srp = info.subRootPath
-        if isRootEditable && subpath == srp {
-            return (info, subpath)
-        }
-        
-        return subpath.hasPrefix(srp + "/") ? (info, subpath) : nil
     }
 }

@@ -128,6 +128,24 @@
 				<string>none</string>
 			</array>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Auto Restore</string>
+			<key>FooterText</key>
+			<string>When enabled, iVim will restore last editing session on launch. See &quot;:h ios-auto-restore&quot;.</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Enable</string>
+			<key>Key</key>
+			<string>kUDAutoRestoreEnable</string>
+			<key>DefaultValue</key>
+			<true/>
+		</dict>
 	</array>
 </dict>
 </plist>

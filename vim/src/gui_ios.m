@@ -114,7 +114,7 @@ void input_special_key(int key) {
 void input_special_name(const char * name) {
     char_u * n = (char_u *)name;
     char_u re[6];
-    int len = trans_special(&n, re, TRUE);
+    int len = trans_special(&n, re, TRUE, FALSE);
     for (int i = 0; i < len; i += 3) {
         if (re[i] == K_SPECIAL) { re[i] = CSI; }
     }
@@ -154,28 +154,28 @@ NSString * expand_tilde_of_path(NSString * path) {
 /*
  * get the absolute path of *path*
  */
-static NSString * full_path_of_path(const char * path) {
-    if (path == NULL) { return nil; }
-    NSString * p = TONSSTRING(path);
-    NSString * res = nil;
-    if ([p isAbsolutePath]) {
-        res = expand_tilde_of_path(p);
-    } else {
-        NSString * cwd = [[NSFileManager defaultManager] currentDirectoryPath];
-        NSURL * cwdURL = [NSURL fileURLWithPath:cwd];
-        NSURL * resURL = [NSURL fileURLWithPath:p relativeToURL:cwdURL];
-        res = [resURL path];
-    }
-    res = [res stringByStandardizingPath];
-    
-    return res;
-//    char_u buf[MAXPATHL];
-//    if (vim_FullName((char_u *)path, buf, MAXPATHL, TRUE) == FAIL) {
-//        return nil;
+//static NSString * full_path_of_path(const char * path) {
+//    if (path == NULL) { return nil; }
+//    NSString * p = TONSSTRING(path);
+//    NSString * res = nil;
+//    if ([p isAbsolutePath]) {
+//        res = expand_tilde_of_path(p);
+//    } else {
+//        NSString * cwd = [[NSFileManager defaultManager] currentDirectoryPath];
+//        NSURL * cwdURL = [NSURL fileURLWithPath:cwd];
+//        NSURL * resURL = [NSURL fileURLWithPath:p relativeToURL:cwdURL];
+//        res = [resURL path];
 //    }
+//    res = [res stringByStandardizingPath];
 //
-//    return TONSSTRING(buf);
-}
+//    return res;
+////    char_u buf[MAXPATHL];
+////    if (vim_FullName((char_u *)path, buf, MAXPATHL, TRUE) == FAIL) {
+////        return nil;
+////    }
+////
+////    return TONSSTRING(buf);
+//}
 
 /*
  * get the current sourcing file name
@@ -185,69 +185,108 @@ NSString * get_current_sourcing_name(void) {
 }
 
 /*
- * to get the write event for files
- */
-void mch_ios_post_buffer_write(buf_T * buf, char_u * fname) {
-    NSString * path = full_path_of_path((char *)fname);
-    if (path == NULL) { return; }
-    [[PickInfoManager shared] writeFor:path];
-}
-
-/*
- * to get the file remove event
- */
-void mch_ios_post_file_remove(const char * file) {
-    NSString * p = full_path_of_path(file);
-    if (p == NULL) { return; }
-    [[PickInfoManager shared] removeFor:p];
-}
-
-/*
- * to get the file rename event
- */
-void mch_ios_post_item_rename(const char * old, const char * new) {
-    NSString * op = full_path_of_path(old);
-    NSString * np = full_path_of_path(new);
-    if (op == NULL || np == NULL) { return; }
-    [[PickInfoManager shared] renameFrom:op to:np];
-}
-
-/*
- * to get the make directory event
- */
-void mch_ios_post_dir_make(const char * path) {
-    NSString * p = full_path_of_path(path);
-    if (p == NULL) { return; }
-    [[PickInfoManager shared] mkdirFor:p];
-}
-
-/*
- * to get the remove directory event
- */
-void mch_ios_post_dir_remove(const char * path) {
-    NSString * p = full_path_of_path(path);
-    if (p == NULL) { return; }
-    [[PickInfoManager shared] rmdirFor:p];
-}
-
-/*
  * help function to judge whether *buf* belongs to mirror at *path*
  */
-static BOOL buf_belongs_to_path(buf_T * buf, NSString * path) {
-    return buf->b_ffname != NULL &&
-        [TONSSTRING(buf->b_ffname) hasPrefix:path];
+static BOOL buf_path_belongs_to_path(char_u *b_path, NSString * path) {
+    return b_path != NULL && [TONSSTRING(b_path) hasPrefix:path];
 }
 
 /*
  * reload buffer representing file in mirror *path*
  */
-void ivim_reload_buffer_for_mirror(NSString * path) {
-    buf_T * buf = nil;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf_belongs_to_path(buf, path) &&
-            !mch_isdir(buf->b_ffname)) {
-            buf_reload(buf, buf->b_orig_mode);
+static void clean_buffer(buf_T *buf) {
+    NSString *cmd = [NSString stringWithFormat:@"bdelete! %d",
+                     buf->b_fnum];
+    do_cmdline_cmd(TOCHARS(cmd));
+    close_buffer(nil, buf, DOBUF_WIPE, FALSE);
+}
+
+static void reload_netrw_wins_for_buf(buf_T *buf) {
+    tabpage_T *tp = NULL;
+    win_T *wp = NULL;
+    tabpage_T *curtab_saved = curtab;
+    win_T *curwin_saved = curwin;
+    int wnr = 0;
+    BOOL done = NO;
+    char cmdbuf[50]; // can afford 10^8 windows
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next) {
+        wnr = 1;
+        wp = tp->tp_firstwin != NULL ? tp->tp_firstwin : firstwin;
+        goto_tabpage_tp(tp, FALSE, FALSE);
+        for (; wp != NULL; wp = wp->w_next) {
+            if (wp->w_buffer == buf) {
+                sprintf(cmdbuf, "%dwindo execute \"normal \\<Plug>NetrwRefresh\"", wnr);
+                do_cmdline_cmd((char_u *)cmdbuf);
+                done = YES;
+                break;
+            }
+            wnr++;
         }
+        if (done) {
+            break;
+        }
+    }
+    goto_tabpage_win(curtab_saved, curwin_saved);
+}
+
+static char_u *safe_ffname_of_buf(buf_T *buf, BOOL *corrected) {
+    char_u *ffname = buf->b_ffname;
+    if (corrected != NULL) {
+        *corrected = NO;
+    }
+    if ((ffname == NULL || *ffname == NUL) &&
+        STRCMP(buf->b_p_ft, "netrw") == 0 &&
+        buf->b_nwindows > 0) {
+        // work around the [No Name] netrw buffer problem
+        wininfo_T *wi;
+        for (wi = buf->b_wininfo; wi != NULL; wi = wi->wi_next) {
+            if (wi->wi_win && wi->wi_win->w_localdir) {
+                ffname = wi->wi_win->w_localdir;
+                if (corrected != NULL) {
+                    *corrected = YES;
+                }
+                break;
+            }
+        }
+    }
+    
+    return ffname;
+}
+
+void enumerate_bufs_with_corrected(
+    void (^task)(buf_T *, char_u *, BOOL)) {
+    buf_T *buf;
+    char_u *ffname = NULL;
+    BOOL corrected = NO;
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
+        ffname = safe_ffname_of_buf(buf, &corrected);
+        task(buf, ffname, corrected);
+    }
+}
+
+void ivim_reload_buffer_for_mirror(NSString * path) {
+    __block BOOL need_redraw = NO;
+    enumerate_bufs_with_corrected(^(buf_T *buf, char_u *ffname, BOOL _) {
+        if (!buf_path_belongs_to_path(ffname, path)) {
+            return;
+        }
+        if (mch_getperm(ffname) == -1) { // not exist
+            clean_buffer(buf);
+            need_redraw = YES;
+            // load its parent dir if dir???
+        } else if (buf->b_nwindows > 0) { // update opened buffers only
+            if (mch_isdir(ffname)) {
+//                NSLog(@"reload dir %s", buf->b_ffname);
+                reload_netrw_wins_for_buf(buf);
+            } else {
+//                NSLog(@"reload file %s", buf->b_ffname);
+                buf_reload(buf, buf->b_orig_mode);
+            }
+            need_redraw = YES;
+        }
+    });
+    if (need_redraw) {
+        update_screen(NOT_VALID);
     }
 }
 
@@ -559,12 +598,29 @@ static void ex_iopenurl(exarg_T * eap) {
 /*
  * Handling function for command *idocuments*
  */
+void scenes_keeper_restore_post(void);
 static void ex_idocuments(exarg_T * eap) {
     NSString * arg = TONSSTRING(eap->arg);
     if ([arg length] == 0 || [arg isEqualToString:@"open"]) {
         [shellViewController() pickDocument];
     } else if ([arg isEqualToString:@"import"]) {
         [shellViewController() importDocument];
+    } else if ([arg isEqualToString:@"dir"]) {
+        [shellViewController() openDir];
+    } else if ([arg isEqualToString:@"session"]) {
+        scenes_keeper_restore_post();
+    } else {
+        NSArray<NSString *> *args = [[[CommandTokenizer alloc] initWithLine:arg] run];
+        if ([args[0] isEqualToString:@"trash"] ||
+            [args[0] isEqualToString:@"trash!"]) {
+            char_u *curpath = NULL;
+            if (curbuf) {
+                curpath = safe_ffname_of_buf(curbuf, NULL);
+            }
+            NSString *path = curpath != NULL ? TONSSTRING(curpath) : nil;
+            [[PickInfoManager shared] handleTrashAt:path
+                                               with:args];
+        }
     }
 }
 
@@ -641,9 +697,13 @@ static void ex_isetekbd(exarg_T * eap) {
 /*
  * Get current working directory
  */
-char_u * get_working_directory(void) {
-    char_u * re = alloc(MAXPATHL);
-    mch_dirname(re, MAXPATHL);
+NSString * get_working_directory(void) {
+    char_u *cwd = alloc(MAXPATHL);
+    NSString *re = nil;
+    if (mch_dirname(cwd, MAXPATHL)) {
+        re = TONSSTRING(cwd);
+    }
+    free(cwd);
     
     return re;
 }
@@ -694,9 +754,9 @@ static void ex_ishare(exarg_T * eap) {
     } else {
         NSString * path = arg;
         if (![path hasPrefix:@"/"]) {
-            char_u * cwd = get_working_directory();
-            if (cwd != NULL) {
-                path = [TONSSTRING(cwd) stringByAppendingPathComponent:path];
+            NSString * cwd = get_working_directory();
+            if (cwd) {
+                path = [cwd stringByAppendingPathComponent:path];
             }
         }
         share_file(path);
@@ -738,7 +798,8 @@ int cells_for_character(char_u * c) {
  * If current buffer is new
  */
 BOOL is_current_buf_new(void) {
-    return (curbuf->b_ffname == NULL && !curbuf->b_changed);
+    return (!curbuf->b_changed &&
+            safe_ffname_of_buf(curbuf, NULL) == NULL);
 }
 
 /*
@@ -767,12 +828,9 @@ BOOL jump_to_window_with_buffer(NSString * path) {
     win_T * fwp = nil;
     char_u * b_name = nil;
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next) {
-        fwp = tp->tp_firstwin;
-        if (fwp == NULL) {
-            fwp = firstwin;
-        }
+        fwp = tp->tp_firstwin != NULL ? tp->tp_firstwin : firstwin;
         for (wp = fwp; wp != NULL; wp = wp->w_next) {
-            b_name = wp->w_buffer->b_ffname;
+            b_name = safe_ffname_of_buf(wp->w_buffer, NULL);
             if (b_name != NULL &&
                 [TONSSTRING(b_name) isEqualToString:path]) {
                 goto_tabpage_win(tp, wp);
@@ -790,18 +848,13 @@ BOOL jump_to_window_with_buffer(NSString * path) {
  * return true if deletion succeeded
  */
 BOOL clean_buffer_for_mirror_path(NSString * path) {
-    buf_T * buf = nil;
-    BOOL result = NO;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-        if (buf_belongs_to_path(buf, path)) {
-            close_buffer(NULL, buf, DOBUF_DEL, 0);
-            close_windows(buf, TRUE);
-            if (buf == curbuf) {
-                do_cmdline_cmd((char_u *)"enew");
-            }
+    __block BOOL result = NO;
+    enumerate_bufs_with_corrected(^(buf_T *buf, char_u *ffname, BOOL _) {
+        if (buf_path_belongs_to_path(ffname, path)) {
+            clean_buffer(buf);
             result = YES;
         }
-    }
+    });
     
     return result;
 }
@@ -905,8 +958,10 @@ gui_mch_init(void)
     set_normal_colors();
 
     gui_check_colors();
-    gui.def_norm_pixel = gui.norm_pixel;
-    gui.def_back_pixel = gui.back_pixel;
+//    gui.def_norm_pixel = gui.norm_pixel;
+//    gui.def_back_pixel = gui.back_pixel;
+    do_cmdline_cmd((char_u *)"highlight Cursor guifg=bg guibg=fg");
+    do_cmdline_cmd((char_u *)"highlight lCursor guifg=bg guibg=fg");
     
     bg_color_ready = YES;
     if (shellViewController()) {
@@ -922,14 +977,14 @@ gui_mch_init(void)
 }
 
 
-
+void scenes_keeper_stash(void);
     void
 gui_mch_exit(int rc)
 {
 //    printf("%s\n",__func__);
     //save old documents
     [[OldDocumentsManager shared] wrapUp];
-    
+    scenes_keeper_stash();
     //unregister file presenters
     [[PickInfoManager shared] wrapUp];
 }
@@ -1527,9 +1582,11 @@ gui_mch_start_blink(void)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
-    [shellViewController() stopBlink];
+    [shellViewController() stopBlink:may_call_gui_update_cursor];
+//    if (may_call_gui_update_cursor) {
+//    }
 //    printf("%s\n",__func__);  
 //    [gui_ios.blink_timer invalidate];
 //    
@@ -1540,6 +1597,17 @@ gui_mch_stop_blink(void)
 //    gui_ios.blink_timer = nil;
 }
 
+int
+gui_mch_is_blinking(void)
+{
+    return FALSE;
+}
+
+int
+gui_mch_is_blink_off(void)
+{
+    return FALSE;
+}
 
 // -- Mouse -----------------------------------------------------------------
 
@@ -1580,7 +1648,7 @@ gui_mch_mousehide(int hide)
 static NSString * PboardTypeVim = @"PboardTypeVim";
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
 //    printf("%s\n",__func__);
     UIPasteboard * pb = [UIPasteboard generalPasteboard];
@@ -1618,7 +1686,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 }
 
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
 //    printf("%s\n",__func__);
     //fill the '*' register if not yet
@@ -1646,13 +1714,13 @@ clip_mch_set_selection(VimClipboard *cbd)
 }
 
    void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
 //    printf("%s\n",__func__);  
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
 //    printf("%s\n",__func__);  
     return OK;
@@ -2155,7 +2223,7 @@ gui_mch_destroy_sign(void *sign)
 gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
     void	*target;
     char_u	*mesg;
-    void	(*mesgCB)__ARGS((BalloonEval *, int));
+    void	(*mesgCB)(BalloonEval *, int);
     void	*clientData;
 {
 //    printf("%s\n",__func__);  

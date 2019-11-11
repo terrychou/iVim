@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *				Motif support by Robert Webb
@@ -16,10 +16,6 @@
 # include <X11/StringDefs.h>
 #endif
 
-#ifdef FEAT_BEVAL
-# include "gui_beval.h"
-#endif
-
 #ifdef FEAT_GUI_GTK
 # ifdef VMS /* undef MIN and MAX because Intrinsic.h redefines them anyway */
 #  ifdef MAX
@@ -31,6 +27,12 @@
 # endif
 # include <X11/Intrinsic.h>
 # include <gtk/gtk.h>
+#endif
+
+// Needed when generating prototypes, since FEAT_GUI is always defined then.
+#if defined(FEAT_XCLIPBOARD) && !defined(FEAT_GUI_MOTIF) \
+	&& !defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_GTK)
+# include <X11/Intrinsic.h>
 #endif
 
 #ifdef FEAT_GUI_MAC
@@ -56,7 +58,6 @@
 #include <CoreText/CoreText.h>
 #endif
 
-
 #ifdef FEAT_GUI_PHOTON
 # include <Ph.h>
 # include <Pt.h>
@@ -74,8 +75,9 @@
 /*
  * GUIs that support dropping files on a running Vim.
  */
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_GTK)
+#if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MAC)
 # define HAVE_DROP_FILE
 #endif
 
@@ -98,7 +100,7 @@
  * X_2_COL  - Convert X pixel coord into character column.
  * Y_2_ROW  - Convert Y pixel coord into character row.
  */
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # define TEXT_X(col)	((col) * gui.char_width)
 # define TEXT_Y(row)	((row) * gui.char_height + gui.char_ascent)
 # define FILL_X(col)	((col) * gui.char_width)
@@ -147,19 +149,15 @@
 # define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
 #define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
+#define DRAW_STRIKE		0x40	/* strikethrough */
 
 /* For our own tearoff menu item */
 #define TEAR_STRING		"-->Detach"
 #define TEAR_LEN		(9)	/* length of above string */
 
 /* for the toolbar */
-#ifdef FEAT_GUI_W16
-# define TOOLBAR_BUTTON_HEIGHT	15
-# define TOOLBAR_BUTTON_WIDTH	16
-#else
-# define TOOLBAR_BUTTON_HEIGHT	18
-# define TOOLBAR_BUTTON_WIDTH	18
-#endif
+#define TOOLBAR_BUTTON_HEIGHT	18
+#define TOOLBAR_BUTTON_WIDTH	18
 #define TOOLBAR_BORDER_HEIGHT	12  /* room above+below buttons for MSWindows */
 
 #ifdef FEAT_GUI_MSWIN
@@ -189,9 +187,7 @@ typedef struct GuiScrollbar
     /* Values measured in characters: */
     int		top;		/* Top of scroll bar (chars from row 0) */
     int		height;		/* Current height of scroll bar in rows */
-#ifdef FEAT_VERTSPLIT
     int		width;		/* Current width of scroll bar in cols */
-#endif
     int		status_height;	/* Height of status line */
 #ifdef FEAT_GUI_X11
     Widget	id;		/* Id of real scroll bar */
@@ -222,6 +218,8 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #define INVALCOLOR (guicolor_T)-11111	/* number for invalid color; on 32 bit
 				   displays there is a tiny chance this is an
 				   actual color */
+#define CTERMCOLOR (guicolor_T)-11110	/* only used for cterm.bg_rgb and
+					   cterm.fg_rgb: use cterm color */
 
 #ifdef FEAT_GUI_GTK
   typedef PangoFontDescription	*GuiFont;       /* handle for a GUI font */
@@ -235,25 +233,35 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #  define NOFONT	(GuiFont)NULL
 #  define NOFONTSET	(GuiFontset)NULL
 # else
-#    ifdef FEAT_GUI_IOS
-typedef CTFontRef	GuiFont;	/* handle for a GUI font */
-typedef CTFontRef	GuiFontset;	/* handle for a GUI fontset */
-#     define NOFONT	(CTFontRef)NULL
-#     define NOFONTSET	(CTFontRef)NULL
-#    else
-#  ifdef FEAT_GUI_X11
+#  ifdef FEAT_GUI_IOS
+  typedef CTFontRef	GuiFont;	/* handle for a GUI font */
+  typedef CTFontRef	GuiFontset;	/* handle for a GUI fontset */
+#   define NOFONT	(CTFontRef)NULL
+#   define NOFONTSET	(CTFontRef)NULL
+#  else
+#   ifdef FEAT_GUI_X11
   typedef XFontStruct	*GuiFont;	/* handle for a GUI font */
   typedef XFontSet	GuiFontset;	/* handle for a GUI fontset */
-#   define NOFONT	(GuiFont)0
-#   define NOFONTSET	(GuiFontset)0
-#  else
+#    define NOFONT	(GuiFont)0
+#    define NOFONTSET	(GuiFontset)0
+#   else
   typedef long_u	GuiFont;	/* handle for a GUI font */
   typedef long_u	GuiFontset;	/* handle for a GUI fontset */
-#   define NOFONT	(GuiFont)0
-#   define NOFONTSET	(GuiFontset)0
+#    define NOFONT	(GuiFont)0
+#    define NOFONTSET	(GuiFontset)0
+#   endif
 #  endif
 # endif
 #endif
+
+#ifdef VIMDLL
+// Use spawn when GUI is starting.
+# define GUI_MAY_SPAWN
+
+// Uncomment the next definition if you want to use the `:gui` command on
+// Windows.  It uses `:mksession` to inherit the session from vim.exe to
+// gvim.exe.  So, it doesn't work perfectly. (EXPERIMENTAL)
+//# define EXPERIMENTAL_GUI_CMD
 #endif
 
 typedef struct Gui
@@ -264,6 +272,9 @@ typedef struct Gui
     int		shell_created;	    /* Has the shell been created yet? */
     int		dying;		    /* Is vim dying? Then output to terminal */
     int		dofork;		    /* Use fork() when GUI is starting */
+#ifdef GUI_MAY_SPAWN
+    int		dospawn;	    /* Use spawn() when GUI is starting */
+#endif
     int		dragged_sb;	    /* Which scrollbar being dragged, if any? */
     win_T	*dragged_wp;	    /* Which WIN's sb being dragged, if any? */
     int		pointer_hidden;	    /* Is the mouse pointer hidden? */
@@ -322,13 +333,11 @@ typedef struct Gui
     GuiFont	menu_font;	    /* menu item font */
 # endif
 #endif
-#ifdef FEAT_MBYTE
     GuiFont	wide_font;	    /* Normal 'guifontwide' font */
-# ifndef FEAT_GUI_GTK
+#ifndef FEAT_GUI_GTK
     GuiFont	wide_bold_font;	    /* Bold 'guifontwide' font */
     GuiFont	wide_ital_font;	    /* Italic 'guifontwide' font */
     GuiFont	wide_boldital_font; /* Bold-Italic 'guifontwide' font */
-# endif
 #endif
 #ifdef FEAT_XFONTSET
     GuiFontset	fontset;	    /* set of fonts for multi-byte chars */
@@ -376,7 +385,9 @@ typedef struct Gui
 #endif
 
 #ifdef FEAT_GUI_GTK
+# ifndef USE_GTK3
     int		visibility;	    /* Is shell partially/fully obscured? */
+# endif
     GdkCursor	*blank_pointer;	    /* Blank pointer */
 
     /* X Resources */
@@ -395,10 +406,21 @@ typedef struct Gui
     GtkWidget	*menubar_h;	    /* menubar handle */
     GtkWidget	*toolbar_h;	    /* toolbar handle */
 # endif
+# ifdef USE_GTK3
+    GdkRGBA	*fgcolor;	    /* GDK-styled foreground color */
+    GdkRGBA	*bgcolor;	    /* GDK-styled background color */
+    GdkRGBA	*spcolor;	    /* GDK-styled special color */
+# else
     GdkColor	*fgcolor;	    /* GDK-styled foreground color */
     GdkColor	*bgcolor;	    /* GDK-styled background color */
     GdkColor	*spcolor;	    /* GDK-styled special color */
+# endif
+# ifdef USE_GTK3
+    cairo_surface_t *surface;       /* drawarea surface */
+    gboolean	     by_signal;     /* cause of draw operation */
+# else
     GdkGC	*text_gc;	    /* cached GC for normal text */
+# endif
     PangoContext     *text_context; /* the context used for all text */
     PangoFont	     *ascii_font;   /* cached font for ASCII strings */
     PangoGlyphString *ascii_glyphs; /* cached code point -> glyph map */
@@ -414,7 +436,7 @@ typedef struct Gui
 #endif	/* FEAT_GUI_GTK */
 
 #if defined(FEAT_GUI_TABLINE) \
-	&& (defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
+	&& (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
 		|| defined(FEAT_GUI_MAC))
     int		tabline_height;
 #endif
@@ -545,3 +567,33 @@ typedef enum
 # define CONVERT_FROM_UTF8(String) (String)
 # define CONVERT_FROM_UTF8_FREE(String) ((String) = (char_u *)NULL)
 #endif /* FEAT_GUI_GTK */
+
+#ifdef FEAT_GUI_GTK
+/*
+ * The second parameter of g_signal_handlers_disconnect_by_func() is supposed
+ * to be a function pointer which was passed to g_signal_connect_*() somewhere
+ * previously, and hence it must be of type GCallback, i.e., void (*)(void).
+ *
+ * Meanwhile, g_signal_handlers_disconnect_by_func() is a macro calling
+ * g_signal_handlers_disconnect_matched(), and the second parameter of the
+ * former is to be passed to the sixth parameter of the latter the type of
+ * which, however, is declared as void * in the function signature.
+ *
+ * While the ISO C Standard does not require that function pointers be
+ * interconvertible to void *, widely-used compilers such as gcc and clang
+ * do such conversion implicitly and automatically on some platforms without
+ * issuing any warning.
+ *
+ * For Solaris Studio, that is not the case.  An explicit type cast is needed
+ * to suppress warnings on that particular conversion.
+ */
+# if defined(__SUNPRO_C) && defined(USE_GTK3)
+#  define FUNC2GENERIC(func) (void *)(func)
+# else
+#  define FUNC2GENERIC(func) G_CALLBACK(func)
+# endif
+#endif /* FEAT_GUI_GTK */
+
+#if defined(UNIX) && !defined(FEAT_GUI_MAC) && !defined(FEAT_GUI_IOS)
+# define GUI_MAY_FORK
+#endif

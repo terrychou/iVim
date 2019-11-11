@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 7.4.	Last change: 2018 May 24
+*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Oct 27
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -32,7 +32,8 @@ the newer iOS systems. This project started from it.
 8.  Settings				|ios-settings|
 9.  External keyboard			|ios-external-keyboard|
 10. Integrated Exuberant Ctags		|ios-exuberant-ctags|
-11. Miscellaneous			|ios-miscellaneous|
+11. Auto restore                        |ios-auto-restore|
+12. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -288,15 +289,20 @@ Editing in place ~
 
 The document picker |:idocuments| also allows you to edit files directly in 
 iCloud Drive or other document provider apps. All the modifications will be 
-saved into the original files even though this is normally not allowed because 
-they are in different sandbox environments.
+saved back to the original files even though this is normally not allowed 
+because they are in different sandbox environments.
 
 iVim also supports opening directories. After you select and open a directory 
 from the document picker, besides file editing, you can do all the supported 
 filesystem operations within it. Such as create or rename subdirectories or 
-files, delete files, etc. All the changes will be synced back to the original 
-directory. Note that the operations need to go in the vim way (e.g. via vim 
-functions, commands, etc.).
+files, delete files, etc. iVim monitors changes in this root directory and
+syncs them back to the original directory. Note that operations on the root
+directory itself break this mechanism therefore would be better avoided.
+
+To provide better safety, iVim puts deleted items in the opened directory
+into its related trash bin. Users can choose to restore them later through
+command |:idocuments-trash|. Note that the trash bin will be cleaned up
+together with its associated directory after the latter is closed.
 
 Also see |open-in-ivim|.
 
@@ -379,6 +385,12 @@ the target mode to jump to when dictation happens in |Normal| mode.
 |Cmdline| mode; `none` will not do mode jumping at all. Refer to `Normal_mode`
 part of |ios-dictation| for details.
 
+Auto Restore ~
+
+Enable
+This option toggles the `Auto restore` feature of iVim. See |ios-auto-restore|
+for details.
+
 
 ==============================================================================
 9. External keyboard				*ios-external-keyboard*
@@ -431,7 +443,50 @@ Type ":help :ictags" for details about the command.
 
 
 ==============================================================================
-11. Miscellaneous			*ios-miscellaneous* *ios-misc*
+11. Auto restore                                *ios-auto-restore*
+
+With `Auto-restore` enabled, iVim automatically restores the last editing 
+session on launch, after an app termination.
+
+Because it is implemented based on vim's |session| feature, `Auto-restore`'s 
+basic behavior goes in that way.
+
+Although iVim tries its best to make a restore look as normal as possible, 
+there are some points worth mentioning:
+
+a. instead of saving a changed buffer directly for the user, iVim caches it
+for each file but leaves the original file alone. 
+
+In another word, iVim will restore the latest content for each file in the
+windows, but the user still needs an explicit `write` operation to save the 
+changes, if there is any, back to the respective file.
+
+1) a changed buffer without a file name will be saved as a temporary file
+automatically, and it is up to the user to save it as a formal file or just 
+drop it.
+
+2) while a changed buffer with a file name keeps its changed state, its undo 
+history is lost.
+
+3) if a file is newer than its cached changes (e.g. it has been edited
+elsewhere before the restore), the latter is dropped.
+
+b. buffers in the buffer list will be cached. To exclude buffers from the next
+restore, delete them from the buffer list.
+
+c. unlike default vim sessions, opened directories by |netrw| will also be 
+restored. However, their cursor position information is not kept.
+
+d. other useful information such as marks or register contents is stored in
+the |viminfo-file|, and also restored. Its details can be customized via the 
+'viminfo' option.
+ 
+e. `Auto-restore` can be disabled in |ios-settings|. Note that iVim will clear 
+all the cached information when this happens.
+
+
+==============================================================================
+12. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 
@@ -449,10 +504,17 @@ c. Two fingers dragging will scroll text in a window.
 d. While one finger long pressing toggles the extended keyboard, two fingers
 long pressing hides the system keyboard, and a single tap to bring it back.
 
-Autosave ~
+Swap file cleaning ~
 
-Because of the mechanism of terminating apps in iOS, iVim won't save opened 
-files automatically. All unsaved changes will be lost when iVim terminates.
+Due to the sudden app termination mechanism of the iOS system, there would be
+leftover swap files in the filesystem. iVim will try and clean them on each
+launch automatically.
+
+The viminfo file ~
+
+The default writing timing for the |viminfo-file| is when vim exits. However,
+that does not happen so often in iVim. Therefore, iVim takes over and records
+the file when necessary.
 
 
- vim:tw=78:ts=8:ft=help:norl
+ vim:tw=78:ts=8:noet:ft=help:norl:

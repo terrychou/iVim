@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -19,7 +19,7 @@
 int is_photon_available;
 #endif
 
-void qnx_init()
+void qnx_init(void)
 {
 #if defined(FEAT_GUI_PHOTON)
     PhChannelParms_t parms;
@@ -37,7 +37,7 @@ void qnx_init()
 #define CLIP_TYPE_TEXT "TEXT"
 
 /* Turn on the clipboard for a console vim when photon is running */
-void qnx_clip_init()
+void qnx_clip_init(void)
 {
     if (is_photon_available == TRUE && !gui.in_use)
 	clip_init(TRUE);
@@ -48,18 +48,18 @@ void qnx_clip_init()
 
 /* No support for owning the clipboard */
 int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return FALSE;
 }
 
 void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
 }
 
 void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
     int		    type = MLINE, clip_length = 0, is_type_set = FALSE;
     void	    *cbdata;
@@ -95,16 +95,14 @@ clip_mch_request_selection(VimClipboard *cbd)
 	}
 
 	if ((clip_text != NULL) && (clip_length > 0))
-	{
 	    clip_yank_selection(type, clip_text, clip_length, cbd);
-	}
 
 	PhClipboardPasteFinish(cbdata);
     }
 }
 
 void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     int type;
     long_u  len;
@@ -122,7 +120,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     type = clip_convert_selection(&str, &len, cbd);
     if (type >= 0)
     {
-	text_clip = lalloc(len + 1, TRUE); /* Normal text */
+	text_clip = alloc(len + 1); // Normal text
 
 	if (text_clip && vim_clip)
 	{

@@ -1582,9 +1582,6 @@ msgstr "E509: Kan inte skapa säkerhetskopia (lägg till ! för att tvinga)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Kan inte göra säkerhetskopia (lägg till ! för att tvinga)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Resursgrenen skulle tappas bort (lägg till ! för att tvinga)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Kan inte hitta temporär fil för skrivning"
 
@@ -1792,7 +1789,7 @@ msgstr "E216: Ingen sådan grupp eller händelse: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Autokommandon ---"
@@ -1811,7 +1808,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: autokommando nästlad för djupt"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Autokommandon för \"%s\""
 
 #, c-format
@@ -2589,40 +2586,11 @@ msgstr "Visa docu av"
 msgid "Generate docu for"
 msgstr "Generera docu för"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Kan inte ansluta till SNiFF+. Kontrollera miljö (sniffemacs måste kunna "
-"hittas i $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Fel vid läsning. Frånkopplad"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ är för närvarande "
-
 msgid "not "
 msgstr "inte "
 
 msgid "connected"
 msgstr "ansluten"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Okänd SNiFF+-begäran: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Fel vid anslutning till SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ inte ansluten"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Inte en SNiFF+-buffert"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Fel vid skrivning. Frånkopplad"
 
 msgid "invalid buffer number"
 msgstr "ogiltigt buffertnummer"
@@ -2784,7 +2752,7 @@ msgstr "-q [felfil]    redigera fil med första fel"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -2897,8 +2865,8 @@ msgstr "-f\t\t\tAnvända inte newcli för att öppna fönster"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <enhet>\t\tAnvänd <enhet> för I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
-msgstr "-A\t\t\tstarta i arabiskt läge"
+msgid "-A\t\t\tStart in Arabic mode"
+msgstr "-A\t\t\tStarta i arabiskt läge"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tStarta i hebreiskt läge"
@@ -3210,14 +3178,8 @@ msgstr "E288: inmatningsmetod stöder inte någon stil"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: inmatningsmetod stöder inte min förredigeringstyp"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: över-pricken-stil kräver typsnittsuppsättning"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Din GTK+ är äldre än 1.2.3. Statusområde inaktiverat"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Inmatningsmetodserver körs inte"
 
 msgid "E293: block was not locked"
 msgstr "E293: block låstes inte"
@@ -4548,7 +4510,7 @@ msgstr "E65: Otillåten bakåtreferens"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z{ inte tillåtet här"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 m.fl. inte tillåtet här"
 
 msgid "E68: Invalid character after \\z"
@@ -4753,8 +4715,8 @@ msgid "Warning: region %s not supported"
 msgstr "Varning: region %s stöds inte"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Läser affix-fil %s ..."
+msgid "Reading affix file %s..."
+msgstr "Läser affix-fil %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -4883,8 +4845,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s värde skiljer sig från vad som används i en annan .aff-fil."
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Läser ordboksfil %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Läser ordboksfil %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -4911,8 +4873,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ignorerade %d ord med icke-ASCII tecken i %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Läser ordfil %s ..."
+msgid "Reading word file %s..."
+msgstr "Läser ordfil %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -4969,8 +4931,8 @@ msgid "Total number of words: %d"
 msgstr "Totalt antal ord: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Skriver förslagsfil %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Skriver förslagsfil %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -4990,8 +4952,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Varning: både sammansättning och NOBREAK specifierad"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Skriver stavningsfil %s ..."
+msgid "Writing spell file %s..."
+msgstr "Skriver stavningsfil %s..."
 
 msgid "Done!"
 msgstr "Klar!"
@@ -5689,8 +5651,8 @@ msgstr "skriv  :q<Enter>                för att avsluta          "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "skriv  :help<Enter> eller <F1>  för online-hjälp         "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "skriv  :help version7<Enter>    för versioninformation   "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "skriv  :help version8<Enter>    för versioninformation   "
 
 msgid "Running in Vi compatible mode"
 msgstr "Kör i Vi-kompatibelt läge"

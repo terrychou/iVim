@@ -31,7 +31,7 @@
 # define STRICT
 #endif
 
-#define INC_OLE2	// WIN32, get ole2 from windows.h
+#define INC_OLE2	// MS-Windows, get ole2 from windows.h
 
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -42,6 +42,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <shlobj.h>
+#include <wchar.h>
 
 /* Accommodate old versions of VC that don't have a modern Platform SDK */
 #if (defined(_MSC_VER) && _MSC_VER < 1300) || !defined(MAXULONG_PTR)
@@ -56,7 +57,6 @@
 #pragma data_seg(".text")
 #define INITGUID
 #include <initguid.h>
-#include <shlguid.h>
 
 //
 // The class ID of this Shell extension class.

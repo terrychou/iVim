@@ -12,21 +12,43 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
+    private var isLaunchedByURL = false
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        self.logToFile()
+        self.registerUserDefaultsValues()
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),
             with: nil,
             waitUntilDone: false)
-        self.cleanMirrors()
+        self.doPossibleCleaning()
+        self.isLaunchedByURL = launchOptions?[.url] != nil
 
         return true
     }
     
-    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey: Any]) -> Bool {
-        return VimURLHandler(url: url)?.open() ?? false
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
+        var handleNow = true
+        if self.isLaunchedByURL {
+            self.isLaunchedByURL = false
+            if scene_keeper_add_pending_url_task({
+                _ = VimURLHandler(url: url)?.open()
+            }) {
+                handleNow = false
+            }
+        }
+        
+        return !handleNow || VimURLHandler(url: url)?.open() ?? false
+    }
+    
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        gPIM.willEnterForeground()
+    }
+    
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        scenes_keeper_stash();
+        gPIM.didEnterBackground()
     }
     
 //    private func logToFile() {
@@ -35,10 +57,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        freopen(file, "a+", stderr)
 //    }
     
-    private func cleanMirrors() {
+    private func doPossibleCleaning() {
         DispatchQueue.main.async {
-            FileManager.default.cleanMirrorFiles()
+            scenes_keeper_clear_all()
         }
+    }
+    
+    private func registerUserDefaultsValues() {
+        register_auto_restore_enabled()
     }
     
     @objc func VimStarter() {
@@ -49,7 +75,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let workingDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         vim_setenv("HOME", workingDir)
         FileManager.default.changeCurrentDirectoryPath(workingDir)
-        let args = ["vim"] + LaunchArgumentsParser().parse()
+        var args = ["vim"]
+        if !scenes_keeper_restore_prepare() {
+            gSVO.showError("failed to auto-restore")
+        } else if let spath = scene_keeper_valid_session_file_path() {
+            let rCmd = "silent! source \(spath) | " +
+            "silent! idocuments session"
+            args += ["-c", rCmd]
+        }
+        args += LaunchArgumentsParser().parse()
         var argv = args.map { strdup($0) }
         VimMain(Int32(args.count), &argv)
         argv.forEach { free($0) }

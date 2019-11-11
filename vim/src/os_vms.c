@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  * VMS port			by Henk Elbers
@@ -18,7 +18,7 @@
 /* based on Alpha's gen64def.h; the file is absent on VAX */
 typedef struct _generic_64 {
 #   pragma __nomember_alignment
-    __union  {                          /* You can treat me as...  */
+    __union  {				/* You can treat me as...  */
 	/* long long is not available on VAXen */
 	/* unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or */
 
@@ -77,13 +77,13 @@ static char *Fspec_Rms;		       /* rms file spec, passed implicitly between rout
 
 
 
-static TT_MODE	get_tty __ARGS((void));
-static void	set_tty __ARGS((int row, int col));
+static TT_MODE	get_tty(void);
+static void	set_tty(int row, int col);
 
 #define EXPL_ALLOC_INC 64
 
 #define EQN(S1,S2,LN) (strncmp(S1,S2,LN) == 0)
-#define SKIP_FOLLOWING_SLASHES(Str) while (Str[1] == '/') ++Str
+#define SKIP_FOLLOWING_SLASHES(Str) do { while (Str[1] == '/') ++Str; } while (0)
 
 
 /*
@@ -238,14 +238,14 @@ mch_getenv(char_u *lognam)
     if (sys$trnlnm(&attrib, &d_file_dev, &d_lognam, NULL,&itmlst) == SS$_NORMAL)
     {
 	buffer[lengte] = '\0';
-	if (cp = (char_u *)alloc((unsigned)(lengte+1)))
+	if (cp = alloc(lengte + 1))
 	    strcpy((char *)cp, buffer);
 	return(cp);
     }
     else if ((sbuf = getenv((char *)lognam)))
     {
 	lengte = strlen(sbuf) + 1;
-	cp = (char_u *)alloc((size_t)lengte);
+	cp = alloc(lengte);
 	if (cp)
 	    strcpy((char *)cp, sbuf);
 	return cp;
@@ -382,7 +382,7 @@ vms_wproc(char *name, int val)
     if (vms_match_num == 0) {
 	/* first time through, setup some things */
 	if (NULL == vms_fmatch) {
-	    vms_fmatch = (char_u **)alloc(EXPL_ALLOC_INC * sizeof(char *));
+	    vms_fmatch = ALLOC_MULT(char *, EXPL_ALLOC_INC);
 	    if (!vms_fmatch)
 		return 0;
 	    vms_match_alloced = EXPL_ALLOC_INC;
@@ -406,7 +406,7 @@ vms_wproc(char *name, int val)
     if (--vms_match_free == 0) {
 	/* add more space to store matches */
 	vms_match_alloced += EXPL_ALLOC_INC;
-	vms_fmatch = (char_u **)vim_realloc(vms_fmatch,
+	vms_fmatch = vim_realloc(vms_fmatch,
 		sizeof(char **) * vms_match_alloced);
 	if (!vms_fmatch)
 	    return 0;
@@ -443,7 +443,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
     *num_file = 0;			/* default: no files found	*/
     files_alloced = EXPL_ALLOC_INC;
     files_free = EXPL_ALLOC_INC;
-    *file = (char_u **) alloc(sizeof(char_u **) * files_alloced);
+    *file = ALLOC_MULT(char_u **, files_alloced);
     if (*file == NULL)
     {
 	*num_file = 0;
@@ -461,8 +461,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	result = decc$translate_vms(vms_fixfilename(buf));
 	if ( (int) result == 0 || (int) result == -1  ) {
 	    cnt = 0;
-	}
-        else {
+	} else {
 	    cnt = decc$to_vms(result, vms_wproc, 1 /*allow wild*/ , (flags & EW_DIR ? 0:1 ) /*allow directory*/) ;
 	}
 	if (cnt > 0)
@@ -491,8 +490,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	    if (--files_free < 1)
 	    {
 		files_alloced += EXPL_ALLOC_INC;
-		*file = (char_u **)vim_realloc(*file,
-		    sizeof(char_u **) * files_alloced);
+		*file = vim_realloc(*file, sizeof(char_u **) * files_alloced);
 		if (*file == NULL)
 		{
 		    *file = (char_u **)"";
@@ -519,10 +517,9 @@ mch_expandpath(garray_T *gap, char_u *path, int flags)
     /* otherwise it might create ACCVIO error in decc$to_vms      */
     result = decc$translate_vms(vms_fixfilename(path));
     if ( (int) result == 0 || (int) result == -1  ) {
-        cnt = 0;
-    }
-    else {
-        cnt = decc$to_vms(result, vms_wproc, 1 /*allow_wild*/, (flags & EW_DIR ? 0:1 ) /*allow directory*/);
+	cnt = 0;
+    } else {
+	cnt = decc$to_vms(result, vms_wproc, 1 /*allow_wild*/, (flags & EW_DIR ? 0:1 ) /*allow directory*/);
     }
     if (cnt > 0)
 	cnt = vms_match_num;
@@ -651,15 +648,12 @@ vms_fixfilename(void *instring)
     if (len > buflen)
     {
 	buflen = len + 128;
-	if (buf)
-	    buf = (char *)vim_realloc(buf, buflen);
-	else
-	    buf = (char *)alloc(buflen * sizeof(char));
+	buf = vim_realloc(buf, buflen * sizeof(char));
     }
 
 #ifdef DEBUG
      char		 *tmpbuf = NULL;
-     tmpbuf = (char *)alloc(buflen * sizeof(char));
+     tmpbuf = ALLOC_MULT(char, buflen);
      strcpy(tmpbuf, instring);
 #endif
 
@@ -723,10 +717,11 @@ struct typeahead_st {
  * "msec" == -1 will block until a character is available.
  */
     int
-RealWaitForChar(fd, msec, check_for_gpm)
-    int		fd UNUSED; /* always read from iochan */
-    long	msec;
-    int		*check_for_gpm UNUSED;
+RealWaitForChar(
+    int		fd UNUSED, /* always read from iochan */
+    long	msec,
+    int		*check_for_gpm UNUSED,
+    int		*interrupted)
 {
     int status;
     struct _generic_64 time_curr;
@@ -740,68 +735,66 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	get_tty();
 
     if (sec > 0) {
-        /* time-out specified; convert it to absolute time */
+	/* time-out specified; convert it to absolute time */
 	/* sec>0 requirement of lib$cvtf_to_internal_time()*/
 
-        /* get current time (number of 100ns ticks since the VMS Epoch) */
-        status = sys$gettim(&time_curr);
-        if (status != SS$_NORMAL)
-            return 0; /* error */
-        /* construct the delta time */
+	/* get current time (number of 100ns ticks since the VMS Epoch) */
+	status = sys$gettim(&time_curr);
+	if (status != SS$_NORMAL)
+	    return 0; /* error */
+	/* construct the delta time */
 #if __G_FLOAT==0
 # ifndef VAX
 	/* IEEE is default on IA64, but can be used on Alpha too - but not on VAX */
-        status = lib$cvts_to_internal_time(
-                &convert_operation, &sec, &time_diff);
+	status = lib$cvts_to_internal_time(
+		&convert_operation, &sec, &time_diff);
 # endif
 #else   /* default on Alpha and VAX  */
-        status = lib$cvtf_to_internal_time(
+	status = lib$cvtf_to_internal_time(
 		&convert_operation, &sec, &time_diff);
 #endif
-        if (status != LIB$_NORMAL)
-            return 0; /* error */
-        /* add them up */
-        status = lib$add_times(
-                &time_curr,
-                &time_diff,
-                &time_out);
-        if (status != LIB$_NORMAL)
-            return 0; /* error */
+	if (status != LIB$_NORMAL)
+	    return 0; /* error */
+	/* add them up */
+	status = lib$add_times(
+		&time_curr,
+		&time_diff,
+		&time_out);
+	if (status != LIB$_NORMAL)
+	    return 0; /* error */
     }
 
     while (TRUE) {
-        /* select() */
-        status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
-                0, 0, &typeahead, 8, 0, 0, 0, 0);
+	/* select() */
+	status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
+		0, 0, &typeahead, 8, 0, 0, 0, 0);
 	if (status != SS$_NORMAL || (iosb[0] & 0xFFFF) != SS$_NORMAL)
-            return 0; /* error */
+	    return 0; /* error */
 
-        if (typeahead.numchars)
-            return 1; /* ready to read */
+	if (typeahead.numchars)
+	    return 1; /* ready to read */
 
-        /* there's nothing to read; what now? */
-        if (msec == 0) {
-            /* immediate time-out; return impatiently */
-            return 0;
-        }
-        else if (msec < 0) {
-            /* no time-out; wait on indefinitely */
-            continue;
-        }
-        else {
-            /* time-out needs to be checked */
-            status = sys$gettim(&time_curr);
-            if (status != SS$_NORMAL)
-                return 0; /* error */
+	/* there's nothing to read; what now? */
+	if (msec == 0) {
+	    /* immediate time-out; return impatiently */
+	    return 0;
+	} else if (msec < 0) {
+	    /* no time-out; wait on indefinitely */
+	    return 1; /* fakeout to force a wait in vms_read() */
+	} else {
+	    /* time-out needs to be checked */
+	    status = sys$gettim(&time_curr);
+	    if (status != SS$_NORMAL)
+		return 0; /* error */
 
-            status = lib$sub_times(
-                    &time_out,
-                    &time_curr,
-                    &time_diff);
-            if (status != LIB$_NORMAL)
-                return 0; /* error, incl. time_diff < 0 (i.e. time-out) */
+	    status = lib$sub_times(
+		    &time_out,
+		    &time_curr,
+		    &time_diff);
+	    if (status != LIB$_NORMAL)
+		return 0; /* error, incl. time_diff < 0 (i.e. time-out) */
 
-            /* otherwise wait some more */
-        }
+	    /* otherwise wait some more */
+	}
     }
 }

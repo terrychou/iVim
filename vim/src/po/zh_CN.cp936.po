@@ -9,7 +9,7 @@
 #   Edyfox <edyfox@gmail.com>
 #   Yuheng Xie <elephant@linux.net.cn>
 #
-# Generated from zh_CN.po, DO NOT EDIT.
+# Generated from zh_CN.UTF-8.po, DO NOT EDIT.
 #
 msgid ""
 msgstr ""
@@ -17,8 +17,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2006-04-21 15:16+0800\n"
 "PO-Revision-Date: 2006-04-21 14:00+0800\n"
-"Last-Translator: Yuheng Xie <elephant@linux.net.cn>\n"
-"Language-Team: Simplified Chinese <i18n-translation@lists.linux.net.cn>\n"
+"Last-Translator: Yuheng Xie\n"
+"Language-Team: Simplified Chinese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=gbk\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -241,9 +241,8 @@ msgstr " ÎÄ¼şÃû²¹È« (^F^N^P)"
 msgid " Tag completion (^]^N^P)"
 msgstr " Tag ²¹È« (^]^N^P)"
 
-#, fuzzy
-#~ msgid " Path pattern completion (^N^P)"
-#~ msgstr " Â·¾¶Ä£Ê½²¹È« (^N^P)"
+msgid " Path pattern completion (^N^P)"
+msgstr " Í·ÎÄ¼şÄ£Ê½²¹È« (^N^P)"
 
 msgid " Definition completion (^D^N^P)"
 msgstr " ¶¨Òå²¹È« (^D^N^P)"
@@ -1565,9 +1564,6 @@ msgstr "E509: ÎŞ·¨´´½¨±¸·İÎÄ¼ş (Çë¼Ó ! Ç¿ÖÆÖ´ĞĞ)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: ÎŞ·¨Éú³É±¸·İÎÄ¼ş (Çë¼Ó ! Ç¿ÖÆÖ´ĞĞ)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Resource fork »á¶ªÊ§ (Çë¼Ó ! Ç¿ÖÆÖ´ĞĞ)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: ÕÒ²»µ½ÓÃÓÚĞ´ÈëµÄÁÙÊ±ÎÄ¼ş"
 
@@ -1770,7 +1766,7 @@ msgstr "E216: ÎŞ´Ë×é»òÊÂ¼ş: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- ×Ô¶¯ÃüÁî ---"
@@ -1789,7 +1785,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: ×Ô¶¯ÃüÁîÇ¶Ì×²ãÊı¹ıÉî"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s ×Ô¶¯ÃüÁî \"%s\""
 
 #, c-format
@@ -2538,38 +2534,11 @@ msgstr "ÏÔÊ¾ÎÄ¼ş: "
 msgid "Generate docu for"
 msgstr "²úÉúÎÄ¼ş: "
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr "²»ÄÜÁ¬½Óµ½ SNiFF+¡£Çë¼ì²é»·¾³±äÁ¿ ($PATH Àï±ØĞè¿ÉÒÔÕÒµ½ sniffemacs)\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: ¶ÁÈ¡´íÎó. È¡ÏûÁ¬½Ó"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ Ä¿Ç°"
-
 msgid "not "
 msgstr "Î´"
 
 msgid "connected"
 msgstr "Á¬½ÓÖĞ"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: ²»ÕıÈ·µÄ SNiff+ µ÷ÓÃ: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Á¬½Óµ½ SNiFF+ Ê§°Ü"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: Î´Á¬½Óµ½ SNiFF+"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: ²»ÊÇ SNiFF+ µÄ»º³åÇø"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Ğ´Èë´íÎó¡£½áÊøÁ¬½Ó"
 
 msgid "invalid buffer number"
 msgstr "ÎŞĞ§µÄ»º³åÇøºÅ"
@@ -2720,7 +2689,7 @@ msgstr "-q [errorfile]  ±à¼­µÚÒ»¸ö³ö´í´¦µÄÎÄ¼ş"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -2829,7 +2798,7 @@ msgstr "-f\t\t\t²»Ê¹ÓÃ newcli À´´ò¿ª´°¿Ú"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\tÊ¹ÓÃ <device> ½øĞĞÊäÈëÊä³ö"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tÒÔ Arabic Ä£Ê½Æô¶¯"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -2851,7 +2820,7 @@ msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\t²»¼ÓÔØ plugin ½Å±¾"
 
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
-msgstr "-P[N]\t\t´ò¿ª N ¸ö±êÇ©Ò³ (Ä¬ÈÏÖµ: Ã¿¸öÎÄ¼şÒ»¸ö)"
+msgstr "-p[N]\t\t´ò¿ª N ¸ö±êÇ©Ò³ (Ä¬ÈÏÖµ: Ã¿¸öÎÄ¼şÒ»¸ö)"
 
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\t´ò¿ª N ¸ö´°¿Ú (Ä¬ÈÏÖµ: Ã¿¸öÎÄ¼şÒ»¸ö)"
@@ -2895,8 +2864,9 @@ msgstr "-X\t\t\t²»Á¬½Óµ½ X Server"
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <files>\tÈçÓĞ¿ÉÄÜ£¬ÔÚ Vim ·şÎñÆ÷ÉÏ±à¼­ÎÄ¼ş <files>"
 
-msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <files>  Í¬ÉÏ£¬ÕÒ²»µ½·şÎñÆ÷Ê±»±§Ô¹"
+msgid ""
+"--remote-silent <files>  Same, don't complain if there is no server"
+msgstr "--remote-silent <files>  Í¬ÉÏ£¬ÕÒ²»µ½·şÎñÆ÷Ê±²»±§Ô¹"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
@@ -3132,14 +3102,8 @@ msgstr "E288: ÊäÈë·¨²»Ö§³ÖÈÎºÎ·ç¸ñ"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: ÊäÈë·¨²»Ö§³ÖÎÒµÄÔ¤±à¼­ÀàĞÍ"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: over-the-spot ·ç¸ñĞèÒª Fontset"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: ÄãµÄ GTK+ ±È 1.2.3 ¾É¡£×´Ì¬Çø²»¿ÉÓÃ¡£"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: ÊäÈë·¨·şÎñÆ÷Î´ÔËĞĞ"
 
 msgid "E293: block was not locked"
 msgstr "E293: ¿éÎ´±»Ëø¶¨"
@@ -4472,7 +4436,7 @@ msgstr "E65: ÎŞĞ§µÄ»ØÒı"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: ´Ë´¦²»ÔÊĞí \\z("
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: ´Ë´¦²»ÔÊĞí \\z1 µÈ"
 
 msgid "E68: Invalid character after \\z"
@@ -4667,7 +4631,7 @@ msgid "Warning: region %s not supported"
 msgstr "¾¯¸æ: ÇøÓò %s ²»Ö§³Ö"
 
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "¶ÁÈ¡¸½¼ÓÎÄ¼ş %s ¡­¡­"
 
 #, c-format
@@ -4795,7 +4759,7 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s µÄÖµÓëÁíÒ»¸ö .aff ÎÄ¼şÖĞÊ¹ÓÃµÄÖµ²»ÏàÍ¬"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "¶ÁÈ¡×ÖµäÎÄ¼ş %s ¡­¡­"
 
 #, c-format
@@ -4823,7 +4787,7 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "ºöÂÔÁËº¬ÓĞ·Ç ASCII ×Ö·ûµÄ %d ¸öµ¥´Ê£¬ÔÚ %s ÖĞ"
 
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "¶ÁÈ¡µ¥´ÊÎÄ¼ş %s ¡­¡­"
 
 #, c-format
@@ -4881,7 +4845,7 @@ msgid "Total number of words: %d"
 msgstr "µ¥´Ê×ÜÊı: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "Ğ´Èë½¨ÒéÎÄ¼ş %s ¡­¡­"
 
 #, c-format
@@ -4902,7 +4866,7 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "¾¯¸æ: Í¬Ê±Ö¸¶¨ÁË compounding ºÍ NOBREAK"
 
 #, c-format
-msgid "Writing spell file %s ..."
+msgid "Writing spell file %s..."
 msgstr "Ğ´ÈëÆ´Ğ´ÎÄ¼ş %s ¡­¡­"
 
 msgid "Done!"
@@ -5284,7 +5248,7 @@ msgstr "Vim: ¶Á´íÎó£¬ÍË³öÖĞ...\n"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
-msgstr "ÎŞ·¨³·Ïú£»Çë¼ÌĞø"
+msgstr "ÎŞ·¨³·Ïú£»ÈÔÈ»¼ÌĞø"
 
 msgid "Already at oldest change"
 msgstr "ÒÑÎ»ÓÚ×î¾ÉµÄ¸Ä±ä"
@@ -5588,8 +5552,8 @@ msgstr "ÊäÈë  :q<Enter>               ÍË³ö            "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "ÊäÈë  :help<Enter>  »ò  <F1>  ²é¿´ÔÚÏß°ïÖú    "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "ÊäÈë  :help version7<Enter>   ²é¿´°æ±¾ĞÅÏ¢    "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "ÊäÈë  :help version8<Enter>   ²é¿´°æ±¾ĞÅÏ¢    "
 
 msgid "Running in Vi compatible mode"
 msgstr "ÔËĞĞÓÚ Vi ¼æÈİÄ£Ê½"
@@ -5601,13 +5565,13 @@ msgid "type  :help cp-default<Enter> for info on this"
 msgstr "ÊäÈë  :help cp-default<Enter> ²é¿´Ïà¹ØËµÃ÷    "
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "²Ëµ¥  Help->Orphans           ²é¿´ËµÃ÷           "
+msgstr "²Ëµ¥  °ïÖú->¹Â¶ù           ²é¿´ËµÃ÷           "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "ÎŞÄ£Ê½ÔËĞĞ£¬ÊäÈëÎÄ×Ö¼´²åÈë"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "²Ëµ¥  Edit->Global Settings->Toggle Insert Mode  "
+msgstr "²Ëµ¥  ±à¼­->È«¾ÖÉè¶¨->¿ª/¹Ø²åÈëÄ£Ê½  "
 
 #, fuzzy
 #~ msgid "                              for two modes      "

@@ -29,6 +29,10 @@ Via the document picker, you can also import or edit files or directories in iCl
 
 iVim supports external hardware keyboards well, just connect your favorite one to the device and start typing. If you are using a standard English keyboard, you can remap the `caps lock` key, too.
 
+### Auto restore
+
+After an app termination, iVim restores the last editing session automatically on launch. So you don't have to worry about data losing any more. And you can disable it in Settings.app if you prefer the old way.
+
 ## How to install it
 
 ### App Store

@@ -85,12 +85,13 @@ final class SafeVimOperations {
             }            
             let isNewBuf = is_current_buf_new()
             let openCmd = isNewBuf ? "edit" : "tabedit"
+//            let path = path_relative_to_cwd(url.path).spaceEscaped
             let path = url.path.spaceEscaped
             do_cmdline_cmd("\(openCmd) \(path)")
             gEnsureSuccessfulOpen()
-            if url.isDirectory {
-                do_cmdline_cmd("lcd \(path)")
-            }
+//            if url.isDirectory {
+//                do_cmdline_cmd("lcd \(path)")
+//            }
         }
     }
 }
