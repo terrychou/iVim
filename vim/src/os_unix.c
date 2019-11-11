@@ -51,6 +51,7 @@ static int selinux_enabled = -1;
 #if TARGET_OS_SIMULATOR || TARGET_OS_IPHONE
 #include <dlfcn.h>  // for dlopen()/dlsym()/dlclose()
 #include "ios_error.h"
+#undef getenv
 #define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS.
 #endif
 

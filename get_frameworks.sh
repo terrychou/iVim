@@ -10,7 +10,9 @@ curl -OL $HHROOT/ios_system/releases/download/v$IOS_SYSTEM_VER/release.tar.gz
 ( tar -xzf release.tar.gz --strip 1 && rm release.tar.gz ) || { echo "ios_system failed to download"; exit 1; }
 )
 echo "Downloading header file:"
+(cd "${PWD}/vim/src"
 curl -OL $HHROOT/ios_system/releases/download/v$IOS_SYSTEM_VER/ios_error.h 
+)
 # We need the sources for Python and Lua, for the headers
 # Do not do this is python3_ios and lua_ios are already present
 # included by if_lua and if_python.
