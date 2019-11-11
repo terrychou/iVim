@@ -4351,7 +4351,7 @@ mch_call_shell(cmd, options)
 # endif
 
         // iOS: fake fork effects
-    if ((pid = 1 /* fork() */ ) == -1)	/* maybe we should use vfork() */
+    if ((pid = fork()) == -1)	/* maybe we should use vfork() */
 	{
 	    MSG_PUTS(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
@@ -4376,7 +4376,8 @@ mch_call_shell(cmd, options)
 		}
 	    }
 	}
-	else if (pid == 1)	/* child */
+    // iOS: must go through both branches:
+	// else if (pid == 1)	/* child */
 	{
 	    reset_signals();		/* handle signals normally */
 
