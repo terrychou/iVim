@@ -10,7 +10,14 @@ import UIKit
 
 typealias VimColor = UInt32
 
+extension NSAttributedString.Key {
+    static let foregroundColorFromContext = NSAttributedString.Key(
+        kCTForegroundColorFromContextAttributeName as String)
+}
+
 extension VimView {
+    typealias StringAttributes = [NSAttributedString.Key: Any]
+    
     @objc func setFgColor(_ color: VimColor) {
         self.fgColor = color
     }
@@ -49,7 +56,7 @@ extension VimView {
                           rect: CGRect, p_antialias: Bool,
                           transparent: Bool, underline: Bool,
                           undercurl: Bool, cursor: Bool) {
-//        print("draw string", self.fgColor)
+//        NSLog("draw '\(string)' at \(rect)")
         self.ctx.saveGState()
         if !transparent {
             self.ctx.setFillVimColor(self.bgColor)
@@ -98,9 +105,10 @@ extension VimView {
     }
     
     private func attributedString(from string: String) -> NSAttributedString {
-        let attributes: [NSAttributedString.Key: Any] = [
+        let attributes: StringAttributes = [
             .font: self.font!,
-            NSAttributedString.Key(kCTForegroundColorFromContextAttributeName as String): true]
+            .foregroundColorFromContext: true,
+        ]
         
         return NSAttributedString(string: string, attributes: attributes)
     }
@@ -139,7 +147,11 @@ extension VimView {
     
     @objc func copyRect(from src: CGRect, to target: CGRect) {
 //        NSLog("copy rect \(src) \(target)")
-        let image = self.ctx.makeImage()!
+        var image: CGImage?
+        self.ctx.saveGState()
+        image = self.ctx.makeImage()
+        self.ctx.restoreGState()
+        guard let img = image else { return }
         var rect = self.bufferBounds
         rect.origin.x = target.origin.x - src.origin.x
         rect.origin.y = target.origin.y - src.origin.y
@@ -147,7 +159,7 @@ extension VimView {
         self.ctx.saveGState()
         self.ctx.clip(to: target)
         self.ctx.setBlendMode(.copy)
-        self.ctx.draw(image, in: rect)
+        self.ctx.draw(img, in: rect)
         self.ctx.restoreGState()
         self.markRectNeedsDisplay(target)
     }

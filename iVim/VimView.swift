@@ -44,19 +44,57 @@ final class VimView: UIView {
     }()
 }
 
+extension Thread {
+    static func runOnMainThread(_ task: @escaping () -> Void) {
+        if self.isMainThread {
+            task()
+        } else {
+            DispatchQueue.main.async(execute: task)
+        }
+    }
+}
+
+private extension CGRect {
+    mutating func safeFormUnion(_ rect: CGRect) {
+        // "safe" means not to union with .zero
+        // whose result doesn't make sense here
+        self = self == .zero ? rect : self.union(rect)
+    }
+}
+
 extension VimView {
+    private var isDirty: Bool {
+        return self.dirtyRect != .zero
+    }
+    
+    private func markClean() {
+        self.dirtyRect = .zero
+    }
+    
+    private func redrawImmediately() {
+        // force the redraw happen immediately
+        RunLoop.main.run(mode: .tracking, before: Date())
+    }
+    
     func markRectNeedsDisplay(_ rect: CGRect) {
-        self.dirtyRect = self.dirtyRect.union(rect)
+//        NSLog("dirty rect \(self.dirtyRect) new rect \(rect)")
+        self.dirtyRect.safeFormUnion(rect)
         self.markNeedsDisplay()
     }
     
     func markNeedsDisplay() {
-        self.setNeedsDisplay(self.dirtyRect)
+        Thread.runOnMainThread {
+            self.setNeedsDisplay(self.dirtyRect)
+        }
     }
     
     func flush() {
         self.markNeedsDisplay()
-        self.dirtyRect = .zero
+        if self.isDirty {
+            self.redrawImmediately()
+        }
+        self.markClean()
+//        NSLog("\(#function)")
     }
     
     @objc func initFont(_ fontInfo: String?) -> CTFont {
@@ -82,11 +120,16 @@ extension VimView {
     }
     
     override func draw(_ rect: CGRect) {
-        guard let ctx = UIGraphicsGetCurrentContext() else { return }
-        let image = self.ctx.makeImage()!
+        var image: CGImage?
+        self.ctx.saveGState()
+        image = self.ctx.makeImage()
+        self.ctx.restoreGState()
+        guard let img = image,
+            let ctx = UIGraphicsGetCurrentContext()
+            else { return }
         ctx.saveGState()
-        ctx.clip(to: self.bounds)
-        ctx.draw(image, in: self.bufferBounds)
+        ctx.clip(to: rect)
+        ctx.draw(img, in: self.bufferBounds)
         ctx.restoreGState()
     }
 }

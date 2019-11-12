@@ -8,6 +8,7 @@
 //
 
 import UIKit
+import ios_system
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //        self.logToFile()
         self.registerUserDefaultsValues()
+        initializeEnvironment() // for ios_system
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),
