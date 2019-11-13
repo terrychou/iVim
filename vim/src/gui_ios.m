@@ -334,16 +334,15 @@ static NSString * bundle_info_for_name(NSString * name) {
  * gui version info line
  */
 char_u * gui_version_info(void) {
-    static char_u * info;
+    static NSString *info;
     if (info == NULL) {
         NSString * name = bundle_info_for_name(@"CFBundleName");
         NSString * version = bundle_info_for_name(@"CFBundleShortVersionString");
         NSString * build = bundle_info_for_name((NSString *)kCFBundleVersionKey);
-        NSString * line = [NSString stringWithFormat:@"%@ version %@(%@)", name, version, build];
-        info = TOCHARS(line);
+        info = [NSString stringWithFormat:@"%@ %@(%@)", name, version, build];
     }
     
-    return info;
+    return TOCHARS(info);
 }
 
 //CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
