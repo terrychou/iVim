@@ -16,7 +16,7 @@
 // global variable to mark whether need to do
 // post work or not, to prevent possible abundant
 // post work.
-static BOOL post_done = NO;
+BOOL ivim_post_done = NO;
 
 /*
  * create directory at path if not exist yet
@@ -240,7 +240,7 @@ static int write_buf(buf_T *buf, NSString *to_path) {
  * whether do auto restore or not
  */
 static NSString *kUDAutoRestoreEnable = @"kUDAutoRestoreEnable";
-static BOOL should_auto_restore(void) {
+BOOL should_auto_restore(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:kUDAutoRestoreEnable];
 }
 
@@ -879,7 +879,7 @@ BOOL scenes_keeper_restore_prepare(void) {
             // give up all post-restore work
             // actually, scenes_keeper_restore_post
             // won't launch due to return NO
-            post_done = YES;
+            ivim_post_done = YES;
             // run possible pending url task
             run_pending_url_task();
             return NO;
@@ -1010,7 +1010,7 @@ static SKPendingURLTask pendingURLTask = nil;
 
 BOOL scene_keeper_add_pending_url_task(SKPendingURLTask task) {
     BOOL added = NO;
-    if (should_auto_restore() && !post_done) {
+    if (should_auto_restore() && !ivim_post_done) {
         pendingURLTask = task;
         added = YES;
     }
@@ -1037,8 +1037,8 @@ static void clean_leftover_items(void) {
 }
 
 void scenes_keeper_restore_post(void) {
-    if (!post_done) {
-        post_done = YES;
+    if (!ivim_post_done) {
+        ivim_post_done = YES;
         if (should_auto_restore()) {
             enumerate_buffer_mappings(restore_origin);
             unlist_dir_buffers();

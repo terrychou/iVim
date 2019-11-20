@@ -11,8 +11,8 @@ syntax on
 " enable file type detection
 filetype plugin indent on
 
-" avoid unnecessary space on the right
-set guioptions=
+" do not always show the right scroll bar
+set guioptions-=r
 " allow backspacing over everything
 set backspace=start,eol,indent
 

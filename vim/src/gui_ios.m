@@ -1031,6 +1031,8 @@ gui_mch_update(void)
 
 
 /* Flush any output to the screen */
+extern int ivim_post_done;
+extern BOOL should_auto_restore(void);
     void
 gui_mch_flush(void)
 {
@@ -1038,6 +1040,11 @@ gui_mch_flush(void)
     // flushing.  If we were to flush every time it was called the screen would
     // flicker.
 //    printf("%s\n",__func__);
+    if (!ivim_post_done && should_auto_restore()) {
+        // if needs auto-restore, only flush after
+        // restore is done
+        return;
+    }
    [shellViewController() flush];
 }
 
@@ -1550,10 +1557,9 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 gui_mch_set_blinking(long wait, long on, long off)
 {
 //    printf("%s\n",__func__);
-    VimViewController * vc = shellViewController();
-    vc.blink_wait = wait;
-    vc.blink_on   = on;
-    vc.blink_off  = off;
+    [shellViewController() setBlinkDurationsForWait:wait
+                                                 on:on
+                                                off:off];
 }
 
 

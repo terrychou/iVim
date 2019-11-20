@@ -10,21 +10,70 @@
 import UIKit
 import MobileCoreServices
 
-private enum blink_state {
-    case none     /* not blinking at all */
-    case off     /* blinking, cursor is not shown */
-    case on        /* blinking, cursor is shown */
+
+final class VimCursorBlinker {
+    var waitDuration: CLong = 1000
+    var onDuration: CLong = 1000
+    var offDuration: CLong = 1000
+    enum State {
+        case none     /* not blinking at all */
+        case off      /* blinking, cursor is not shown */
+        case on       /* blinking, cursor is shown */
+    }
+    private var state: State = .none
+    private var timer: Timer?
+    weak var controller: VimViewController?
+}
+
+extension VimCursorBlinker {
+    private func changeCursor(after interval: CLong) {
+        self.timer?.invalidate()
+        let delay = TimeInterval(interval) / 1000.0
+        self.timer = Timer.scheduledTimer(
+            timeInterval: delay,
+            target: self,
+            selector: #selector(blinkCursor),
+            userInfo: nil,
+            repeats: false)
+    }
+    
+    @objc private func blinkCursor() {
+        let duration: CLong
+        switch self.state {
+        case .on:
+            gui_undraw_cursor()
+            self.state = .off
+            duration = self.offDuration
+        case .off, .none:
+            gui_update_cursor(1, 0)
+            self.state = .on
+            duration = self.onDuration
+        }
+        self.changeCursor(after: duration)
+        self.controller?.markNeedsDisplay()
+    }
+    
+    func startBlinking() {
+        self.state = .on
+        gui_update_cursor(1, 0)
+        self.changeCursor(after: self.waitDuration)
+    }
+    
+    func stopBlinking(_ updateCursor: Bool) {
+        if self.state == .off && updateCursor {
+            self.timer?.invalidate()
+            gui_update_cursor(1, 0)
+            self.timer = nil
+        }
+        self.state = .none
+    }
 }
 
 final class VimViewController: UIViewController, UIKeyInput, UITextInput, UITextInputTraits {
     @objc var vimView: VimView?
     var hasBeenFlushedOnce = false
     
-    @objc var blink_wait: CLong = 1000
-    @objc var blink_on: CLong = 1000
-    @objc var blink_off: CLong = 1000
-    private var state: blink_state = .none
-    var blinkTimer: Timer?
+    private let cursorBlinker = VimCursorBlinker()
     
     var documentController: UIDocumentInteractionController?
     
@@ -111,45 +160,9 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.vimView?.flush()
     }
     
-    private func changeCursor(after timeInterval: CLong) {
-        self.blinkTimer?.invalidate()
-        let delay = TimeInterval(timeInterval) / 1000.0
-        self.blinkTimer = Timer.scheduledTimer(timeInterval: delay, target: self, selector: #selector(self.blinkCursor), userInfo: nil, repeats: false)
-    }
-    
     func markNeedsDisplay() {
         self.vimView?.markNeedsDisplay()
     }
-    
-    @objc func blinkCursor() {
-        switch self.state {
-        case .on:
-            gui_undraw_cursor()
-            self.state = .off
-            self.changeCursor(after: self.blink_off)
-        case .off, .none:
-            gui_update_cursor(1, 0)
-            self.state = .on
-            self.changeCursor(after: self.blink_on)
-        }
-        self.markNeedsDisplay()
-    }
-    
-    @objc func startBlink() {
-        self.state = .on
-        gui_update_cursor(1, 0)
-        self.changeCursor(after: self.blink_wait)
-    }
-    
-    @objc func stopBlink(_ updateCursor: Bool) {
-        if self.state == .off && updateCursor {
-            self.blinkTimer?.invalidate()
-            gui_update_cursor(1, 0)
-            self.blinkTimer = nil
-        }
-        self.state = .none
-    }
-
     
     override var canBecomeFirstResponder: Bool {
         return self.hasBeenFlushedOnce
@@ -240,7 +253,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         let expirationDate = wtime != -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
         let runloop = RunLoop.current
         repeat {
-            runloop.acceptInput(forMode: .default, before: expirationDate)
+            runloop.acceptInput(forMode: .default,
+                                before: expirationDate)
 //            NSLog("gogogo \(wtime)")// \(runloop)")
             if input_available() > 0 {
                 return true
@@ -301,6 +315,26 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }) { _ in
             fv.removeFromSuperview()
         }
+    }
+}
+
+extension VimViewController { // cursor blinking
+    @objc func setBlinkDurationsFor(wait: CLong,
+                                    on: CLong,
+                                    off: CLong) {
+        let cb = self.cursorBlinker
+        cb.controller = self
+        cb.waitDuration = wait
+        cb.onDuration = on
+        cb.offDuration = off
+    }
+    
+    @objc func startBlink() {
+        self.cursorBlinker.startBlinking()
+    }
+    
+    @objc func stopBlink(_ updateCursor: Bool) {
+        self.cursorBlinker.stopBlinking(updateCursor)
     }
 }
 

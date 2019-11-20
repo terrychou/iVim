@@ -30,25 +30,35 @@ extension VimView {
         self.spColor = color
     }
     
+    private typealias DrawTask = (CGContext) -> CGRect
+    private func draw(_ task: DrawTask) {
+        self.ctx.saveGState()
+        let rect = task(self.ctx)
+        self.ctx.restoreGState()
+        self.markRectNeedsDisplay(rect)
+    }
+    
     @objc func fillAll(with color: VimColor) {
         self.fillRect(self.bounds, with: color)
     }
     
     @objc func fillRect(_ rect: CGRect, with color: VimColor) {
-        self.ctx.saveGState()
-        self.ctx.setFillVimColor(color)
-        self.ctx.fill(rect)
-        self.ctx.restoreGState()
-        self.markRectNeedsDisplay(rect)
+        self.draw { ctx in
+            ctx.setFillVimColor(color)
+            ctx.fill(rect)
+            
+            return rect
+        }
     }
     
     @objc func strokeRect(_ rect: CGRect, with color: VimColor) {
 //        print("stroke rect", rect, color)
-        self.ctx.saveGState()
-        self.ctx.setStrokeVimColor(color)
-        self.ctx.stroke(rect)
-        self.ctx.restoreGState()
-        self.markRectNeedsDisplay(rect)
+        self.draw { ctx in
+            ctx.setStrokeVimColor(color)
+            ctx.stroke(rect)
+            
+            return rect
+        }
     }
     
     @objc func drawString(_ string: NSString,
@@ -57,61 +67,68 @@ extension VimView {
                           transparent: Bool, underline: Bool,
                           undercurl: Bool, cursor: Bool) {
 //        NSLog("draw '\(string)' at \(rect)")
-        self.ctx.saveGState()
-        if !transparent {
-            self.ctx.setFillVimColor(self.bgColor)
-            self.ctx.fill(rect)
+        self.draw { ctx in
+            if !transparent {
+                ctx.setFillVimColor(self.bgColor)
+                ctx.fill(rect)
+            }
+            ctx.setShouldAntialias(p_antialias)
+            ctx.setAllowsAntialiasing(p_antialias)
+            ctx.setShouldSmoothFonts(p_antialias)
+            ctx.setCharacterSpacing(0)
+            ctx.setTextDrawingMode(.fill)
+            ctx.setFillVimColor(self.fgColor)
+            let range = NSMakeRange(0, string.length)
+            var offset = CGFloat(0)
+            var totalCells = 0
+            let attr: StringAttributes = [
+                .font: self.font!,
+                .foregroundColorFromContext: true,
+            ]
+            string.enumerateSubstrings(
+                in: range,
+                options: .byComposedCharacterSequences) { (c, _, _, _) in
+                    guard let c = c else { return }
+                    let a = NSAttributedString(string: c,
+                                               attributes: attr)
+                    let l = CTLineCreateWithAttributedString(a)
+                    ctx.textPosition = CGPoint(x: pos_x + offset,
+                                               y: pos_y)
+                    CTLineDraw(l, ctx)
+                    let cells = cells_for_character(c)
+                    totalCells += Int(cells)
+                    offset += CGFloat(cells) * self.char_width
+            }
+            
+            if underline {
+                self.drawUnderline(x: pos_x,
+                                   y: pos_y,
+                                   cells: totalCells,
+                                   in: ctx)
+            } else if undercurl {
+                self.drawUndercurl(x: pos_x,
+                                   y: pos_y,
+                                   cells: totalCells,
+                                   in: ctx)
+            }
+            
+            if cursor {
+                ctx.setBlendMode(.difference)
+                ctx.fill(rect)
+            }
+            
+            return rect
         }
-        self.ctx.setShouldAntialias(p_antialias)
-        self.ctx.setAllowsAntialiasing(p_antialias)
-        self.ctx.setShouldSmoothFonts(p_antialias)
-        self.ctx.setCharacterSpacing(0)
-        self.ctx.setTextDrawingMode(.fill)
-        self.ctx.setFillVimColor(self.fgColor)
-        let range = NSMakeRange(0, string.length)
-        var offset = CGFloat(0)
-        var totalCells = 0
-        string.enumerateSubstrings(
-            in: range,
-            options: .byComposedCharacterSequences) { (c, _, _, _) in
-                guard let c = c else { return }
-                let a = self.attributedString(from: c)
-                let l = CTLineCreateWithAttributedString(a)
-                self.ctx.textPosition = CGPoint(x: pos_x + offset, y: pos_y)
-                CTLineDraw(l, self.ctx)
-                let cells = cells_for_character(c)
-                totalCells += Int(cells)
-                offset += CGFloat(cells) * self.char_width
-        }
-        
-        if underline {
-            self.drawUnderline(x: pos_x,
-                               y: pos_y,
-                               cells: totalCells,
-                               in: self.ctx)
-        } else if undercurl {
-            self.drawUndercurl(x: pos_x,
-                               y: pos_y,
-                               cells: totalCells,
-                               in: self.ctx)
-        }
-        
-        if cursor {
-            self.ctx.setBlendMode(.difference)
-            self.ctx.fill(rect)
-        }
-        self.ctx.restoreGState()
-        self.markRectNeedsDisplay(rect)
     }
     
-    private func attributedString(from string: String) -> NSAttributedString {
-        let attributes: StringAttributes = [
-            .font: self.font!,
-            .foregroundColorFromContext: true,
-        ]
-        
-        return NSAttributedString(string: string, attributes: attributes)
-    }
+//    private func attributedString(from string: String) -> NSAttributedString {
+//        let attributes: StringAttributes = [
+//            .font: self.font!,
+//            .foregroundColorFromContext: true,
+//        ]
+//
+//        return NSAttributedString(string: string, attributes: attributes)
+//    }
     
     private func drawUnderline(x: CGFloat, y: CGFloat,
                                cells: Int, in ctx: CGContext) {
@@ -147,21 +164,22 @@ extension VimView {
     
     @objc func copyRect(from src: CGRect, to target: CGRect) {
 //        NSLog("copy rect \(src) \(target)")
-        var image: CGImage?
-        self.ctx.saveGState()
-        image = self.ctx.makeImage()
-        self.ctx.restoreGState()
-        guard let img = image else { return }
-        var rect = self.bufferBounds
-        rect.origin.x = target.origin.x - src.origin.x
-        rect.origin.y = target.origin.y - src.origin.y
-        
-        self.ctx.saveGState()
-        self.ctx.clip(to: target)
-        self.ctx.setBlendMode(.copy)
-        self.ctx.draw(img, in: rect)
-        self.ctx.restoreGState()
-        self.markRectNeedsDisplay(target)
+        self.draw { ctx in
+            var image: CGImage?
+            ctx.saveGState()
+            image = ctx.makeImage()
+            ctx.restoreGState()
+            guard let img = image else { return .zero }
+            var rect = self.bufferBounds
+            rect.origin.x = target.origin.x - src.origin.x
+            rect.origin.y = target.origin.y - src.origin.y
+            
+            ctx.clip(to: target)
+            ctx.setBlendMode(.copy)
+            ctx.draw(img, in: rect)
+            
+            return target
+        }
     }
 }
 
