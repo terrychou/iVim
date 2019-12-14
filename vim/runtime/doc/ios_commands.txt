@@ -1,4 +1,4 @@
-*ios_commands.txt*	For Vim version 8.1.	Last change: 2019 Oct 27
+*ios_commands.txt*	For Vim version 8.1.	Last change: 2019 Dec 14
 
 				iVim REFERENCE MANUAL	by Terry Chou
 
@@ -746,7 +746,7 @@ h. compose					*isetekbd-op-compose*
 
 it resets the compose mode.
 
-In the `compose` mode, this operatio clears the existing editing history and 
+In the `compose` mode, this operation clears the existing editing history and 
 sets the current state as the initial history entry. As a result, it makes a 
 clean environment for its following composition. Example: >
 
