@@ -206,7 +206,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     func insertText(_ text: String) {
         guard self.allowsInsertingText else { return } //no input during dictation
-        self.markedInfo?.deleteOldMarkedText() //handle the alt- input
+//        self.markedInfo?.deleteOldMarkedText() //handle the alt- input
         if self.handleModifiers(with: text) { return }
         self.addToInputBuffer(self.escapingText(text))
     }

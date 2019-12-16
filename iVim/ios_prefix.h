@@ -32,6 +32,10 @@
 #define FEAT_TERMINAL 1
 #define HAVE_SYS_POLL_H 1
 #define TARGET_OS_IPHONE 1
+#define FEAT_LUA 1
+#define FEAT_PYTHON3 1
+#define DYNAMIC_PYTHON3 1
+#define DYNAMIC_PYTHON3_DLL "pythonB.framework/pythonB"
 #define MODIFIED_BY "Boogaloo"
 
 int VimMain(int argc, char *argv[]);

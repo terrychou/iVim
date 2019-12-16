@@ -28,6 +28,11 @@ set scrolloff=5
 
 " make netrw adapt cwd automatically
 let g:netrw_keepdir=0
+" correct netrw 'scp' command silent option
+let g:netrw_scp_cmd='scp -s'
+" disable using of external mkdir for netrw
+" since it requires umask too
+let g:netrw_localmkdir=''
 
 " skip defaults.vim
 let skip_defaults_vim=1

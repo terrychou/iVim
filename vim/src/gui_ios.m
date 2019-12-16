@@ -114,7 +114,7 @@ void input_special_key(int key) {
 void input_special_name(const char * name) {
     char_u * n = (char_u *)name;
     char_u re[6];
-    int len = trans_special(&n, re, TRUE, FALSE);
+    int len = trans_special(&n, re, FALSE, FALSE);
     for (int i = 0; i < len; i += 3) {
         if (re[i] == K_SPECIAL) { re[i] = CSI; }
     }
@@ -898,6 +898,57 @@ void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL 
     };
     worker(m);
     vim_regfree(regmatch.regprog);
+}
+
+/*
+ * append "shell command names" matching *pat* to *matches*
+ * called by expand_shellcmd()
+ */
+
+static NSArray<NSString *> *available_shell_cmds() {
+    static NSArray<NSString *> *cmds;
+    if (cmds == NULL) {
+        NSURL *cPath = [[[NSBundle mainBundle] resourceURL]
+                        URLByAppendingPathComponent:
+                        @"runtime/doc/ios_shell_cmds"];
+        NSError *err;
+        NSString *content = [NSString
+                             stringWithContentsOfURL:cPath
+                             encoding:NSUTF8StringEncoding
+                             error:&err];
+        if (err == nil) {
+            cmds = [content componentsSeparatedByCharactersInSet:
+                    [NSCharacterSet newlineCharacterSet]];
+        } else {
+            cmds = @[];
+            NSLog(@"failed to read shell cmds list: %@",
+                  [err localizedDescription]);
+        }
+    }
+    
+    return cmds;
+}
+
+void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches) {
+    // vim tries to collect commands from directories
+    // in 'path', so it appends a '*' to any pattern.
+    // as a result, need to remove it first
+    NSString *nspat = @"";
+    BOOL matchAll = YES;
+    if (pat != NULL) {
+        nspat = TONSSTRING(pat);
+        if ([nspat hasSuffix:@"*"]) {
+            nspat = [nspat substringToIndex:[nspat length] - 1];
+        }
+        if ([nspat length] > 0) {
+            matchAll = NO;
+        }
+    }
+    for (NSString *cmd in available_shell_cmds()) {
+        if (matchAll || [cmd hasPrefix:nspat]) {
+            ga_add_string(matches, TOCHARS(cmd));
+        }
+    }
 }
 
 /*

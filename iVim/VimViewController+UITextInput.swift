@@ -401,37 +401,39 @@ extension MarkedInfo {
         return VimTextRange(location: 0, length: self.text.nsLength)!
     }
     
-    private func deleteBackward(for times: Int) {
-        gFeedKeys("\\<BS>", for: times, mode: "n")
-//        gAddTextToInputBuffer(keyBS.unicoded, for: times)
-//        for _ in 0..<times {
-//            input_special_key(keyBS)
-//        }
-    }
+//    private func deleteBackward(for times: Int) {
+//        gFeedKeys("\\<BS>", for: times, mode: "n")
+////        gAddTextToInputBuffer(keyBS.unicoded, for: times)
+////        for _ in 0..<times {
+////            input_special_key(keyBS)
+////        }
+//    }
     
-    func deleteOldMarkedText() {
-        guard !self.text.isEmpty else { return }
-        let oldLen = self.text.nsLength
-        let offset = oldLen - self.selectedRange.location
-        move_cursor_right(offset)
-        self.deleteBackward(for: oldLen)
-    }
+//    func deleteOldMarkedText() {
+////        guard !self.text.isEmpty else { return }
+////        let oldLen = self.text.nsLength
+////        let offset = oldLen - self.selectedRange.location
+////        move_cursor_right(offset)
+////        self.deleteBackward(for: oldLen)
+//    }
     
     mutating func didGetMarkedText(_ text: String?, selectedRange: NSRange, pending: Bool) {
         guard let text = text else { return }
-        if !pending {
-            self.deleteOldMarkedText()
-            gAddNonCSITextToInputBuffer(text)
-            let offset = text.nsLength - selectedRange.location
-            move_cursor_left(offset)
-        }
+//        if !pending {
+//            self.deleteOldMarkedText()
+////            gAddNonCSITextToInputBuffer(text)
+////            let offset = text.nsLength - selectedRange.location
+////            move_cursor_left(offset)
+//        }
         self.text = text
         self.selectedRange = selectedRange
     }
     
     mutating func didUnmark() {
-        guard self.cancelled else { return }
-        self.deleteOldMarkedText()
-        self.cancelled = false
+        if self.cancelled {
+            self.cancelled = false
+        } else {
+            gAddNonCSITextToInputBuffer(self.text)            
+        }
     }
 }

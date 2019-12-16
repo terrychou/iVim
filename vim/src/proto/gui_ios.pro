@@ -94,5 +94,9 @@ void gui_mch_post_balloon(BalloonEval *beval, char_u *mesg);
 void ex_ios_cmds(exarg_T *eap);
 
 void enumerate_bufs_with_corrected(void (^task)(buf_T *, char_u *, BOOL));
+void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches);
 
+// ios_term.m
+void ios_term_run_cmd(char_u *cmd, int toshell_fd, int fromshell_fd);
+void ios_term_readline(char_u *ta_buf, int len, int *got_int, pid_t pid, int *toshell_fd);
 /* vim: set ft=c : */
