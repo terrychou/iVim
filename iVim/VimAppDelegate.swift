@@ -68,31 +68,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         register_auto_restore_enabled()
     }
     
-    private func setupPython(withResourcePath resPath: String) {
-        numPythonInterpreters = 2
-        let libPath = NSSearchPathForDirectoriesInDomains(.libraryDirectory,
-                                                          .userDomainMask,
-                                                          true)[0]
-        let libHome = libPath + "/python/site-packages"
-//        vim_setenv("PYTHONHOME", resPath + "/python" + ":" + libHome)
-        vim_setenv("PYTHONHOME", resPath + "/python")
-        vim_setenv("PYTHONPATH", libHome)
-        // setup pip: install into the writable one
-        vim_setenv("PIP_TARGET", libHome)
-        vim_setenv("PIP_DISABLE_PIP_VERSION_CHECK", "yes")
-        vim_setenv("PIP_NO_COLOR", "yes")
-    }
-    
     @objc func VimStarter() {
-        guard let vimPath = Bundle.main.resourcePath else { return }
-        initializeEnvironment() // for ios_system
-        let runtimePath = vimPath + "/runtime"
-        vim_setenv("VIM", vimPath)
-        vim_setenv("VIMRUNTIME", runtimePath)
-        let workingDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        vim_setenv("HOME", workingDir)
-        self.setupPython(withResourcePath: vimPath)
-        FileManager.default.changeCurrentDirectoryPath(workingDir)
+        guard self.customizeEnv() else { return }
         var args = ["vim"]
         if !scenes_keeper_restore_prepare() {
             gSVO.showError("failed to auto-restore")
@@ -106,4 +83,47 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         VimMain(Int32(args.count), &argv)
         argv.forEach { free($0) }
     }
+}
+
+extension AppDelegate { // env setup
+    private func customizeEnv() -> Bool {
+            guard let resPath = Bundle.main.resourcePath else { return false }
+            // for ios_system
+            initializeEnvironment()
+            
+            // setup vim
+            let runtimePath = resPath + "/runtime"
+            vim_setenv("VIM", resPath)
+            vim_setenv("VIMRUNTIME", runtimePath)
+            let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory,
+                                                             .userDomainMask,
+                                                             true)[0]
+            vim_setenv("HOME", docDir)
+            FileManager.default.changeCurrentDirectoryPath(docDir)
+            
+            // setup python
+            self.setupPython(withResourcePath: resPath)
+            
+            // no color for ls
+            unsetenv("CLICOLOR")
+            
+            return true
+        }
+        
+        private func setupPython(withResourcePath resPath: String) {
+            numPythonInterpreters = 2
+            let libPath = NSSearchPathForDirectoriesInDomains(.libraryDirectory,
+                                                              .userDomainMask,
+                                                              true)[0]
+            let libHome = libPath + "/python/site-packages"
+    //        vim_setenv("PYTHONHOME", resPath + "/python" + ":" + libHome)
+            vim_setenv("PYTHONHOME", resPath + "/python")
+            vim_setenv("PYTHONPATH", libHome)
+            vim_setenv("PYTHONIOENCODING", "utf-8")
+            // setup pip: install into the writable one
+            vim_setenv("PIP_TARGET", libHome)
+            vim_setenv("PIP_DISABLE_PIP_VERSION_CHECK", "yes")
+            vim_setenv("PIP_NO_COLOR", "yes")
+            vim_setenv("PIP_PROGRESS_BAR", "pretty")
+        }
 }

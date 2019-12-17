@@ -61,10 +61,10 @@ extension VimCursorBlinker {
     
     func stopBlinking(_ updateCursor: Bool) {
         if self.state == .off && updateCursor {
-            self.timer?.invalidate()
             gui_update_cursor(1, 0)
-            self.timer = nil
         }
+        self.timer?.invalidate()
+        self.timer = nil
         self.state = .none
     }
 }

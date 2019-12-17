@@ -47,7 +47,7 @@ extern __thread FILE* thread_stdin;
 extern __thread FILE* thread_stdout;
 extern __thread FILE* thread_stderr;
 
-#define exit ios_exit
+//#define exit ios_exit
 #define abort() ios_exit(1)
 #define _exit ios_exit
 #define kill ios_killpid

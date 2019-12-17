@@ -52,10 +52,6 @@ static int selinux_enabled = -1;
 # include <dlfcn.h>  // for dlopen()/dlsym()/dlclose()
 # include <ios_error.h>
 # define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS.
-extern __thread FILE* thread_stdin;
-extern __thread FILE* thread_stdout;
-extern __thread FILE* thread_stderr;
-extern void ios_setStreams(FILE* _stdin, FILE* _stdout, FILE* _stderr);
 #endif
 
 #ifdef __BEOS__
@@ -3361,6 +3357,10 @@ mch_exit(int r)
 	    cursor_on();
     }
     out_flush();
+#ifdef FEAT_GUI_IOS
+    // need to stash scenes before memfiles removed
+    scenes_keeper_stash();
+#endif
     ml_close_all(TRUE);		/* remove all memfiles */
     may_core_dump();
 #ifdef FEAT_GUI
@@ -4919,6 +4919,7 @@ mch_call_shell_fork(
 	     * to the X server (esp. with GTK, which uses atexit()).
 	     */
 # if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+        vim_setenv((char_u *)"TERM", (char_u *)"xterm");
         ios_term_run_cmd(cmd, fd_toshell[0], fd_fromshell[1]);
 # else
         execvp(argv[0], argv);

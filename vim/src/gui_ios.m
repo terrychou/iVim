@@ -1026,15 +1026,12 @@ gui_mch_init(void)
     return OK;
 }
 
-
-void scenes_keeper_stash(void);
     void
 gui_mch_exit(int rc)
 {
 //    printf("%s\n",__func__);
     //save old documents
     [[OldDocumentsManager shared] wrapUp];
-    scenes_keeper_stash();
     //unregister file presenters
     [[PickInfoManager shared] wrapUp];
 }
