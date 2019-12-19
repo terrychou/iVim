@@ -63,10 +63,10 @@ private extension CGRect {
 }
 
 extension VimView {    
-    private func redrawImmediately() {
-        // force the redraw happen immediately
-        RunLoop.main.run(mode: .tracking, before: Date())
-    }
+//    private func redrawImmediately() {
+//        // force the redraw happen immediately
+//        RunLoop.main.run(mode: .tracking, before: Date())
+//    }
     
     func markRectNeedsDisplay(_ rect: CGRect) {
 //        NSLog("dirty rect \(self.dirtyRect) new rect \(rect)")
@@ -82,10 +82,11 @@ extension VimView {
     
     func flush() {
         self.markNeedsDisplay()
-        if self.dirtyRect != .zero {
-            self.redrawImmediately()
-            self.dirtyRect = .zero
-        }
+        self.dirtyRect = .zero
+//        if self.dirtyRect != .zero {
+//            self.redrawImmediately()
+//            self.dirtyRect = .zero
+//        }
 //        NSLog("\(#function)")
     }
     
