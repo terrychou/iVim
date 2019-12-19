@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Oct 27
+*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Dec 18
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -6,6 +6,9 @@
 							*ios* *iOS*
 
 This file documents the particularities of the iOS port of Vim.
+
+iVim is open source: https://github.com/terrychou/iVim, and you can find 
+useful information on its wiki: https://github.com/terrychou/iVim/wiki
 
 ACKNOWLEGEMENT
 
@@ -33,7 +36,8 @@ the newer iOS systems. This project started from it.
 9.  External keyboard			|ios-external-keyboard|
 10. Integrated Exuberant Ctags		|ios-exuberant-ctags|
 11. Auto restore                        |ios-auto-restore|
-12. Miscellaneous			|ios-miscellaneous|
+12. External commands                   |ios-external-commands|
+13. Miscellaneous			|ios-miscellaneous|
 
 ==============================================================================
 1. File system				*ios-file-system*
@@ -486,7 +490,16 @@ all the cached information when this happens.
 
 
 ==============================================================================
-12. Miscellaneous			*ios-miscellaneous* *ios-misc*
+12. External commands                   *ios-external-commands*
+
+In order to enhance some plugins and its editing workflow, iVim includes some
+useful external commands and manages to make them work seemlessly with itself.
+
+See |ios-external-cmds| for related details.
+
+
+==============================================================================
+13. Miscellaneous			*ios-miscellaneous* *ios-misc*
 
 Touch support ~
 
