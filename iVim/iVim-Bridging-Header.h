@@ -66,6 +66,7 @@ NSString * get_pattern_from_line(NSString * line);
 void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL (^matcher)(NSString *)));
 
 void gui_ios_init_bg_color(void);
+void gui_mch_flush(void);
 
 // scenes keeper
 void scenes_keeper_stash(void);

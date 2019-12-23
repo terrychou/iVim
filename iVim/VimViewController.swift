@@ -26,8 +26,13 @@ final class VimCursorBlinker {
 }
 
 extension VimCursorBlinker {
-    private func changeCursor(after interval: CLong) {
+    private func invalidateTimer() {
         self.timer?.invalidate()
+        self.timer = nil
+    }
+    
+    private func changeCursor(after interval: CLong) {
+        self.invalidateTimer()
         let delay = TimeInterval(interval) / 1000.0
         self.timer = Timer.scheduledTimer(
             timeInterval: delay,
@@ -53,7 +58,9 @@ extension VimCursorBlinker {
         self.controller?.markNeedsDisplay()
     }
     
-    func startBlinking() {
+    func startBlinking(_ inFocus: Bool) {
+        self.invalidateTimer()
+        guard inFocus else { return }
         self.state = .on
         gui_update_cursor(1, 0)
         self.changeCursor(after: self.waitDuration)
@@ -63,11 +70,12 @@ extension VimCursorBlinker {
         if self.state == .off && updateCursor {
             gui_update_cursor(1, 0)
         }
-        self.timer?.invalidate()
-        self.timer = nil
+        self.invalidateTimer()
         self.state = .none
     }
 }
+
+var gVVC: VimViewController? = nil
 
 final class VimViewController: UIViewController, UIKeyInput, UITextInput, UITextInputTraits {
     @objc var vimView: VimView?
@@ -96,6 +104,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     override func viewDidLoad() {
+        guard gVVC == nil else { return }
+        gVVC = self
         let v = VimView(frame: .zero)
         (self.view as! VimMainView).addShellView(v)
         self.vimView = v
@@ -149,7 +159,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }
     }
     
-    @objc func flush() {
+    func flush() {
+        self.flush(redrawImmediately: self.isInFocus())
+    }
+    
+    @objc func flush(redrawImmediately: Bool) {
         if !self.hasBeenFlushedOnce {
             self.hasBeenFlushedOnce = true
             DispatchQueue.main.async {
@@ -157,7 +171,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
                 gSVO.markStart()
             }
         }
-        self.vimView?.flush()
+        self.vimView?.flush(redrawImmediately)
     }
     
     func markNeedsDisplay() {
@@ -318,6 +332,18 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
 }
 
+extension VimViewController {
+    @objc func isInFocus() -> Bool {
+        return self.isFirstResponder &&
+            (self.presentedViewController == nil) &&
+            (UIApplication.shared.applicationState == .active)
+    }
+    
+    func tryResumeFocus() {
+        gui_mch_flush()
+    }
+}
+
 extension VimViewController { // cursor blinking
     @objc func setBlinkDurationsFor(wait: CLong,
                                     on: CLong,
@@ -329,8 +355,8 @@ extension VimViewController { // cursor blinking
         cb.offDuration = off
     }
     
-    @objc func startBlink() {
-        self.cursorBlinker.startBlinking()
+    @objc func startBlink(_ inFocus: Bool) {
+        self.cursorBlinker.startBlinking(inFocus)
     }
     
     @objc func stopBlink(_ updateCursor: Bool) {
@@ -380,12 +406,23 @@ extension VimViewController {
         if let url = url {
             self.documentController = UIDocumentInteractionController(url: url)
             self.documentController?.presentOptionsMenu(from: self.shareRect, in: self.view, animated: true)
+            self.documentController?.delegate = self
         } else if let text = text {
             let avc = UIActivityViewController(activityItems: [text], applicationActivities: nil)
             avc.popoverPresentationController?.sourceRect = self.shareRect
             avc.popoverPresentationController?.sourceView = self.view
+            avc.completionWithItemsHandler = {
+                [unowned self] _, _, _, _ in
+                self.tryResumeFocus()
+            }
             self.present(avc, animated: true)
         }
+    }
+}
+
+extension VimViewController: UIDocumentInteractionControllerDelegate {
+    func documentInteractionControllerDidDismissOptionsMenu(_ controller: UIDocumentInteractionController) {
+        self.tryResumeFocus()
     }
 }
 

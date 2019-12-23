@@ -52,6 +52,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         gPIM.didEnterBackground()
     }
     
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // resume focus
+        gui_mch_flush()
+    }
+    
 //    private func logToFile() {
 //        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
 //        let file = path + "/NSLog.log"

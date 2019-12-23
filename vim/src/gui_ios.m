@@ -1093,7 +1093,13 @@ gui_mch_flush(void)
         // restore is done
         return;
     }
-   [shellViewController() flush];
+    BOOL in_focus = [shellViewController() isInFocus];
+    BOOL was_in_focus = (gui.in_focus == TRUE);
+    BOOL focus_changed = (in_focus != was_in_focus);
+    if (focus_changed) {
+        gui_focus_change(in_focus);
+    }
+    [shellViewController() flushWithRedrawImmediately:in_focus];
 }
 
 
@@ -1560,10 +1566,10 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 #endif
     CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), cw * gui.char_width, gui.char_height);
 //    CGColorRef cgColor = CGColorCreateFromVimColor(color);
-//    rect.size.width += 1;
-//    rect.size.height += 1;
-//    rect.origin.x -= 0.5;
-//    rect.origin.y -= 0.5;
+    rect.size.width -= 1;
+    rect.size.height -= 1;
+    rect.origin.x += 0.5;
+    rect.origin.y += 0.5;
     [shellView() strokeRect:rect with:(uint32_t)color];
 }
 
@@ -1618,7 +1624,7 @@ gui_mch_set_blinking(long wait, long on, long off)
     void
 gui_mch_start_blink(void)
 {
-    [shellViewController() startBlink];
+    [shellViewController() startBlink:gui.in_focus];
 //    printf("%s\n",__func__);
  //   if (gui_ios.blink_timer != nil)
  //       [gui_ios.blink_timer invalidate];
@@ -1659,12 +1665,14 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
 int
 gui_mch_is_blinking(void)
 {
+//    NSLog(@"%s\n", __func__);
     return FALSE;
 }
 
 int
 gui_mch_is_blink_off(void)
 {
+//    NSLog(@"%s\n", __func__);
     return FALSE;
 }
 
