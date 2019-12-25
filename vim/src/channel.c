@@ -633,6 +633,12 @@ channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
 		(gpointer)(long)channel->ch_part[part].ch_fd);
 #   endif
     }
+#  elif defined(FEAT_GUI_IOS)
+    // register the channel for ivim
+    if (!gui_ivim_has_channel(channel, part)) {
+        ch_log(channel, "Registering part %s with fd %d", part_names[part], channel->ch_part[part].ch_fd);
+        gui_ivim_add_channel(channel, part);
+    }
 #  endif
 # endif
 }
@@ -685,6 +691,12 @@ channel_gui_unregister_one(channel_T *channel UNUSED, ch_part_T part UNUSED)
 	gdk_input_remove(channel->ch_part[part].ch_inputHandler);
 #   endif
 	channel->ch_part[part].ch_inputHandler = 0;
+    }
+#  elif defined(FEAT_GUI_IOS)
+    // remove the channel for ivim
+    if (gui_ivim_has_channel(channel, part)) {
+        ch_log(channel, "Unregistering part %s", part_names[part]);
+        gui_ivim_remove_channel(channel, part);
     }
 #  endif
 # endif
@@ -3805,6 +3817,18 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 theend:
     free_job_options(&opt);
 }
+
+#if defined(FEAT_GUI_IOS)
+    void
+ivim_read_channel(channel_T *channel, ch_part_T part, char *func)
+{
+    sock_T ch_fd = channel->ch_part[part].ch_fd;
+    if (ch_fd != INVALID_FD &&
+        channel_wait(channel, ch_fd, 0) == CW_READY) {
+        channel_read(channel, part, func);
+    }
+}
+#endif
 
 # if defined(MSWIN) || defined(FEAT_GUI) || defined(PROTO)
 /*

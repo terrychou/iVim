@@ -96,6 +96,11 @@ void ex_ios_cmds(exarg_T *eap);
 void enumerate_bufs_with_corrected(void (^task)(buf_T *, char_u *, BOOL));
 void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches);
 
+// channel and job
+int gui_ivim_has_channel(channel_T *channel, ch_part_T part);
+void gui_ivim_add_channel(channel_T *channel, ch_part_T part);
+void gui_ivim_remove_channel(channel_T *channel, ch_part_T part);
+
 void scenes_keeper_stash(void);
 // ios_term.m
 void ios_term_run_cmd(char_u *cmd, int toshell_fd, int fromshell_fd);

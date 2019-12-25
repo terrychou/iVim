@@ -79,8 +79,8 @@ extension VimViewController {
             self.becomeFirstResponder()
         }
         self.markedInfo?.didGetMarkedText(markedText, selectedRange: selectedRange, pending: self.isNormalPending)
-        self.flush()
-        self.markNeedsDisplay()
+//        self.flush()
+//        self.markNeedsDisplay()
     }
     
     func unmarkText() {

@@ -1113,10 +1113,47 @@ gui_mch_flush(void)
  * or FAIL otherwise.
  */
 //TODO: Move to VC
+static BOOL got_input(void) {
+    return (input_available() || got_int);
+}
+
     int
 gui_mch_wait_for_chars(int wtime)
 {
-    return [shellViewController() waitForChars:wtime];
+    parse_queued_messages();
+    if (got_input()) {
+        return OK;
+    }
+    NSTimer *timer = nil;
+    CFTimeInterval ti = (wtime >= 0 ? 0.001 * wtime : 1e8);
+    if (ti > 0.1 && (has_any_channel() || has_pending_job())) {
+        timer = [NSTimer
+                 scheduledTimerWithTimeInterval:0.1
+                 repeats:YES
+                 block:^(NSTimer * _Nonnull tr) {
+            parse_queued_messages();
+            if (input_available()) {
+                CFRunLoopStop(CFRunLoopGetCurrent());
+            }
+        }];
+    }
+    int char_found = FAIL;
+    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, ti, true)
+           == kCFRunLoopRunHandledSource) {
+        ti = 0.0;
+        if (got_input()) {
+            char_found = OK;
+        }
+    }
+    if (got_input()) {
+        char_found = OK;
+    }
+    
+    [timer invalidate];
+    
+    return char_found;
+    
+//    return [shellViewController() waitForChars:wtime];
 }
 
 
@@ -2224,7 +2261,96 @@ gui_mch_settitle(char_u *title, char_u *icon)
 }
 #endif
 
+#if defined(FEAT_JOB_CHANNEL)
+// ----------------- Channel and job support ------------------
+void ivim_read_channel(channel_T *channel, ch_part_T part, char *func);
+typedef NSMutableDictionary<NSString *, NSDictionary *> ChannelTable;
+static NSString *kVCIChannelPointer = @"ch_ptr";
+static NSString *kVCIChannelPart = @"ch_part";
+static NSString *kVCIFileDescriptor = @"fd";
+static ChannelTable *channel_table(void)
+{
+    static ChannelTable *table;
+    if (table == nil) {
+        table = [NSMutableDictionary dictionary];
+    }
+    
+    return table;
+}
 
+static NSString *key_for_channel(channel_T *channel, ch_part_T part)
+{
+    return [NSString stringWithFormat:@"c%dp%d", channel->ch_id, part];
+}
+
+static void note_channel_read(CFFileDescriptorRef fd_ref,
+                              CFOptionFlags callback_types,
+                              void *info)
+{
+    NSString *key = (__bridge NSString *)info;
+//    NSLog(@"channel read for key: %@", key);
+    NSDictionary *ch_info = channel_table()[key];
+    if (ch_info == nil) {
+        return;
+    }
+    channel_T *channel = (channel_T *)[ch_info[kVCIChannelPointer] pointerValue];
+    ch_part_T part = (ch_part_T)[ch_info[kVCIChannelPart] intValue];
+    ivim_read_channel(channel, part, "note_channel_read");
+    // re-enable the file descriptor read callback
+    CFFileDescriptorEnableCallBacks(fd_ref, kCFFileDescriptorReadCallBack);
+}
+
+    int
+gui_ivim_has_channel(channel_T *channel, ch_part_T part)
+{
+    return (channel_table()[key_for_channel(channel, part)] != nil);
+}
+
+    void
+gui_ivim_add_channel(channel_T *channel, ch_part_T part)
+{
+    NSString *key = key_for_channel(channel, part);
+    ChannelTable *ch_table = channel_table();
+    if (gui_ivim_has_channel(channel, part)) {
+        // already registered
+        return;
+    }
+    CFFileDescriptorContext ctx = {
+        0, (__bridge void *)(key), NULL, NULL, NULL
+    };
+    CFFileDescriptorRef fd_ref =
+    CFFileDescriptorCreate(kCFAllocatorDefault,
+                           channel->ch_part[part].ch_fd,
+                           false,
+                           note_channel_read,
+                           &ctx);
+    ch_table[key] = @{
+        kVCIChannelPointer: [NSValue valueWithPointer:channel],
+        kVCIChannelPart: [NSNumber numberWithInt:part],
+        kVCIFileDescriptor: [NSValue valueWithPointer:fd_ref],
+    };
+    CFFileDescriptorEnableCallBacks(fd_ref, kCFFileDescriptorReadCallBack);
+    CFRunLoopSourceRef s = CFFileDescriptorCreateRunLoopSource(NULL, fd_ref, 0);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), s, kCFRunLoopDefaultMode);
+    CFRelease(s);
+}
+
+    void
+gui_ivim_remove_channel(channel_T *channel, ch_part_T part)
+{
+    if (!gui_ivim_has_channel(channel, part)) {
+        return;
+    }
+    NSString *key = key_for_channel(channel, part);
+    ChannelTable *ch_table = channel_table();
+    NSDictionary *ch_info = ch_table[key];
+    [ch_table removeObjectForKey:key];
+    CFFileDescriptorRef fd_ref = (CFFileDescriptorRef)[ch_info[kVCIFileDescriptor] pointerValue];
+    CFFileDescriptorInvalidate(fd_ref);
+    CFRelease(fd_ref);
+}
+
+#endif
 
     void
 gui_mch_toggle_tearoffs(int enable)

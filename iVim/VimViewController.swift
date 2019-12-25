@@ -262,22 +262,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.tuneFrameAccordingToKeyboard(notification)
     }
     
-    @objc func waitForChars(_ wtime: Int) -> Bool {
-        if input_available() > 0 { return true }
-        let expirationDate = wtime != -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
-        let runloop = RunLoop.current
-        repeat {
-            runloop.acceptInput(forMode: .default,
-                                before: expirationDate)
-//            NSLog("gogogo \(wtime)")// \(runloop)")
-            if input_available() > 0 {
-                return true
-            }
-        } while expirationDate > Date()
-        
-        return false
-    }
-    
     @objc func pan(_ sender: UIPanGestureRecognizer) {
         guard let v = self.vimView else { return }
         let clickLocation = sender.location(in: v)
