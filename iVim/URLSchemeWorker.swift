@@ -29,7 +29,7 @@ struct URLSchemeWorker {
 }
 
 enum URLCommand: String {
-    case newtab
+    case shareextension
     
     init?(url: URL) {
         guard let host = url.host else { return nil }
@@ -41,31 +41,19 @@ extension URLCommand {
     func invoke(with url: URL, info: Any?) {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return }
         switch self {
-        case .newtab: self.doNewtab(components)
+        case .shareextension: self.doShareExtension(components)
         }
     }
     
-    private func text(of file: String) -> String? {
-        guard let c = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: gAppGroup) else { return nil }
-        let url = c.appendingPathComponent(file)
-        do {
-            let text = try String(contentsOf: url, encoding: .utf8)
-            try FileManager.default.removeItem(at: url)
-            return text
-        } catch {
-            NSLog("Failed to read temp file: \(error)")
-            return nil
+    private func doShareExtension(_ components: URLComponents) {
+        guard let name = components.firstQueryValue(for: "action") else { return }
+        if let textAction = ShareTextAction(name: name) {
+            textAction.run()
+        } else if let fileAction = ShareFileAction(name: name) {
+            fileAction.run()
+        } else {
+            NSLog("invalid share extension action name '\(name)'")
         }
-    }
-    
-    private func doNewtab(_ components: URLComponents) {
-        guard let fn = components.firstQueryValue(for: "file"),
-            let t = self.text(of: fn) else { return }
-        if !is_current_buf_new() {
-            do_cmdline_cmd("tabnew")
-        }
-        do_cmdline_cmd("normal! i\(t)")
-        gEnsureSuccessfulOpen()
     }
 }
 

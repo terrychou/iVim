@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Dec 18
+*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Dec 27
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -314,9 +314,27 @@ Items in the share panel ~
 
 a. Share with iVim					*share-with-ivim*
 
-This item will share the selected text in the sharing app. When invoked, the
-selected text will appear in a floating box for you to do some simple editing.
-Tapping `Post` will open iVim and the text in a new buffer within a new tab.
+This item share text with iVim. When invoked, a floating box appears with the
+text to be shared. The text may come from:
+
+1) selected text
+
+when the shared item is the selected text in the sharing app, the text is
+right the selected text. 
+
+2) content of files
+
+when the shared items are files, it tries to get text content from each file
+and concatenate them in order. If any file (e.g. an image file) fails to 
+provide valid text content, it aborts and shows the error. Note that at max 
+10 files at once is supported in this way, and it does not affect the original
+files.
+
+After the text becomes available in the box, you can do some more simple 
+editing to it. Tapping `Share` opens iVim and puts the text into a new buffer 
+in a new tab.
+
+Note that any invalid share items disables the `Share` button.
 
 b. Copy to iVim						*copy-to-ivim*
 

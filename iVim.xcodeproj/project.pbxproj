@@ -24,6 +24,10 @@
 		DE33BF87214F724B009A5D5F /* VimViewBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE33BF86214F724A009A5D5F /* VimViewBackend.swift */; };
 		DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3B043B205B7087009F81E8 /* URLOpener.swift */; };
 		DE47B2EE2373E62E003D5BBE /* shell.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE47B2EC2373E62E003D5BBE /* shell.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE4F946623B485C800782BB4 /* VimShareActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946523B485C700782BB4 /* VimShareActions.swift */; };
+		DE4F946723B496D300782BB4 /* VimShareActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946523B485C700782BB4 /* VimShareActions.swift */; };
+		DE4F946923B4A84900782BB4 /* VimShareActions+ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946823B4A84900782BB4 /* VimShareActions+ShareExtension.swift */; };
+		DE4F946C23B4C5B900782BB4 /* VimShareActions+Host.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
 		DE5382612396074F00E64CE5 /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE7DF70E238CE54B0012A469 /* lua_ios.framework */; };
@@ -352,6 +356,9 @@
 		DE44D4241F209661007AFD63 /* URLSchemeWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSchemeWorker.swift; sourceTree = "<group>"; };
 		DE44D4251F209661007AFD63 /* GlobalConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalConfiguration.swift; sourceTree = "<group>"; };
 		DE47B2EC2373E62E003D5BBE /* shell.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = shell.framework; path = Frameworks/shell.framework; sourceTree = "<group>"; };
+		DE4F946523B485C700782BB4 /* VimShareActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimShareActions.swift; sourceTree = "<group>"; };
+		DE4F946823B4A84900782BB4 /* VimShareActions+ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VimShareActions+ShareExtension.swift"; sourceTree = "<group>"; };
+		DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VimShareActions+Host.swift"; sourceTree = "<group>"; };
 		DE531AF21F20941100D71DB3 /* iVim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iVim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE531AFA1F20941100D71DB3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		DE531AFC1F20941100D71DB3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -3809,6 +3816,14 @@
 			name = "Extended Keyboard";
 			sourceTree = "<group>";
 		};
+		DE4F946A23B4C58900782BB4 /* Share Extension */ = {
+			isa = PBXGroup;
+			children = (
+				DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */,
+			);
+			name = "Share Extension";
+			sourceTree = "<group>";
+		};
 		DE531AE91F20941100D71DB3 = {
 			isa = PBXGroup;
 			children = (
@@ -3841,6 +3856,7 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DE4F946A23B4C58900782BB4 /* Share Extension */,
 				DEC24CB9239373D20017A9C8 /* Shell */,
 				DEC1D03023474F9B008DB801 /* runtime */,
 				DEC1D02E2347455A008DB801 /* gui_ios.m */,
@@ -8520,6 +8536,8 @@
 				DEEAD17C1F23005500B4CAC9 /* ShareViewController.swift */,
 				DEEAD17E1F23005500B4CAC9 /* MainInterface.storyboard */,
 				DEEAD1811F23005500B4CAC9 /* Info.plist */,
+				DE4F946523B485C700782BB4 /* VimShareActions.swift */,
+				DE4F946823B4A84900782BB4 /* VimShareActions+ShareExtension.swift */,
 			);
 			path = iVimShare;
 			sourceTree = "<group>";
@@ -8784,11 +8802,13 @@
 				DEC1D07E2347865C008DB801 /* drawscreen.c in Sources */,
 				DEC1D05323477601008DB801 /* getchar.c in Sources */,
 				DEC1D03F23475E10008DB801 /* evalwindow.c in Sources */,
+				DE4F946C23B4C5B900782BB4 /* VimShareActions+Host.swift in Sources */,
 				DEC1D0502347756F008DB801 /* list.c in Sources */,
 				DEC1D05B23477702008DB801 /* if_cscope.c in Sources */,
 				DEC1D08923478881008DB801 /* xemit.c in Sources */,
 				DEC1D082234787C1008DB801 /* usercmd.c in Sources */,
 				DE5C51A61F6E166C00373B92 /* lregex.c in Sources */,
+				DE4F946723B496D300782BB4 /* VimShareActions.swift in Sources */,
 				DE5C518B1F6E155400373B92 /* lisp.c in Sources */,
 				DE5C51B91F6E172000373B92 /* asp.c in Sources */,
 				DE7BA7921F21A75400705E67 /* VimView.swift in Sources */,
@@ -8973,6 +8993,8 @@
 			files = (
 				DEEAD17D1F23005500B4CAC9 /* ShareViewController.swift in Sources */,
 				DEEAD1891F2300B900B4CAC9 /* GlobalConfiguration.swift in Sources */,
+				DE4F946923B4A84900782BB4 /* VimShareActions+ShareExtension.swift in Sources */,
+				DE4F946623B485C800782BB4 /* VimShareActions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
