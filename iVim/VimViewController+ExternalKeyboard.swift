@@ -29,9 +29,9 @@ extension VimViewController {
     }
     
     private var shouldRemapCapslock: Bool {
-        guard let lang = self.textInputMode?.primaryLanguage else { return false }
-
-        return lang.hasPrefix("en") || lang.hasPrefix("dictation")
+        return self.currentPrimaryLanguage.map {
+            $0.hasPrefix("en") || $0.hasPrefix("dictation")
+        } ?? false
     }
     
     func registerExternalKeyboardNotifications(to nfc: NotificationCenter) {
@@ -44,6 +44,7 @@ extension VimViewController {
     }
     
     @objc func keyboardDidChange(_ notification: Notification) {
+        self.updatePrimaryLanguage()
         self.updateCapslockDst()
     }
     

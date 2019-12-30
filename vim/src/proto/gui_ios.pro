@@ -96,6 +96,11 @@ void ex_ios_cmds(exarg_T *eap);
 void enumerate_bufs_with_corrected(void (^task)(buf_T *, char_u *, BOOL));
 void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches);
 
+// input method
+int im_get_status(void);
+void im_set_active(int active_arg);
+void im_set_position(int row, int col);
+
 // channel and job
 int gui_ivim_has_channel(channel_T *channel, ch_part_T part);
 void gui_ivim_add_channel(channel_T *channel, ch_part_T part);

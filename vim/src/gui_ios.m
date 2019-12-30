@@ -2261,6 +2261,27 @@ gui_mch_settitle(char_u *title, char_u *icon)
 }
 #endif
 
+// ----------------- Input Method -----------------
+// Not really support HAVE_INPUT_METHOD
+// just provide support to "CursorIM" for now
+    int
+im_get_status(void)
+{
+    return [shellViewController() imState];
+}
+
+    void
+im_set_active(int active_arg)
+{
+    // set language programmatically not supported in iOS
+}
+
+    void
+im_set_position(int row, int col)
+{
+    // not implemented
+}
+
 #if defined(FEAT_JOB_CHANNEL)
 // ----------------- Channel and job support ------------------
 void ivim_read_channel(channel_T *channel, ch_part_T part, char *func);

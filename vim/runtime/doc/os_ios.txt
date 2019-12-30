@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Dec 27
+*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Dec 28
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -150,20 +150,42 @@ needs, you can customize them through command |:isetekbd|.
 
 iVim adds support to multistage input languages such as Chinese or Japanese.
 
-During a multistage input session, the keys that have been input will be 
-inserted at the cursor. The candidates will be listed at the top of the 
-keyboard. When a candidate is confirmed, it will replace the existing keys 
-and this session ends.
+Multistage input means keys from the user may have different meaning than
+their literal one. It requires the user to do further confirm to get the final
+result. Besides the asian languages, `alt-`-enabled accentuated Latin input is 
+also an example.
 
-Pressing `esc` will cancel current multistage input session and all input keys 
-will be deleted.
+Input behavior ~
 
-Tapping on screen or pressing arrow keys will end current multistage input 
-session and the existing keys will be confirmed as the result.
+During a multistage input session: 
+
+1) the cursor position will not change until the user confirms thus the final
+result is ready (which also means the end of this session).
+
+2) pressing `esc` cancels current input session and discards all keys input so 
+far.
+
+3) tapping on screen ends current input session and confirms the input result 
+so far as the final result.
+
+4) any arrow key from the extended keyboard behaves as the same as tapping on
+screen. However, arrow keys from an external hardware keyboard will usually be 
+taken over by the system and travel among the available choices.
 
 Note: a. The key pressings will be translated into normal ones if it is not in 
 |Insert| mode. b. Multistage input will stop working during dictation as
 mentioned in |ios-dictation|.
+
+Special highlight ~
+
+Often, by a simple glance, the user cannot tell if a multistage input session 
+is in effect or not. iVim provides a little feature to help with this: the
+user can change the color of the cursor-in-multistage by setting the highlight
+group CursorIM: >
+
+        :highlight CursorIM guifg=NONE guibg=Green
+<
+after this, the cursor becomes green when it is in a multistage input session.
 
 
 ==============================================================================

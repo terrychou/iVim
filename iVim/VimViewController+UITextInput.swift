@@ -340,6 +340,19 @@ extension VimViewController {
     }
 }
 
+extension VimViewController {
+    func updatePrimaryLanguage() {
+        self.currentPrimaryLanguage = self.textInputMode?.primaryLanguage
+    }
+    
+    @objc func imState() -> Bool {
+        return (self.currentPrimaryLanguage.map {
+            !$0.hasPrefix("en")
+            } ?? false) ||
+            !(self.markedInfo?.text.isEmpty ?? true)
+    }
+}
+
 class VimTextPosition: UITextPosition {
     var location: Int
     
@@ -390,7 +403,7 @@ class VimTextRange: UITextRange {
     }
 }
 
-struct MarkedInfo {
+final class MarkedInfo {
     var selectedRange = NSMakeRange(0, 0)
     var text = ""
     var cancelled = false
@@ -409,15 +422,16 @@ extension MarkedInfo {
 ////        }
 //    }
     
-//    func deleteOldMarkedText() {
-////        guard !self.text.isEmpty else { return }
-////        let oldLen = self.text.nsLength
-////        let offset = oldLen - self.selectedRange.location
-////        move_cursor_right(offset)
-////        self.deleteBackward(for: oldLen)
-//    }
+    func deleteOldMarkedText() {
+        guard !self.text.isEmpty else { return }
+        self.text = ""
+//        let oldLen = self.text.nsLength
+//        let offset = oldLen - self.selectedRange.location
+//        move_cursor_right(offset)
+//        self.deleteBackward(for: oldLen)
+    }
     
-    mutating func didGetMarkedText(_ text: String?, selectedRange: NSRange, pending: Bool) {
+    func didGetMarkedText(_ text: String?, selectedRange: NSRange, pending: Bool) {
         guard let text = text else { return }
 //        if !pending {
 //            self.deleteOldMarkedText()
@@ -429,11 +443,12 @@ extension MarkedInfo {
         self.selectedRange = selectedRange
     }
     
-    mutating func didUnmark() {
+    func didUnmark() {
         if self.cancelled {
             self.cancelled = false
-        } else {
-            gAddNonCSITextToInputBuffer(self.text)            
+        } else if !self.text.isEmpty {
+            gAddNonCSITextToInputBuffer(self.text)
         }
+        self.text = ""
     }
 }

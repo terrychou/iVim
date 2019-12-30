@@ -96,6 +96,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var currentCapslockDst: CapsLockDestination = .none
     
+    var currentPrimaryLanguage: String?
+    
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
@@ -220,7 +222,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     func insertText(_ text: String) {
         guard self.allowsInsertingText else { return } //no input during dictation
-//        self.markedInfo?.deleteOldMarkedText() //handle the alt- input
+        self.markedInfo?.deleteOldMarkedText() //handle the alt- input
         if self.handleModifiers(with: text) { return }
         self.addToInputBuffer(self.escapingText(text))
     }
