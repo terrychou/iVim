@@ -2834,7 +2834,19 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    {
 #ifdef FEAT_TERMINAL
 		if (buffer->b_term != NULL)
+# if defined(FEAT_GUI_IOS)
+        {
+            char_u *translated = ios_term_translate_msg(msg);
+            write_to_term(buffer,
+                          translated,
+                          channel);
+            if (translated != msg) {
+                free(translated);
+            }
+        }
+# else
 		    write_to_term(buffer, msg, channel);
+# endif
 		else
 #endif
 		    append_to_buffer(buffer, msg, channel, part);
@@ -3818,18 +3830,6 @@ theend:
     free_job_options(&opt);
 }
 
-#if defined(FEAT_GUI_IOS)
-    void
-ivim_read_channel(channel_T *channel, ch_part_T part, char *func)
-{
-    sock_T ch_fd = channel->ch_part[part].ch_fd;
-    if (ch_fd != INVALID_FD &&
-        channel_wait(channel, ch_fd, 0) == CW_READY) {
-        channel_read(channel, part, func);
-    }
-}
-#endif
-
 # if defined(MSWIN) || defined(FEAT_GUI) || defined(PROTO)
 /*
  * Check the channels for anything that is ready to be read.
@@ -3975,6 +3975,12 @@ channel_send(
 	    res = sock_write(fd, (char *)buf, len);
 	else
 	{
+#if defined(FEAT_GUI_IOS)
+        // handle possible terminal channel
+        if (ios_term_handle_channel_input(channel, buf, len)) {
+            res = len;
+        } else
+#endif
 	    res = fd_write(fd, (char *)buf, len);
 #ifdef MSWIN
 	    if (channel->ch_named_pipe && res < 0)
@@ -6635,5 +6641,51 @@ f_job_stop(typval_T *argvars, typval_T *rettv)
     if (job != NULL)
 	rettv->vval.v_number = job_stop(job, argvars, NULL);
 }
+
+#if defined(FEAT_GUI_IOS)
+    void
+ivim_read_channel(channel_T *channel, ch_part_T part, char *func)
+{
+    sock_T ch_fd = channel->ch_part[part].ch_fd;
+    if (ch_fd != INVALID_FD &&
+        channel_wait(channel, ch_fd, 0) == CW_READY) {
+        channel_read(channel, part, func);
+    }
+}
+
+    void
+ivim_cleanup_existing_jobs(void)
+{
+    job_T *job = NULL;
+    channel_T *channel = NULL;
+    ch_part_T part;
+    int fd = INVALID_FD;
+    channel_wait_result cw_result;
+    
+    for (job = first_job; job != NULL; job = job->jv_next) {
+        channel = job->jv_channel;
+        if (channel == NULL || job->jv_status != JOB_FINISHED) {
+            continue;
+        }
+        for (part = PART_SOCK; part < PART_IN; part++) {
+            fd = channel->ch_part[part].ch_fd;
+            if (fd == INVALID_FD) {
+                continue;
+            }
+            cw_result = channel_wait(channel, fd, 0);
+            if (cw_result == CW_READY) {
+                channel_read(channel,
+                             part,
+                             "ivim_cleanup_existing_jobs");
+            } else if (cw_result == CW_ERROR) {
+                ch_close_part_on_error(channel,
+                                       part,
+                                       TRUE,
+                                       "ivim_cleanup_existing_jobs");
+            }
+        }
+    }
+}
+#endif
 
 #endif /* FEAT_JOB_CHANNEL */

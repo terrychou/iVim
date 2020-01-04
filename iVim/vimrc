@@ -34,5 +34,10 @@ let g:netrw_scp_cmd='scp -s'
 " since it requires umask too
 let g:netrw_localmkdir=''
 
+" enable termguicolors
+set termguicolors
+" set ansi colors for terminal
+let g:terminal_ansi_colors=['#435a66', '#fb3841', '#5cf09e', '#fed032', '#36b6fe', '#fb216e', '#58ffd1', '#fffefe', '#a0b0b8', '#fc736d', '#acf6be', '#fee16c', '#6fcefe', '#fc669a', '#99ffe5', '#fffefe']
+
 " skip defaults.vim
 let skip_defaults_vim=1

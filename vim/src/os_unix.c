@@ -52,6 +52,7 @@ static int selinux_enabled = -1;
 # include <dlfcn.h>  // for dlopen()/dlsym()/dlclose()
 # include <ios_error.h>
 # define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH)) // access() always returns -1 on iOS.
+# define waitpid ios_term_waitpid
 #endif
 
 #ifdef __BEOS__
@@ -4198,7 +4199,27 @@ set_child_environment(
 #  endif
 	    t_colors;
 
-# ifdef HAVE_SETENV
+# if defined(FEAT_GUI_IOS)
+    ios_term_setenv("TERM", term);
+    sprintf((char *)envbuf, "%ld", rows);
+    ios_term_setenv("ROWS", (char *)envbuf);
+    sprintf((char *)envbuf, "%ld", rows);
+    ios_term_setenv("LINES", (char *)envbuf);
+    sprintf((char *)envbuf, "%ld", columns);
+    ios_term_setenv("COLUMNS", (char *)envbuf);
+    sprintf((char *)envbuf, "%ld", colors);
+    ios_term_setenv("COLORS", (char *)envbuf);
+#  ifdef FEAT_TERMINAL
+    if (is_terminal)
+    {
+        sprintf((char *)envbuf, "%ld",  (long)get_vim_var_nr(VV_VERSION));
+        ios_term_setenv("VIM_TERMINAL", (char *)envbuf);
+    }
+#  endif
+#  ifdef FEAT_CLIENTSERVER
+    ios_term_setenv("VIM_SERVERNAME", serverName == NULL ? "" : (char *)serverName);
+#  endif
+# elif defined(HAVE_SETENV)
     setenv("TERM", term, 1);
     sprintf((char *)envbuf, "%ld", rows);
     setenv("ROWS", (char *)envbuf, 1);
@@ -4257,108 +4278,108 @@ set_default_child_environment(int is_terminal)
     set_child_environment(Rows, Columns, "dumb", is_terminal);
 }
 
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
-static char* stored_TERM;
-static char* stored_Rows;
-static char* stored_Lines;
-static char* stored_Columns;
-static char* stored_Colors;
-#  ifdef FEAT_TERMINAL
-static char* stored_VIM_TERMINAL;
-#  endif
-#  ifdef FEAT_CLIENTSERVER
-static char* stored_VIM_SERVERNAME;
-#  endif
-// Storing the environment before calls to fork(), to restore it afterwards.
-    static void
-store_environment()
-{
-    char* buffer;
-    buffer = getenv("TERM");
-    if (buffer) 
-    	stored_TERM = strdup(buffer); 
-    else stored_TERM = NULL;
-    buffer = getenv("ROWS");
-    if (buffer) 
-    	stored_Rows = strdup(buffer); 
-    else stored_Rows = NULL;
-    buffer = getenv("LINES");
-    if (buffer) 
-    	stored_Lines = strdup(buffer); 
-    else stored_Lines = NULL; 
-    buffer = getenv("COLUMNS");
-    if (buffer) 
-	stored_Columns = strdup(buffer); 
-    else stored_Columns = NULL; 
-    buffer = getenv("COLORS");
-    if (buffer) 
-    	stored_Colors = strdup(buffer);
-    else stored_Colors = NULL; 
-#  ifdef FEAT_TERMINAL
-    buffer = getenv("VIM_TERMINAL"); 
-    if (buffer) 
-	stored_VIM_TERMINAL = strdup(buffer); 
-    else stored_VIM_TERMINAL = NULL; 
-#  endif
-#  ifdef FEAT_CLIENTSERVER
-    buffer = getenv("VIM_SERVERNAME"); 
-    if (buffer) 
-	stored_VIM_SERVERNAME = strdup(buffer); 
-    else stored_VIM_SERVERNAME = NULL; 
-#  endif
-}
-
-    static void
-restore_environment()
-{
-    if (stored_TERM) {
-        setenv("TERM", stored_TERM, 1);
-        free(stored_TERM);
-        stored_TERM = NULL;
-    } else
-        unsetenv("TERM");
-    if (stored_Rows) {
-        setenv("ROWS", stored_Rows, 1);
-        free(stored_Rows);
-        stored_Rows = NULL;
-    } else
-        unsetenv("ROWS");
-    if (stored_Lines) {
-        setenv("LINES", stored_Lines, 1);
-        free(stored_Lines);
-        stored_Lines = NULL;
-    } else
-        unsetenv("LINES");
-    if (stored_Columns) {
-        setenv("COLUMNS", stored_Columns, 1);
-        free(stored_Columns);
-        stored_Columns = NULL;
-    } else
-        unsetenv("COLUMNS");
-    if (stored_Colors) {
-        setenv("COLORS", stored_Colors, 1);
-        free(stored_Colors);
-        stored_Colors = NULL;
-    } else
-        unsetenv("COLORS");
-#  ifdef FEAT_TERMINAL
-    if (stored_VIM_TERMINAL) {
-        setenv("VIM_TERMINAL", stored_VIM_TERMINAL, 1);
-        free(stored_VIM_TERMINAL);
-        stored_VIM_TERMINAL = NULL;
-    } else
-        unsetenv("VIM_TERMINAL");
-#  endif
-#  ifdef FEAT_CLIENTSERVER
-    if (stored_VIM_SERVERNAME) {
-        setenv("VIM_SERVERNAME", stored_VIM_SERVERNAME, 1);
-        free(stored_VIM_SERVERNAME);
-        stored_VIM_SERVERNAME = NULL;
-    } else
-    unsetenv("VIM_SERVERNAME");
-#  endif
-}
-# endif
+//# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+//static char* stored_TERM;
+//static char* stored_Rows;
+//static char* stored_Lines;
+//static char* stored_Columns;
+//static char* stored_Colors;
+//#  ifdef FEAT_TERMINAL
+//static char* stored_VIM_TERMINAL;
+//#  endif
+//#  ifdef FEAT_CLIENTSERVER
+//static char* stored_VIM_SERVERNAME;
+//#  endif
+//// Storing the environment before calls to fork(), to restore it afterwards.
+//    static void
+//store_environment()
+//{
+//    char* buffer;
+//    buffer = getenv("TERM");
+//    if (buffer)
+//    	stored_TERM = strdup(buffer);
+//    else stored_TERM = NULL;
+//    buffer = getenv("ROWS");
+//    if (buffer)
+//    	stored_Rows = strdup(buffer);
+//    else stored_Rows = NULL;
+//    buffer = getenv("LINES");
+//    if (buffer)
+//    	stored_Lines = strdup(buffer);
+//    else stored_Lines = NULL;
+//    buffer = getenv("COLUMNS");
+//    if (buffer)
+//	stored_Columns = strdup(buffer);
+//    else stored_Columns = NULL;
+//    buffer = getenv("COLORS");
+//    if (buffer)
+//    	stored_Colors = strdup(buffer);
+//    else stored_Colors = NULL;
+//#  ifdef FEAT_TERMINAL
+//    buffer = getenv("VIM_TERMINAL");
+//    if (buffer)
+//	stored_VIM_TERMINAL = strdup(buffer);
+//    else stored_VIM_TERMINAL = NULL;
+//#  endif
+//#  ifdef FEAT_CLIENTSERVER
+//    buffer = getenv("VIM_SERVERNAME");
+//    if (buffer)
+//	stored_VIM_SERVERNAME = strdup(buffer);
+//    else stored_VIM_SERVERNAME = NULL;
+//#  endif
+//}
+//
+//    static void
+//restore_environment()
+//{
+//    if (stored_TERM) {
+//        setenv("TERM", stored_TERM, 1);
+//        free(stored_TERM);
+//        stored_TERM = NULL;
+//    } else
+//        unsetenv("TERM");
+//    if (stored_Rows) {
+//        setenv("ROWS", stored_Rows, 1);
+//        free(stored_Rows);
+//        stored_Rows = NULL;
+//    } else
+//        unsetenv("ROWS");
+//    if (stored_Lines) {
+//        setenv("LINES", stored_Lines, 1);
+//        free(stored_Lines);
+//        stored_Lines = NULL;
+//    } else
+//        unsetenv("LINES");
+//    if (stored_Columns) {
+//        setenv("COLUMNS", stored_Columns, 1);
+//        free(stored_Columns);
+//        stored_Columns = NULL;
+//    } else
+//        unsetenv("COLUMNS");
+//    if (stored_Colors) {
+//        setenv("COLORS", stored_Colors, 1);
+//        free(stored_Colors);
+//        stored_Colors = NULL;
+//    } else
+//        unsetenv("COLORS");
+//#  ifdef FEAT_TERMINAL
+//    if (stored_VIM_TERMINAL) {
+//        setenv("VIM_TERMINAL", stored_VIM_TERMINAL, 1);
+//        free(stored_VIM_TERMINAL);
+//        stored_VIM_TERMINAL = NULL;
+//    } else
+//        unsetenv("VIM_TERMINAL");
+//#  endif
+//#  ifdef FEAT_CLIENTSERVER
+//    if (stored_VIM_SERVERNAME) {
+//        setenv("VIM_SERVERNAME", stored_VIM_SERVERNAME, 1);
+//        free(stored_VIM_SERVERNAME);
+//        stored_VIM_SERVERNAME = NULL;
+//    } else
+//    unsetenv("VIM_SERVERNAME");
+//#  endif
+//}
+//# endif
 
 #endif
 
@@ -4764,7 +4785,9 @@ mch_call_shell_fork(
 		}
 	    }
 	}
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# if defined(FEAT_GUI_IOS)
+        ios_term_register_process_signal_handlers(pid);
+# else
 	// with iOS, we go through both branches
 	else if (pid == 0)	/* child */
 # endif
@@ -4920,7 +4943,10 @@ mch_call_shell_fork(
 	     */
 # if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
         vim_setenv((char_u *)"TERM", (char_u *)"xterm");
-        ios_term_run_cmd(cmd, fd_toshell[0], fd_fromshell[1]);
+        ios_term_run_shell_cmd(cmd,
+                               pid,
+                               fd_toshell[0],
+                               fd_fromshell[1]);
 # else
         execvp(argv[0], argv);
 	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
@@ -5584,13 +5610,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 
     /* default is to fail */
     job->jv_status = JOB_FAILED;
-
+# if !defined(FEAT_GUI_IOS)
     if (options->jo_pty
 	    && (!(use_file_for_in || use_null_for_in)
 		|| !(use_file_for_out || use_null_for_out)
 		|| !(use_out_for_err || use_file_for_err || use_null_for_err)))
 	open_pty(&pty_master_fd, &pty_slave_fd,
 					    &job->jv_tty_out, &job->jv_tty_in);
+# endif
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
@@ -5667,7 +5694,9 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	goto failed;
     }
 
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# if defined(FEAT_GUI_IOS)
+    ios_term_register_process_signal_handlers(pid);
+# else
 	// with iOS, we go through both branches
     if (pid == 0)
 # endif
@@ -5695,9 +5724,9 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	(void)setsid();
 # endif
 
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
-	store_environment();
-# endif
+//# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+//	store_environment();
+//# endif
 # ifdef FEAT_TERMINAL
 	if (options->jo_term_rows > 0)
 	{
@@ -5732,15 +5761,22 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
-
+# if defined(FEAT_GUI_IOS)
+            ios_term_setenv((char *)hi->hi_key, (char *)tv_get_string(item));
+# else
 		    vim_setenv((char_u*)hi->hi_key, tv_get_string(item));
+# endif
 		    --todo;
 		}
 	}
 
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
 	{
+# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+        null_fd = ios_term_null_fd();
+# else
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
+# endif
 	    if (null_fd < 0)
 	    {
 		perror("opening /dev/null failed");
@@ -5758,8 +5794,41 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
 #  endif
 	}
-
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+        int ios_in_fd = -1;
+        int ios_out_fd = -1;
+        int ios_err_fd = -1;
+        // setup the input fd
+        if (use_null_for_in && null_fd >= 0) {
+            ios_in_fd = null_fd;
+        } else if (fd_in[0] < 0) {
+            ios_in_fd = pty_slave_fd;
+        } else {
+            ios_in_fd = fd_in[0];
+        }
+        
+        // setup the error fd
+        if (use_null_for_err && null_fd >= 0)
+        {
+            ios_err_fd = null_fd;
+            stderr_works = FALSE;
+        } else if (use_out_for_err) {
+            ios_err_fd = fd_out[1];
+        } else if (fd_err[1] < 0) {
+            ios_err_fd = pty_slave_fd;
+        } else {
+            ios_err_fd = fd_err[1];
+        }
+        
+        // setup the output fd
+        if (use_null_for_out && null_fd >= 0) {
+            ios_out_fd = null_fd;
+        } else if (fd_out[1] < 0) {
+            ios_out_fd = pty_slave_fd;
+        } else {
+            ios_out_fd = fd_out[1];
+        }
+# else
 	/* set up stdin for the child */
 	close(0);
 	if (use_null_for_in && null_fd >= 0)
@@ -5812,38 +5881,21 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 
 	if (null_fd >= 0)
 	    close(null_fd);
-# else // TARGET_OS_IPHONE
-        fd_in[0] = 0;
-        fd_out[1] = 1; // IVIM_TEST_TERM
-	ios_dup2(fd_in[0], 0);
-	ios_dup2(fd_out[1], 1);
-	if (use_null_for_err && null_fd >= 0)
-	{
-	    ios_dup2(null_fd, 2);
-	}
-	else if (use_out_for_err)
-	    ios_dup2(fd_out[1], 2);
-	else 
-	    ios_dup2(fd_err[1], 2);
 # endif
 	if (options->jo_cwd != NULL && mch_chdir((char *)options->jo_cwd) != 0)
 	    _exit(EXEC_FAILED);
 
 	/* See above for type of argv. */
 # if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
-        int offset = 0;
-        for (int i = 0; argv[i] != NULL; i++) {
-            if (STRCMP(argv[i], "-c") == 0) {
-                offset = i + 1;
-                break;
-            }
-        }
-        execvp(argv[offset], argv + offset);
+        ios_term_cmd_execv(argv[0], argv,
+                           pid,
+                           ios_in_fd,
+                           ios_out_fd,
+                           ios_err_fd,
+                           channel);
 # else
 	execvp(argv[0], argv);
-# endif
 
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
 	if (stderr_works)
 	    perror("executing job failed");
 # ifdef EXITFREE
@@ -5855,9 +5907,9 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
     }
 
     /* parent */
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
-    restore_environment(); 
-# endif
+//# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+//    restore_environment();
+//# endif
     UNBLOCK_SIGNALS(&curset);
 
     job->jv_pid = pid;

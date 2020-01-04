@@ -69,7 +69,7 @@ char_u * gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, ch
 int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd);
 void gui_mch_flash(int msec);
 guicolor_T gui_mch_get_color(char_u *name);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_mch_get_screen_dimensions(int *screen_w, int *screen_h);
 int gui_mch_haskey(char_u *name);
 void gui_mch_iconify(void);
@@ -105,9 +105,17 @@ void im_set_position(int row, int col);
 int gui_ivim_has_channel(channel_T *channel, ch_part_T part);
 void gui_ivim_add_channel(channel_T *channel, ch_part_T part);
 void gui_ivim_remove_channel(channel_T *channel, ch_part_T part);
+void ivim_cleanup_existing_jobs(void);
 
 void scenes_keeper_stash(void);
 // ios_term.m
-void ios_term_run_cmd(char_u *cmd, int toshell_fd, int fromshell_fd);
+void ios_term_register_process_signal_handlers(pid_t pid);
+void ios_term_setenv(const char *name, const char *value);
+void ios_term_cmd_execv(const char *path, char * const argv[], pid_t pid, int in_fd, int out_fd, int err_fd, channel_T *channel);
+void ios_term_run_shell_cmd(char_u *cmd, pid_t pid, int toshell_fd, int fromshell_fd);
+int ios_term_null_fd(void);
 void ios_term_readline(char_u *ta_buf, int len, int *got_int, pid_t pid, int *toshell_fd);
+char_u *ios_term_translate_msg(char_u *msg);
+pid_t ios_term_waitpid(pid_t pid, int *stat_loc, int options);
+int ios_term_handle_channel_input(channel_T *channel, char_u *buf, size_t len);
 /* vim: set ft=c : */

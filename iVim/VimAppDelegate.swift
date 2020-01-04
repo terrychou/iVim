@@ -109,9 +109,6 @@ extension AppDelegate { // env setup
             // setup python
             self.setupPython(withResourcePath: resPath)
             
-            // no color for ls
-            unsetenv("CLICOLOR")
-            
             return true
         }
         
@@ -129,6 +126,5 @@ extension AppDelegate { // env setup
             vim_setenv("PIP_TARGET", libHome)
             vim_setenv("PIP_DISABLE_PIP_VERSION_CHECK", "yes")
             vim_setenv("PIP_NO_COLOR", "yes")
-            vim_setenv("PIP_PROGRESS_BAR", "pretty")
         }
 }

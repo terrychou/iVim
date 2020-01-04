@@ -65,7 +65,7 @@ private extension CGRect {
 extension VimView {    
     private func redrawImmediately() {
         // force the redraw happen immediately
-        RunLoop.main.run(mode: .tracking, before: Date())
+//        RunLoop.main.run(mode: .tracking, before: Date())
     }
     
     func markRectNeedsDisplay(_ rect: CGRect) {

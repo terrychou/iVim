@@ -30,6 +30,7 @@
 #define FEAT_BROWSE
 #define FEAT_JOB_CHANNEL 1
 #define FEAT_TERMINAL 1
+#define FEAT_TERMGUICOLORS 1
 #define HAVE_SYS_POLL_H 1
 #define TARGET_OS_IPHONE 1
 #define FEAT_LUA 1
@@ -37,6 +38,13 @@
 #define DYNAMIC_PYTHON3 1
 #define DYNAMIC_PYTHON3_DLL "pythonB.framework/pythonB"
 #define MODIFIED_BY "Boogaloo"
+
+// for libvterm to display emoji correctly (vim: 6d0826d)
+#define INLINE ""
+#define VSNPRTINTF vim_vsnprintf
+#define IS_COMBINING_FUNCTION utf_iscomposing_uint
+#define WCWIDTH_FUNCTION utf_uint2cells
+#define _CRT_SECURE_NO_WARNINGS 1
 
 int VimMain(int argc, char *argv[]);
 
