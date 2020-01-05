@@ -28,6 +28,7 @@ void input_special_key(int key);
 void input_special_name(const char * name);
 
 NSString * expand_tilde_of_path(NSString * path);
+NSString * _Nonnull ivim_escaping_filepath(NSString *path);
 
 NSString * get_current_sourcing_name(void);
 

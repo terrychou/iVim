@@ -152,6 +152,17 @@ NSString * expand_tilde_of_path(NSString * path) {
 }
 
 /*
+ * escape a path string for using with vim command
+ */
+NSString * _Nonnull ivim_escaping_filepath(NSString *path) {
+    char_u *escaped = vim_strsave_fnameescape(TOCHARS(path), FALSE);
+    NSString *ret = TONSSTRING(escaped);
+    vim_free(escaped);
+    
+    return ret;
+}
+
+/*
  * get the absolute path of *path*
  */
 //static NSString * full_path_of_path(const char * path) {
