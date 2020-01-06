@@ -6750,6 +6750,10 @@ mch_expand_wildcards(
     char_u	***file,
     int		   flags)	/* EW_* flags */
 {
+#if defined(FEAT_GUI_IOS)
+    // don't handle wildcards expansion
+    return FAIL;
+#else
     int		i;
     size_t	len;
     long	llen;
@@ -7236,10 +7240,11 @@ notfound:
     if (flags & EW_NOTFOUND)
 	return save_patterns(num_pat, pat, num_file, file);
     return FAIL;
+#endif // FEAT_GUI_IOS
 }
 
 #endif /* VMS */
-
+#if !defined(FEAT_GUI_IOS)
     static int
 save_patterns(
     int		num_pat,
@@ -7265,6 +7270,7 @@ save_patterns(
     *num_file = num_pat;
     return OK;
 }
+#endif // FEAT_GUI_IOS
 
 /*
  * Return TRUE if the string "p" contains a wildcard that mch_expandpath() can
@@ -7314,7 +7320,7 @@ mch_has_wildcard(char_u *p)
     }
     return FALSE;
 }
-
+#if !defined(FEAT_GUI_IOS)
     static int
 have_wildcard(int num, char_u **file)
 {
@@ -7336,7 +7342,7 @@ have_dollars(int num, char_u **file)
 	    return TRUE;
     return FALSE;
 }
-
+#endif // FEAT_GUI_IOS
 #if !defined(HAVE_RENAME) || defined(PROTO)
 /*
  * Scaled-down version of rename(), which is missing in Xenix.

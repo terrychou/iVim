@@ -34,6 +34,8 @@
 #define HAVE_SYS_POLL_H 1
 #define TARGET_OS_IPHONE 1
 #define FEAT_LUA 1
+#define DYNAMIC_LUA "yes"
+#define DYNAMIC_LUA_DLL "lua_ios.framework/lua_ios"
 #define FEAT_PYTHON3 1
 #define DYNAMIC_PYTHON3 1
 #define DYNAMIC_PYTHON3_DLL "pythonB.framework/pythonB"

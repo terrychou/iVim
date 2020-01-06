@@ -368,7 +368,10 @@ static char *replacing_in(const char *ori,
     
     // count old occurrences
     for (i = 0; ori[i] != '\0'; i++) {
-        if (strncmp(&ori[i], old, old_len) == 0) {
+        if (strncmp(&ori[i], new, new_len) == 0) {
+            // if new word found first, don't count it
+            i += new_len - 1;
+        } else if (strncmp(&ori[i], old, old_len) == 0) {
             cnt++;
             // jump to after the matched old
             i += old_len - 1;
@@ -381,7 +384,11 @@ static char *replacing_in(const char *ori,
         ret = (char *)malloc(i + cnt * (new_len - old_len) + 1);
         i = 0;
         while (*ori) {
-            if (strncmp(ori, old, old_len) == 0) {
+            if (strncmp(ori, new, new_len) == 0) {
+                strcpy(&ret[i], new);
+                i += new_len;
+                ori += new_len;
+            } else if (strncmp(ori, old, old_len) == 0) {
                 strcpy(&ret[i], new);
                 i += new_len;
                 ori += old_len;

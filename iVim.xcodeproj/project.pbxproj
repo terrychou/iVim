@@ -30,7 +30,6 @@
 		DE4F946C23B4C5B900782BB4 /* VimShareActions+Host.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
-		DE5382612396074F00E64CE5 /* lua_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE7DF70E238CE54B0012A469 /* lua_ios.framework */; };
 		DE5382622396074F00E64CE5 /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE7DF70E238CE54B0012A469 /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DE5382632396075D00E64CE5 /* if_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4572347275E00F3E794 /* if_lua.c */; };
 		DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D51F6E13CD00373B92 /* ctags_ios.m */; };
@@ -3756,7 +3755,6 @@
 			files = (
 				DEEB35ED23A3C72400B1B18F /* libssh2.framework in Frameworks */,
 				DEEB35EF23A3C72400B1B18F /* openssl.framework in Frameworks */,
-				DE5382612396074F00E64CE5 /* lua_ios.framework in Frameworks */,
 				DE7FD20A239B4B0C00ADFE2F /* ios_system.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
