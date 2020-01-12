@@ -27,8 +27,9 @@
 #include "os_unixx.h"	    /* unix includes for os_unix.c only */
 
 #ifdef FEAT_GUI_IOS
-# undef HAVE_SELECT
-# include <sys/poll.h>
+// # undef HAVE_SELECT
+// # include <sys/poll.h>
+#define SELECT_TYPE_ARG234 (fd_set *)
 #endif
 
 #ifdef USE_XSMP
