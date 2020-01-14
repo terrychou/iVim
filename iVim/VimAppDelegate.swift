@@ -71,6 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func registerUserDefaultsValues() {
         register_auto_restore_enabled()
+        VimViewController.registerExternalKeyboardUserDefaults()
     }
     
     @objc func VimStarter() {

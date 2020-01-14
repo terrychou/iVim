@@ -15,23 +15,38 @@ private let escapedKeys = "\t\r"
 private let specialKeys = [UIKeyCommand.inputEscape, UIKeyCommand.inputUpArrow, UIKeyCommand.inputDownArrow, UIKeyCommand.inputLeftArrow, UIKeyCommand.inputRightArrow]
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
 private let kUDOptionMapping = "kUDOptionMapping"
+private let kUDKeyRepeating = "kUDKeyRepeating"
 
 extension VimViewController {
     override var keyCommands: [UIKeyCommand]? {
+        var keys = [UIKeyCommand]()
         switch self.currentCapslockDst {
         case .none:
-            return self.isOptionMappingEnabled ?
-                VimViewController.externalKeysWithOption :
-                VimViewController.externalKeys
-        case .esc: return VimViewController.capslockToEsc
-        case .ctrl: return VimViewController.capslockToCtrl
+            if self.isOptionMappingEnabled {
+                keys.append(contentsOf: VimViewController.externalKeysWithOption)
+            } else {
+                keys.append(contentsOf: VimViewController.externalKeys)
+            }
+        case .esc: keys.append(contentsOf: VimViewController.capslockToEsc)
+        case .ctrl: keys.append(contentsOf: VimViewController.capslockToCtrl)
         }
+        if self.isKeyRepeating {
+            keys.append(contentsOf: VimViewController.keysForRepeating)
+        }
+        
+        return keys
     }
     
     private var shouldRemapCapslock: Bool {
         return self.currentPrimaryLanguage.map {
             $0.hasPrefix("en") || $0.hasPrefix("dictation")
         } ?? false
+    }
+    
+    static func registerExternalKeyboardUserDefaults() {
+        UserDefaults.standard.register(defaults: [
+            kUDKeyRepeating: true,
+        ])
     }
     
     func registerExternalKeyboardNotifications(to nfc: NotificationCenter) {
@@ -81,6 +96,13 @@ extension VimViewController {
         VimViewController.externalKeys +
         VimViewController.optionKeys
     
+    private static let keysForRepeating: [UIKeyCommand] =
+        VimViewController.keyCommands(
+            keys: alphabetaKeys + numericKeys + symbolKeys,
+            modifierFlags: [[]]) +
+        VimViewController.keyCommands(keys: alphabetaKeys,
+                                      modifierFlags: [.shift])
+    
     private static let capslockToEsc: [UIKeyCommand] =
         VimViewController.externalKeys +
         VimViewController.optionKeys +
@@ -96,6 +118,11 @@ extension VimViewController {
     
     private var isOptionMappingEnabled: Bool {
         return UserDefaults.standard.bool(forKey: kUDOptionMapping)
+    }
+    
+    private var isKeyRepeating: Bool {
+        return UserDefaults.standard.bool(forKey: kUDKeyRepeating) &&
+            self.shouldRemapCapslock // also only repeat for english keyboards
     }
     
     private static func keyCommand(input: String, modifierFlags: UIKeyModifierFlags = [], title: String? = nil) -> UIKeyCommand {

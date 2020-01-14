@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 8.1.	Last change: 2019 Dec 28
+*os_ios.txt*	For Vim version 8.1.	Last change: 2020 Jan 14
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -419,6 +419,10 @@ When enabled, it will map keystrokes with modifier `alt` to |<A-| chords in
 iVim. Otherwise, they will be handled by iOS system for extended symbols 
 input.
 
+c. Key Repeating
+The held key will repeat itself if this option is enabled. It is on by default.
+Note that it has some caveats as mentioned in |ios-external-keyboard|.
+
 Dictation ~
 
 Force normal mode to
@@ -467,6 +471,18 @@ refer to |digraph|; however, the `alt` mapping mentioned in c. will still work
 if enabled.
 
 h. there are some caveats worth noting when it comes to |ios-dictation|.
+
+Key repeating ~
+
+If you are inputting in English, iVim repeats certain held keys for you. The
+supported keys include:
+
+a. alphabeta keys: "abcdefghijklmnopqrstuvwxyz" and their upper case ones.
+b. numeric keys: "1234567890"
+c. symbol keys: "`-=~!@#$%^&*()_+[]\\{}|;':\",./<>?"
+
+Note that it will be disabled automatically when inputting in a language other 
+than English. You can enable or disable it in |ios-settings|.
 
 
 ==============================================================================

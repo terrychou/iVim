@@ -3224,13 +3224,14 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef hpux
 	"hpux",
 #endif
-#ifdef IOS
+#ifdef FEAT_GUI_IOS
     "ios",
+    "ivim",
 #endif
 #ifdef __linux__
 	"linux",
 #endif
-#ifdef MACOS_X
+#if defined(MACOS_X) && !defined(FEAT_GUI_IOS)
 	"mac",		/* Mac OS X (and, once, Mac OS Classic) */
 	"osx",		/* Mac OS X */
 # ifdef MACOS_X_DARWIN

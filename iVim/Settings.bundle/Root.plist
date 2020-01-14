@@ -64,7 +64,7 @@
 			<key>Title</key>
 			<string>Hardware Keyboard</string>
 			<key>FooterText</key>
-			<string>Mapping caps lock has caveats. See &quot;:h ios-external-keyboard&quot;. Mapping [alt] enables iVim take over alt- keystrokes.</string>
+			<string>Mapping caps lock has caveats. See &quot;:h ios-external-keyboard&quot;. Mapping [alt] enables iVim take over alt- keystrokes. Key Repeating repeats the held key for English keyboards.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -97,6 +97,16 @@
 			<string>kUDOptionMapping</string>
 			<key>DefaultValue</key>
 			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Key Repeating</string>
+			<key>Key</key>
+			<string>kUDKeyRepeating</string>
+			<key>DefaultValue</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>Type</key>
