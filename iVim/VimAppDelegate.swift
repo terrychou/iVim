@@ -21,6 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         initializeEnvironment()
         numPythonInterpreters = 2; // max 2 pythons running together (2 is required for pip)
         joinMainThread = false; // the main thread of ios_system runs in detached mode, non-blocking
+        ios_switchSession("vimMainSession");
         //Start Vim!
         self.performSelector(
             onMainThread: #selector(self.VimStarter),

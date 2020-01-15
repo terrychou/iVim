@@ -3100,7 +3100,8 @@ executable_file(char_u *name)
 #else
 #if TARGET_OS_IPHONE
     // access always returns -1 on iOS. 
-    return S_ISREG(st.st_mode) && S_ISXXX(st.st_mode); 
+    // the executable bit "x" cannot be relied on either
+    return S_ISREG(st.st_mode) ; 
 #else
     return S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0;
 #endif
@@ -4254,6 +4255,7 @@ set_default_child_environment(int is_terminal)
 }
 
 #if TARGET_OS_IPHONE
+static bool environmentRestored = true;
 static char* stored_TERM;
 static char* stored_Rows;
 static char* stored_Lines;
@@ -4270,6 +4272,7 @@ static char* stored_VIM_SERVERNAME;
 store_environment()
 {
     char* buffer;
+    environmentRestored = false;
     buffer = getenv("TERM");
     if (buffer) 
     	stored_TERM = strdup(buffer); 
@@ -4307,12 +4310,15 @@ store_environment()
     static void
 restore_environment()
 {
+    if (environmentRestored) return; // make sure we call this only once
     if (stored_TERM) {
 	setenv("TERM", stored_TERM, 1); 
 	free(stored_TERM); 
 	stored_TERM = NULL; 
-    } else 
+    } else {
+    	// fprintf(stderr, "stored_TERM is NULL\n"); 
     	unsetenv("TERM"); 
+    }
     if (stored_Rows) {
 	setenv("ROWS", stored_Rows, 1); 
 	free(stored_Rows); 
@@ -4353,6 +4359,7 @@ restore_environment()
     } else 
     unsetenv("VIM_SERVERNAME"); 
 #  endif
+    environmentRestored = true;
 }
 #endif
 
@@ -4915,15 +4922,11 @@ mch_call_shell_fork(
 	     * Call _exit() instead of exit() to avoid closing the connection
 	     * to the X server (esp. with GTK, which uses atexit()).
 	     */
-#if TARGET_OS_IPHONE
-        ios_system(cmd); // We do not need argv and sh, but we still built them to minimize code changes.
-#else
         execvp(argv[0], argv);
-	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
-#endif
-	}
+        // with iOS, we return from execvp and go through both branches
 #if !TARGET_OS_IPHONE
-	// with iOS, we go through both branches
+	    _exit(EXEC_FAILED);	    /* exec failed, return failure code */
+	}
 	else			/* parent */
 #endif
 	{
@@ -5829,9 +5832,6 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
     }
 
     /* parent */
-#if TARGET_OS_IPHONE
-    restore_environment(); 
-#endif
     UNBLOCK_SIGNALS(&curset);
 
     job->jv_pid = pid;
@@ -5978,6 +5978,10 @@ mch_job_status(job_T *job)
 return_dead:
     if (job->jv_status < JOB_ENDED)
 	job->jv_status = JOB_ENDED;
+#if TARGET_OS_IPHONE
+    // fprintf(stderr, "restore_environment in mch_job_status\n"); 
+    restore_environment(); 
+#endif
     return "dead";
 }
 
@@ -6004,6 +6008,7 @@ mch_detect_ended_job(job_T *job_list)
     // No access to entire list of process on iOS. Just scan the list of jobs:
     for (job = job_list; job != NULL; job = job->jv_next)
     {
+    	if (job->jv_status >= JOB_ENDED) continue;
         wait_pid = waitpid(job->jv_pid, &status, WNOHANG);
         if ((wait_pid == -1) || (wait_pid == job->jv_pid))  {
             // This job terminated
@@ -6019,6 +6024,8 @@ mch_detect_ended_job(job_T *job_list)
             {
                 ch_log(job->jv_channel, "Job ended");
                 job->jv_status = JOB_ENDED;
+                // fprintf(stderr, "restore_environment in mch_detect_ended_job\n");
+                restore_environment();
             }
             return job;
         }
@@ -6064,6 +6071,10 @@ mch_detect_ended_job(job_T *job_list)
     int
 mch_signal_job(job_T *job, char_u *how)
 {
+#if TARGET_OS_IPHONE
+    // fprintf(stderr, "restore_environment in mch_signal_job\n"); 
+    restore_environment(); 
+#endif
     int	    sig = -1;
 
     if (*how == NUL || STRCMP(how, "term") == 0)
