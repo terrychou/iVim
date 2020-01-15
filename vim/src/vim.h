@@ -9,6 +9,9 @@
 #ifndef VIM__H
 # define VIM__H
 
+// iOS/OSX architecture definitions
+#include <TargetConditionals.h>
+
 #include "protodef.h"
 
 // _WIN32 is defined as 1 when the compilation target is 32-bit or 64-bit.
@@ -2139,7 +2142,7 @@ typedef enum {
 	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC) && !defined(PROTO)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
-# define mch_msg(str)		printf("%s", (str))
+# define mch_msg(str)		fprintf(stdout, "%s", (str))
 #else
 # define USE_MCH_ERRMSG
 #endif
@@ -2642,5 +2645,18 @@ long elapsed(DWORD start_tick);
 #define APC_SUBSTITUTE		2   // text is replaced, not inserted
 
 #define CLIP_ZINDEX 32000
+
+// Flags for replace_termcodes()
+#define REPTERM_FROM_PART	1
+#define REPTERM_DO_LT		2
+#define REPTERM_SPECIAL		4
+#define REPTERM_NO_SIMPLIFY	8
+#if TARGET_OS_IPHONE 
+#include "ios_error.h"
+#define isatty ios_isatty
+#define fork   ios_fork
+#undef getenv
+#undef ECHILD // waitpid() does not set errno = ECHILD
+#endif
 
 #endif // VIM__H
