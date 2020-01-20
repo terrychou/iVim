@@ -10,6 +10,7 @@
 #import <ios_system/ios_system.h>
 #import "vim.h"
 #include <pthread.h>
+#import <ivish/ivish.h>
 
 
 static void log_failure(const char *attempt, char_u *cmd);
@@ -267,6 +268,57 @@ static signal_handler handler_for_pid(pid_t pid, int sig)
     return handler;
 }
 
+// --------------- ivish callbacks ------------------
+void shell_cmds_matching(const char *pat, void (^task)(NSString *));
+static NSArray<NSString *>  * _Nonnull ivish_available_cmds(NSString * _Nullable pattern)
+{
+    NSMutableArray<NSString *> *ret = [NSMutableArray array];
+    shell_cmds_matching([pattern UTF8String], ^(NSString *cmd) {
+        if ([cmd length] > 0) {
+            [ret addObject:cmd];
+        }
+    });
+    
+    return ret;
+}
+
+static void run_ex_command(NSString * _Nonnull cmd)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        do_cmdline_cmd((char_u *)[cmd UTF8String]);
+    });
+}
+
+static NSArray<NSString *> * _Nonnull ivish_expand_filenames(NSString * _Nonnull pattern)
+{
+    int fcount;
+    int fi;
+    char_u **fnames;
+    char_u *pat = (char_u *)[pattern UTF8String];
+    int flags = EW_DIR|EW_FILE|EW_ADDSLASH|EW_SILENT;
+    NSMutableArray<NSString *> *ret = [NSMutableArray array];
+    
+    if (gen_expand_wildcards(1, &pat, &fcount, &fnames, flags) == OK &&
+        fcount > 0) {
+        for (fi = 0; fi < fcount; fi++) {
+            [ret addObject:
+             [NSString stringWithUTF8String:(char *)fnames[fi]]];
+        }
+        FreeWild(fcount, fnames);
+    }
+    
+    return ret;
+}
+
+static ivish_callbacks_t ivish_callbacks = {
+    ivish_available_cmds,
+    run_ex_command,
+    char2cells,
+    ivish_expand_filenames,
+};
+
+// --------------- /ivish callbacks ------------------
+
 typedef void (^ __nullable CommandCompletion)(void);
 static void ios_term_run(char_u *name,
                               pid_t pid,
@@ -312,6 +364,8 @@ static void ios_term_run(char_u *name,
             return;
         }
     }
+    
+    BOOL is_ivish = (strstr((char *)name, "ivish") != NULL);
     // start command asynchronously
     dispatch_async(cmd_queue, ^{
         __block NSString *session_id = nil;
@@ -320,6 +374,9 @@ static void ios_term_run(char_u *name,
             thread_stdin = nil;
             thread_stdout = nil;
             thread_stderr = nil;
+            if (is_ivish) {
+                ios_setContext(&ivish_callbacks);
+            }
             ios_setStreams(in_file, out_file, err_file);
             deploy_env_cache(child_env());
         });
@@ -667,6 +724,7 @@ typedef NSMutableDictionary<NSString *, ChannelInfo *> ChannelInfoTable;
 static NSString *kChannelInfoReadline = @"CIReadline";
 static NSString *kChannelInfoEchoFd = @"CIEchoFd";
 static NSString *kChannelInfoPID = @"CIProcessID";
+static NSString *kChannelInfoProgName = @"CIProgName";
 
 static ChannelInfoTable *channel_info_table(void)
 {
@@ -697,12 +755,12 @@ static NSMutableString *readline_for_channel(channel_T *channel)
                          ^{ return [NSMutableString string]; });
 }
 
-static pid_t pid_for_channel(channel_T *channel)
-{
-    NSNumber *num = info_for_channel(channel)[kChannelInfoPID];
-    
-    return num != nil ? [num intValue] : -1;
-}
+//static pid_t pid_for_channel(channel_T *channel)
+//{
+//    NSNumber *num = info_for_channel(channel)[kChannelInfoPID];
+//
+//    return num != nil ? [num intValue] : -1;
+//}
 
 static void delete_info_for_channel_key(NSString *key)
 {
@@ -711,18 +769,8 @@ static void delete_info_for_channel_key(NSString *key)
 
 static NSString *command_term_mode(NSString *cmd)
 {
-    NSString *mode = @"line";
-    NSDictionary *cp = cmd_personalities()[cmd];
-    if (cp != nil) {
-        mode = cp[@"termmode"] ?: @"line";
-    }
-    
-    return mode;
-}
-
-static NSString *progname_for_channel(channel_T *channel)
-{
-    return [NSString stringWithUTF8String:ios_progname()];
+    return [[cmd_personalities() valueForKey:cmd]
+            valueForKey:@"termmode"] ?: @"line";
 }
 
 static BOOL is_terminal_channel(channel_T *channel)
@@ -767,7 +815,28 @@ void ios_term_cmd_execv(const char *path,
                  err_fd);
 }
 
-
+static BOOL should_handle_input_for_channel(channel_T *channel)
+{
+    ChannelInfo *ci = info_for_channel(channel);
+    __block NSString *progname = ci[kChannelInfoProgName];
+    if (progname == nil) {
+        pid_t pid = channel->ch_job->jv_pid;
+        switch_to_session_for_pid_safely(pid, ^(NSString *sessionID) {
+            progname = [NSString stringWithUTF8String:ios_progname()];
+        });
+        ci[kChannelInfoProgName] = progname;
+    }
+    if (progname == nil) {
+        NSLog(@"failed to retrieve program name.");
+        return NO;
+    }
+    if(![command_term_mode(progname) isEqualToString:@"line"]) {
+        // only handle for term mode "line"
+        return NO;
+    }
+    
+    return YES;
+}
 
 static int echo_fd_for_channel(channel_T *channel)
 {
@@ -780,28 +849,21 @@ int ios_term_handle_channel_input(channel_T *channel,
 {
     // return OK if handled, otherwise FAIL
     // leave non-term channel alone
-    if (!is_terminal_channel(channel)) {
+    if (!is_terminal_channel(channel) ||
+        !should_handle_input_for_channel(channel)) {
         return FAIL;
     }
-    pid_t pid = pid_for_channel(channel);
-    if (pid < 0) {
-        return FAIL;
-    }
-    __block int ret = OK;
+    
+    NSMutableString *line = readline_for_channel(channel);
+    char_u *ta_buf = (char_u *)malloc(len + MAX(len, 100));
+    vim_strncpy(ta_buf, buf, len);
+    int out_fd = echo_fd_for_channel(channel);
+    pid_t pid = channel->ch_job->jv_pid;
     switch_to_session_for_pid_safely(pid, ^(NSString *sessionID) {
-        if(![command_term_mode(progname_for_channel(channel)) isEqualToString:@"line"]) {
-            // only handle for term mode "line"
-            ret = FAIL;
-            return;
-        }
-        NSMutableString *line = readline_for_channel(channel);
-        char_u *ta_buf = (char_u *)malloc(len + MAX(len, 100));
-        vim_strncpy(ta_buf, buf, len);
-        int out_fd = echo_fd_for_channel(channel);
         simple_readline(ta_buf,
                         (int)len,
                         line,
-                        channel->ch_job->jv_pid,
+                        pid,
                         channel->ch_part[PART_IN].ch_fd,
                         ^(char_u c) { // echo char action
             switch (c) {
@@ -823,8 +885,8 @@ int ios_term_handle_channel_input(channel_T *channel,
         }, ^{ // got eof action
             // nothing to do
         });
-        free(ta_buf);
     });
+    free(ta_buf);
     
-    return ret;
+    return OK;
 }

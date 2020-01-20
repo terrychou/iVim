@@ -7399,6 +7399,7 @@ ios-exter-cmds-env	ios_external_cmds.txt	/*ios-exter-cmds-env*
 ios-exter-cmds-io	ios_external_cmds.txt	/*ios-exter-cmds-io*
 ios-exter-cmds-list	ios_external_cmds.txt	/*ios-exter-cmds-list*
 ios-exter-cmds-personalities	ios_external_cmds.txt	/*ios-exter-cmds-personalities*
+ios-exter-cmds-term	ios_external_cmds.txt	/*ios-exter-cmds-term*
 ios-exter-cmds-wiki	ios_external_cmds.txt	/*ios-exter-cmds-wiki*
 ios-external-cmds	ios_external_cmds.txt	/*ios-external-cmds*
 ios-external-commands	os_ios.txt	/*ios-external-commands*
@@ -7447,6 +7448,11 @@ it	motion.txt	/*it*
 italic	syntax.txt	/*italic*
 items()	eval.txt	/*items()*
 ivim-old-documents	os_ios.txt	/*ivim-old-documents*
+ivish	ios_external_cmds.txt	/*ivish*
+ivish-completion	ios_external_cmds.txt	/*ivish-completion*
+ivish-editing	ios_external_cmds.txt	/*ivish-editing*
+ivish-history	ios_external_cmds.txt	/*ivish-history*
+ivish-internal-cmds	ios_external_cmds.txt	/*ivish-internal-cmds*
 iw	motion.txt	/*iw*
 i{	motion.txt	/*i{*
 i}	motion.txt	/*i}*

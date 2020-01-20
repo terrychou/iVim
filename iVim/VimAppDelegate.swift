@@ -93,39 +93,48 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 extension AppDelegate { // env setup
     private func customizeEnv() -> Bool {
-            guard let resPath = Bundle.main.resourcePath else { return false }
-            // for ios_system
-            initializeEnvironment()
-            
-            // setup vim
-            let runtimePath = resPath + "/runtime"
-            vim_setenv("VIM", resPath)
-            vim_setenv("VIMRUNTIME", runtimePath)
-            let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory,
-                                                             .userDomainMask,
-                                                             true)[0]
-            vim_setenv("HOME", docDir)
-            FileManager.default.changeCurrentDirectoryPath(docDir)
-            
-            // setup python
-            self.setupPython(withResourcePath: resPath)
-            
-            return true
-        }
+        guard let resPath = Bundle.main.resourcePath else { return false }
+        // for ios_system
+        initializeEnvironment()
         
-        private func setupPython(withResourcePath resPath: String) {
-            numPythonInterpreters = 2
-            let libPath = NSSearchPathForDirectoriesInDomains(.libraryDirectory,
-                                                              .userDomainMask,
-                                                              true)[0]
-            let libHome = libPath + "/python/site-packages"
-    //        vim_setenv("PYTHONHOME", resPath + "/python" + ":" + libHome)
-            vim_setenv("PYTHONHOME", resPath + "/python")
-            vim_setenv("PYTHONPATH", libHome)
-            vim_setenv("PYTHONIOENCODING", "utf-8")
-            // setup pip: install into the writable one
-            vim_setenv("PIP_TARGET", libHome)
-            vim_setenv("PIP_DISABLE_PIP_VERSION_CHECK", "yes")
-            vim_setenv("PIP_NO_COLOR", "yes")
-        }
+        // setup vim
+        let runtimePath = resPath + "/runtime"
+        vim_setenv("VIM", resPath)
+        vim_setenv("VIMRUNTIME", runtimePath)
+        let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory,
+                                                         .userDomainMask,
+                                                         true)[0]
+        vim_setenv("HOME", docDir)
+        FileManager.default.changeCurrentDirectoryPath(docDir)
+        
+        // setup shell
+        self.setupShell(homePath: docDir, resPath: resPath)
+        
+        // setup python
+        self.setupPython(withResourcePath: resPath)
+        
+        return true
+    }
+    
+    private func setupPython(withResourcePath resPath: String) {
+        numPythonInterpreters = 2
+        let libPath = NSSearchPathForDirectoriesInDomains(.libraryDirectory,
+                                                          .userDomainMask,
+                                                          true)[0]
+        let libHome = libPath + "/python/site-packages"
+        //        vim_setenv("PYTHONHOME", resPath + "/python" + ":" + libHome)
+        vim_setenv("PYTHONHOME", resPath + "/python")
+        vim_setenv("PYTHONPATH", libHome)
+        vim_setenv("PYTHONIOENCODING", "utf-8")
+        // setup pip: install into the writable one
+        vim_setenv("PIP_TARGET", libHome)
+        vim_setenv("PIP_DISABLE_PIP_VERSION_CHECK", "yes")
+        vim_setenv("PIP_NO_COLOR", "yes")
+    }
+    
+    private func setupShell(homePath: String, resPath: String) {
+        vim_setenv("IVISH_CMD_DB", resPath + "/commandPersonalities.plist")
+        // history file path
+        vim_setenv("IVISH_HISTORY_FILE", homePath + "/.ivish_history")
+    }
 }

@@ -41,3 +41,6 @@ let g:terminal_ansi_colors=['#435a66', '#fb3841', '#5cf09e', '#fed032', '#36b6fe
 
 " skip defaults.vim
 let skip_defaults_vim=1
+
+" set default shell
+set shell=ivish

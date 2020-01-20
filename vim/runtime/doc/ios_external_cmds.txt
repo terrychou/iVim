@@ -1,4 +1,4 @@
-*ios_external_cmds.txt*     For Vim version 8.1.    Last change: 2019 Dec 19
+*ios_external_cmds.txt*     For Vim version 8.1.    Last change: 2020 Jan 20
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -13,6 +13,8 @@ provided by iVim.
 3. Command Personalities                |ios-exter-cmds-personalities|
 4. CA Certificates                      |ios-exter-cmds-ca-certs|
 5. Input & Output                       |ios-exter-cmds-io|
+6. Terminal                             |ios-exter-cmds-term|
+7. ivish                                |ivish|
 
 
 ==============================================================================
@@ -152,4 +154,130 @@ the standard error, and prints it in the message window. Note that you cannot
 scroll back when the output is more than one screen.
 
 
+==============================================================================
+6. Terminal                                     *ios-exter-cmds-term*
+
+iVim enables the |+terminal| feature. Which means you can also run external
+commands in a |terminal-window|.
+
+The easiest way to run an external command in a terminal window, is to invoke
+it via the |:terminal| command: >
+        :terminal pwd               "open a terminal window and show current
+                                    "directory in it
+<
+The advantages of running commands in a terminal window include:
+
+a) colors 
+the terminal window support the ANSI colors. Commands' output including them
+will be displayed correctly. Note that iVim also enables |+termguicolors|, so
+you can set the default 16 ANSI colors used by the terminal via the variable
+|g:terminal_ansi_colors|.
+
+b) multiple commands simultaneously
+unlike running via ex command line, you can open multiple terminal windows
+and run one command in each, at the same time.
+
+c) more convenient output browsing
+While you cannot scroll back to see the earlier output if it exceeds one page
+in the ex command line, a terminal window, by default, will be kept open after
+its command is finished. As a result, you are able to browse the whole output 
+as easily as reading a normal document in vim.
+
+d) auto-restore support
+if a command was still running in a terminal window when iVim terminated, the
+related window will be restored automatically at the next launch, with the 
+right command started within it.
+
+See |terminal| for details about the terminal window.
+
+            
+==============================================================================
+7. ivish                                        *ivish*
+
+To make running external commands in a more continous way, iVim includes a 
+simple shell named `ivish`. You can launch it via: >
+        :terminal ivish
+<
+or just simply: >
+        :terminal
+<
+the difference between them is that in the latter case, the terminal window 
+will be closed automatically when `ivish` exits.
+
+Input & output ~
+
+After `ivish` started, it shows a prompt `$ ` and waits for you to offer a 
+command. `ivish` won't handle your input until you confirm by pressing enter.
+After it started, the running command takes over the input and output. Only 
+when it is done, `ivish` comes out again and expects your next command.
+
+Line editing ~
+                                                    *ivish-editing*
+`ivish` provides a powerful line editing mode for you to edit your input.
+
+`^A`: jump to the start of the line;
+`^B`: move one character backward;
+`^C`: cancel the current line and start a new prompt;
+`^D`: delete the character under the cursor; act like enter if cursor at the
+end; Note that if the current line is empty, it exits `ivish`;
+`^E`: jump to the end of the line;
+`^F`: move one character forward;
+`^K`: delete all since the cursor;
+`^T`: move one word backward;
+`^U`: delete all before the cursor;
+`^W`: delete one previous word; Note that since the terminal window eats `^W`
+use `^W.` to do this;
+`^Y`: move one word forward.
+
+Hints & completion ~
+                                                    *ivish-completion*
+Right now, `ivish` provides completion for the following types:
+
+a) command names
+b) file or directory names
+
+During your input, `ivish` watches the cursor position and gives the first of
+all possible completion candidates as a hint. 
+
+When you press the `tab` key:
+
+a) if there are more than one completion candidates available, `ivish` lists 
+them and complete the word to their longest common prefix;
+b) if there is only one candidate, the whole word gets completed;
+c) if no candidates available, nothing happens.
+
+Note that hints and completion only work in `ivish` right now, not the running
+commands.
+
+History ~
+                                                    *ivish-history*
+Every confirmed line in `ivish` will be recorded as one history item. You can
+navigate the list via:
+
+`^P` or `up-arrow`: move to the previous line if available;
+`^N` or `down-arrow`: move to the next line if available, otherwise return to
+the current input;
+`esc`: restore to the current input.
+
+You can list the current history items via the internal command `history`.
+
+There are some notes worth mentioning:
+
+a) repeated lines are allowed;
+b) at most 100 items are kept in the history;
+c) if the env variable `IVISH_HISTORY_FILE` exists, `ivish` loads lines from
+it everytime it starts, and saves history into it everytime it terminates;
+d) running commands in `ivish` share one history, and it's not saving to a
+file.
+
+Internal commands ~
+                                                    *ivish-internal-cmds*
+`ivish` also provides some internal commands:
+
+`exit`: terminate the current `ivish`;
+`help`: show this documentation;
+`history`: list the current history.
+
+
+==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:

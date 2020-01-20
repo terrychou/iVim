@@ -940,7 +940,7 @@ static NSArray<NSString *> *available_shell_cmds() {
     return cmds;
 }
 
-void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches) {
+void shell_cmds_matching(const char *pat, void (^task)(NSString *)) {
     // vim tries to collect commands from directories
     // in 'path', so it appends a '*' to any pattern.
     // as a result, need to remove it first
@@ -957,9 +957,15 @@ void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches) {
     }
     for (NSString *cmd in available_shell_cmds()) {
         if (matchAll || [cmd hasPrefix:nspat]) {
-            ga_add_string(matches, TOCHARS(cmd));
+            task(cmd);
         }
     }
+}
+
+void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches) {
+    shell_cmds_matching((char *)pat, ^(NSString *cmd) {
+        ga_add_string(matches, TOCHARS(cmd));
+    });
 }
 
 /*

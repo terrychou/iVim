@@ -1,4 +1,4 @@
-*os_ios.txt*	For Vim version 8.1.	Last change: 2020 Jan 14
+*os_ios.txt*	For Vim version 8.1.	Last change: 2020 Jan 16
 
 			iVim REFERENCE MANUAL	by Terry Chou
 
@@ -481,8 +481,9 @@ a. alphabeta keys: "abcdefghijklmnopqrstuvwxyz" and their upper case ones.
 b. numeric keys: "1234567890"
 c. symbol keys: "`-=~!@#$%^&*()_+[]\\{}|;':\",./<>?"
 
-Note that it will be disabled automatically when inputting in a language other 
-than English. You can enable or disable it in |ios-settings|.
+Note that: 1) you need to switch on iOS system's related setting for this to
+work; 2) it will be disabled automatically when inputting in a language other 
+than English; 3) you can enable or disable it in |ios-settings|.
 
 
 ==============================================================================
