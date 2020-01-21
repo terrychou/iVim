@@ -117,6 +117,7 @@
 		DE863ACF20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */; };
 		DE863AD120A18297000FC5F8 /* FileLineReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863AD020A18297000FC5F8 /* FileLineReader.swift */; };
 		DE99CEC023C72665000098E9 /* ivish.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE99CEBE23C72664000098E9 /* ivish.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEA2B9A723D6BD5000E918B8 /* catimg_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEA2B9A523D6BD5000E918B8 /* catimg_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DEAF4E8A226EEEDB0037E0F7 /* scenes_keeper.m in Sources */ = {isa = PBXBuildFile; fileRef = DEAF4E89226EEEDB0037E0F7 /* scenes_keeper.m */; };
 		DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41F1F209661007AFD63 /* VimFunctions.swift */; };
 		DEBE7EB723711DD100FC887E /* channel.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4962347275E00F3E794 /* channel.c */; };
@@ -295,6 +296,7 @@
 				DE11B88A23A32A7A0080D00E /* python3_ios.framework in Embed Frameworks */,
 				DE7FD20B239B4B0C00ADFE2F /* ios_system.framework in Embed Frameworks */,
 				DEEB35EE23A3C72400B1B18F /* libssh2.framework in Embed Frameworks */,
+				DEA2B9A723D6BD5000E918B8 /* catimg_ios.framework in Embed Frameworks */,
 				DE2385862372A59D00A37420 /* files.framework in Embed Frameworks */,
 				DEFC96F82388CFAE000F22CE /* text.framework in Embed Frameworks */,
 				DE47B2EE2373E62E003D5BBE /* shell.framework in Embed Frameworks */,
@@ -3706,6 +3708,8 @@
 		DEA0C8162347276C00F3E794 /* window.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = window.c; sourceTree = "<group>"; };
 		DEA0C8172347276C00F3E794 /* keymap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = keymap.h; sourceTree = "<group>"; };
 		DEA0C8182347276C00F3E794 /* gui_athena.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gui_athena.c; sourceTree = "<group>"; };
+		DEA2B97523D6AA4900E918B8 /* catimg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = catimg.framework; path = ../frameworks/catimg.framework; sourceTree = "<group>"; };
+		DEA2B9A523D6BD5000E918B8 /* catimg_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = catimg_ios.framework; path = ../frameworks/catimg_ios.framework; sourceTree = "<group>"; };
 		DEAF4E89226EEEDB0037E0F7 /* scenes_keeper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = scenes_keeper.m; sourceTree = "<group>"; };
 		DEBE45732281604D00E04A08 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		DEBE92DF238CFD08008F2964 /* tar.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = tar.framework; path = Frameworks/tar.framework; sourceTree = "<group>"; };
@@ -8487,6 +8491,8 @@
 		DEBE45722281604D00E04A08 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DEA2B9A523D6BD5000E918B8 /* catimg_ios.framework */,
+				DEA2B97523D6AA4900E918B8 /* catimg.framework */,
 				DE99CEBE23C72664000098E9 /* ivish.framework */,
 				DE0B1DD72396577A0066E132 /* pythonB.framework */,
 				DE16465F2390DB7200ADC198 /* pythonA.framework */,
