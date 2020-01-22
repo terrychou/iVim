@@ -92,6 +92,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 
 extension AppDelegate { // env setup
+    private func appendToEnvPath(_ path: String) {
+        var old = String(cString: getenv("PATH"))
+        old.append(":" + path)
+        vim_setenv("PATH", old)
+    }
+    
     private func customizeEnv() -> Bool {
         guard let resPath = Bundle.main.resourcePath else { return false }
         // for ios_system
@@ -121,15 +127,19 @@ extension AppDelegate { // env setup
         let libPath = NSSearchPathForDirectoriesInDomains(.libraryDirectory,
                                                           .userDomainMask,
                                                           true)[0]
-        let libHome = libPath + "/python/site-packages"
-        //        vim_setenv("PYTHONHOME", resPath + "/python" + ":" + libHome)
-        vim_setenv("PYTHONHOME", resPath + "/python")
-        vim_setenv("PYTHONPATH", libHome)
+        let libHome = libPath + "/python"
+        let pythonHome = resPath + "/python"
+        let siteSubpath = "/lib/python3.7/site-packages"
+        vim_setenv("PYTHONHOME", pythonHome)
+        vim_setenv("PYTHONPATH", libHome + siteSubpath)
+        let pipBin = pythonHome + siteSubpath + "/bin"
+        let libBin = libHome + "/bin"
+        self.appendToEnvPath(pipBin + ":" + libBin)
         vim_setenv("PYTHONIOENCODING", "utf-8")
         // setup pip: install into the writable one
-        vim_setenv("PIP_TARGET", libHome)
+        vim_setenv("PIP_PREFIX", libHome)
         vim_setenv("PIP_DISABLE_PIP_VERSION_CHECK", "yes")
-        vim_setenv("PIP_NO_COLOR", "yes")
+//        vim_setenv("PIP_NO_COLOR", "yes")
     }
     
     private func setupShell(homePath: String, resPath: String) {

@@ -915,9 +915,86 @@ void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL 
  * append "shell command names" matching *pat* to *matches*
  * called by expand_shellcmd()
  */
+static BOOL is_file_executable(NSString *path)
+{
+    struct stat st;
+    if (stat([path UTF8String], &st)) {
+        return NO;
+    }
+    
+    return (S_ISREG(st.st_mode) &&
+            (st.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)));
+}
+
+static NSArray<NSString *> *executables_under_dir(NSString *path, BOOL should_be_x)
+{
+    static NSMutableSet<NSString *> *not_permitted;
+    if (not_permitted == nil) {
+        not_permitted = [NSMutableSet set];
+    }
+    if ([not_permitted containsObject:path]) {
+        return @[];
+    }
+    NSMutableArray<NSString *> *ret = [NSMutableArray array];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    BOOL is_dir = NO;
+    if ([fm fileExistsAtPath:path isDirectory:&is_dir] && is_dir) {
+        NSError *error = nil;
+        NSArray<NSString *> *contents = [fm contentsOfDirectoryAtPath:path
+                                                                error:&error];
+        if (error == nil) {
+            for (NSString *item in contents) {
+                NSString *p = [path stringByAppendingPathComponent:item];
+                is_dir = NO;
+                if ([fm fileExistsAtPath:p isDirectory:&is_dir] && !is_dir) {
+                    if (should_be_x) {
+                        if (is_file_executable(p)) {
+                            [ret addObject:item];
+                        }
+                    } else {
+                        [ret addObject:item];
+                    }
+                }
+            }
+        } else {
+            if ([error code] == 257) {
+                [not_permitted addObject:path];
+            }
+            NSLog(@"failed to load contents of dir: %@", error);
+        }
+    }
+    
+    return ret;
+}
+
+static BOOL executables_should_be_x_under(NSString *path)
+{
+    // permission "x" of files under the resource dir always
+    // gets removed while being installed
+    return ![path hasPrefix:[[NSBundle mainBundle] resourcePath]];
+}
+
+static NSSet<NSString *> *cmds_from_env_paths(void)
+{
+    NSMutableSet<NSString *> *ret = [NSMutableSet set];
+    NSString *envPath = [NSString stringWithUTF8String:getenv("PATH")];
+    NSArray<NSString *> *paths = nil;
+    if (![envPath isEqualToString:@""]) {
+        paths = [envPath componentsSeparatedByString:@":"];
+    }
+    if (paths != nil) {
+        for (NSString *path in paths) {
+            BOOL should_be_x = executables_should_be_x_under(path);
+            [ret addObjectsFromArray:executables_under_dir(path, should_be_x)];
+        }
+    }
+    
+    return ret;
+}
 
 static NSArray<NSString *> *available_shell_cmds() {
     static NSArray<NSString *> *cmds;
+    static NSArray<NSSortDescriptor *> *descriptors;
     if (cmds == NULL) {
         NSURL *cPath = [[[NSBundle mainBundle] resourceURL]
                         URLByAppendingPathComponent:
@@ -936,8 +1013,15 @@ static NSArray<NSString *> *available_shell_cmds() {
                   [err localizedDescription]);
         }
     }
+    if (descriptors == nil) {
+        descriptors = @[[NSSortDescriptor
+                         sortDescriptorWithKey:@"description"
+                         ascending:YES]];
+    }
+    NSSet<NSString *> *searched = cmds_from_env_paths();
+    NSSet<NSString *> *ret = [searched setByAddingObjectsFromArray:cmds];
     
-    return cmds;
+    return [ret sortedArrayUsingDescriptors:descriptors];
 }
 
 void shell_cmds_matching(const char *pat, void (^task)(NSString *)) {
