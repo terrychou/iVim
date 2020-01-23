@@ -11,12 +11,16 @@
 import UIKit
 import CoreText
 
+
+extension CTFontSymbolicTraits: Hashable {}
+
 final class VimView: UIView {
     private var dirtyRect: CGRect = .zero
     var fgColor: VimColor = 0
     var bgColor: VimColor = 0
     var spColor: VimColor = 0
     var font: CTFont?
+    var fontCache = [CTFontSymbolicTraits: CTFont]()
     @objc var char_ascent: CGFloat = 0
     var char_descent: CGFloat = 0
     @objc var char_width: CGFloat = 0
@@ -100,6 +104,7 @@ extension VimView {
         self.char_width = w
         self.char_height = h
         self.font = f
+        self.fontCache.removeAll()
         
         return f
     }

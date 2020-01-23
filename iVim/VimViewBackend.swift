@@ -10,9 +10,16 @@ import UIKit
 
 typealias VimColor = UInt32
 
-extension NSAttributedString.Key {
+private extension NSAttributedString.Key {
     static let foregroundColorFromContext = NSAttributedString.Key(
         kCTForegroundColorFromContextAttributeName as String)
+}
+
+private extension CTFont {    
+    func copy(with traits: CTFontSymbolicTraits) -> CTFont? {
+        return CTFontCreateCopyWithSymbolicTraits(
+            self, 0.0, nil, traits, traits)
+    }
 }
 
 extension VimView {
@@ -61,14 +68,53 @@ extension VimView {
         }
     }
     
+    private struct Flags: OptionSet {
+        let rawValue: UInt8
+        
+        static let transparent = Flags(rawValue: 1)
+        static let bold = Flags(rawValue: 2)
+        static let underline = Flags(rawValue: 4)
+        static let undercurl = Flags(rawValue: 8)
+        static let italic = Flags(rawValue: 16)
+        static let cursor = Flags(rawValue: 32)
+        static let strikethrough = Flags(rawValue: 64)
+    }
+    
+    private func font(for flags: inout Flags) -> CTFont {
+        var ret = self.font!
+        var traits: CTFontSymbolicTraits = []
+        if flags.contains(.bold) {
+            traits.formUnion(.traitBold)
+        }
+        if flags.contains(.italic) {
+            traits.formUnion(.traitItalic)
+        }
+        if traits != [] {
+            if let ef = self.fontCache[traits] {
+                ret = ef
+            } else if let n = ret.copy(with: traits) {
+                ret = n
+                self.fontCache[traits] = n
+            } else if flags.contains(.italic) {
+                // use underline if italic not available
+                flags.formUnion(.underline)
+            }
+//            } else {
+//                NSLog("failed to get font with traits \(traits)")
+//            }
+        }
+        
+        return ret
+    }
+    
     @objc func drawString(_ string: NSString,
                           pos_x: CGFloat, pos_y: CGFloat,
                           rect: CGRect, p_antialias: Bool,
-                          transparent: Bool, underline: Bool,
-                          undercurl: Bool, cursor: Bool) {
+                          flags: UInt8) {
 //        NSLog("draw '\(string)' at \(rect)")
+        var f = Flags(rawValue: flags)
         self.draw { ctx in
-            if !transparent {
+            if !f.contains(.transparent) {
                 ctx.setFillVimColor(self.bgColor)
                 ctx.fill(rect)
             }
@@ -82,7 +128,7 @@ extension VimView {
             var offset = CGFloat(0)
             var totalCells = 0
             let attr: StringAttributes = [
-                .font: self.font!,
+                .font: self.font(for: &f),
                 .foregroundColorFromContext: true,
             ]
             string.enumerateSubstrings(
@@ -100,19 +146,19 @@ extension VimView {
                     offset += CGFloat(cells) * self.char_width
             }
             
-            if underline {
+            if f.contains(.underline) {
                 self.drawUnderline(x: pos_x,
                                    y: pos_y,
                                    cells: totalCells,
                                    in: ctx)
-            } else if undercurl {
+            } else if f.contains(.undercurl) {
                 self.drawUndercurl(x: pos_x,
                                    y: pos_y,
                                    cells: totalCells,
                                    in: ctx)
             }
             
-            if cursor {
+            if f.contains(.cursor) {
                 ctx.setBlendMode(.difference)
                 ctx.fill(rect)
             }
