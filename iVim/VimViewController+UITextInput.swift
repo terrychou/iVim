@@ -345,11 +345,15 @@ extension VimViewController {
         self.currentPrimaryLanguage = self.textInputMode?.primaryLanguage
     }
     
+    var isDuringMultistageInput: Bool {
+        return !(self.markedInfo?.text.isEmpty ?? true)
+    }
+    
     @objc func imState() -> Bool {
         return (self.currentPrimaryLanguage.map {
             !$0.hasPrefix("en")
             } ?? false) ||
-            !(self.markedInfo?.text.isEmpty ?? true)
+            self.isDuringMultistageInput
     }
 }
 

@@ -122,7 +122,8 @@ extension VimViewController {
     
     private var isKeyRepeating: Bool {
         return UserDefaults.standard.bool(forKey: kUDKeyRepeating) &&
-            self.shouldRemapCapslock // also only repeat for english keyboards
+            self.shouldRemapCapslock && // also only repeat for english keyboards
+            !self.isDuringMultistageInput // don't repeat if inputting accented chars
     }
     
     private static func keyCommand(input: String, modifierFlags: UIKeyModifierFlags = [], title: String? = nil) -> UIKeyCommand {
