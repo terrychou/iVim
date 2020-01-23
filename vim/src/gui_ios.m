@@ -946,21 +946,17 @@ static NSArray<NSString *> *executables_under_dir(NSString *path, BOOL should_be
             for (NSString *item in contents) {
                 NSString *p = [path stringByAppendingPathComponent:item];
                 is_dir = NO;
-                if ([fm fileExistsAtPath:p isDirectory:&is_dir] && !is_dir) {
-                    if (should_be_x) {
-                        if (is_file_executable(p)) {
-                            [ret addObject:item];
-                        }
-                    } else {
-                        [ret addObject:item];
-                    }
+                if ([fm fileExistsAtPath:p isDirectory:&is_dir] && !is_dir &&
+                    (!should_be_x || is_file_executable(p))) {
+                    [ret addObject:item];
                 }
             }
         } else {
             if ([error code] == 257) {
                 [not_permitted addObject:path];
+            } else {
+                NSLog(@"failed to load contents of dir: %@", error);
             }
-            NSLog(@"failed to load contents of dir: %@", error);
         }
     }
     

@@ -295,14 +295,32 @@ static NSArray<NSString *> * _Nonnull ivish_expand_filenames(NSString * _Nonnull
     int fi;
     char_u **fnames;
     char_u *pat = (char_u *)[pattern UTF8String];
-    int flags = EW_DIR|EW_FILE|EW_ADDSLASH|EW_SILENT;
+    NSString *fname = nil;
+    char *fn = NULL;
+    int flags = EW_DIR|EW_FILE|EW_ADDSLASH|EW_SILENT|EW_NOTENV;
     NSMutableArray<NSString *> *ret = [NSMutableArray array];
+    size_t prefix_len = 0;
+    NSString *kept_prefix = @"";
+    if ([pattern hasPrefix:@"~"]) {
+        // truncate the path of $HOME
+        int l = MAXPATHL + 2;
+        char_u buf[l];
+        expand_env((char_u *)"~", buf, l);
+        prefix_len = STRLEN(buf);
+        kept_prefix = @"~";
+    }
     
     if (gen_expand_wildcards(1, &pat, &fcount, &fnames, flags) == OK &&
         fcount > 0) {
         for (fi = 0; fi < fcount; fi++) {
-            [ret addObject:
-             [NSString stringWithUTF8String:(char *)fnames[fi]]];
+            fn = (char *)fnames[fi];
+            if (prefix_len > 0) {
+                fname = [NSString stringWithFormat:@"%@%s",
+                         kept_prefix, fn + prefix_len];
+            } else {
+                fname = [NSString stringWithUTF8String:fn];
+            }
+            [ret addObject:fname];
         }
         FreeWild(fcount, fnames);
     }
