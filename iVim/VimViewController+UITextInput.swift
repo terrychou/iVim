@@ -247,6 +247,8 @@ extension VimViewController {
     func cancelCurrentMarkedText() {
         self.markedInfo?.cancelled = true
         self.resetKeyboard()
+        self.markedInfo?.didUnmark()
+//        self.markedInfo = nil
     }
 }
 
