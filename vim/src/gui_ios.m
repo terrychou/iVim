@@ -877,6 +877,14 @@ BOOL is_in_normal_mode(void) {
 }
 
 /*
+ * if currently in insert mode
+ */
+BOOL is_in_insert_mode(void)
+{
+    return State & INSERT;
+}
+
+/*
  * Get the regex pattern from *line*
  * return last_search_pat() if itself isn't a valid pattern
  */

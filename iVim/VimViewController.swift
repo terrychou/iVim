@@ -294,11 +294,18 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         if diffY >= 1 {
             sender.setTranslation(CGPoint(x: 0, y: translation.y - floor(diffY) * charHeight), in: v)
         }
+        let isInsertMode = is_in_insert_mode()
         while diffY <= -1 {
+            if isInsertMode {
+                input_special_name("<C-o>")
+            }
             input_special_name("<C-e>")
             diffY += 1
         }
         while diffY >= 1 {
+            if isInsertMode {
+                input_special_name("<C-o>")
+            }
             input_special_name("<C-y>")
             diffY -= 1
         }

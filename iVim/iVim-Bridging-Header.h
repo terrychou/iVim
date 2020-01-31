@@ -61,6 +61,7 @@ BOOL file_is_in_buffer_list(NSString * path);
 BOOL jump_to_window_with_buffer(NSString * path);
 BOOL clean_buffer_for_mirror_path(NSString * path);
 BOOL is_in_normal_mode(void);
+BOOL is_in_insert_mode(void);
 NSString * get_pattern_from_line(NSString * line);
 void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL (^matcher)(NSString *)));
 
