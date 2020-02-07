@@ -797,7 +797,7 @@ do_highlight(
 		gui_init_menu_font();
 # endif
 	    }
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_X11)
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_IOS)
 	    gui_mch_def_colors();
 # endif
 # ifdef FEAT_GUI_X11

@@ -1107,26 +1107,14 @@ gui_mch_init(void)
 {
 //    printf("%s\n",__func__);
     set_option_value((char_u *)"termencoding", 0L, (char_u *)"utf-8", 0);
-    
     gui_mch_def_colors();
-    
-    set_normal_colors();
-
-    gui_check_colors();
-//    gui.def_norm_pixel = gui.norm_pixel;
-//    gui.def_back_pixel = gui.back_pixel;
-    do_cmdline_cmd((char_u *)"highlight Cursor guifg=bg guibg=fg");
-    do_cmdline_cmd((char_u *)"highlight lCursor guifg=bg guibg=fg");
     
     bg_color_ready = YES;
     if (shellViewController()) {
         gui_ios_init_bg_color();
     }
-
-//#ifdef FEAT_GUI_SCROLL_WHEEL_FORCE
-   // gui.scroll_wheel_force = 1;
-    //gui
-//#endif
+    
+    highlight_gui_started();
 
     return OK;
 }
@@ -1431,9 +1419,9 @@ void gui_mch_def_colors(void) {
     void
 gui_mch_new_colors(void)
 {
-//    printf("%s\n",__func__);  
-    gui.def_back_pixel = gui.back_pixel;
+//    printf("%s\n",__func__);
     gui.def_norm_pixel = gui.norm_pixel;
+    gui.def_back_pixel = gui.back_pixel;
     gui_ios_sync_bg_color(NO);
 }
 
@@ -1443,7 +1431,7 @@ gui_mch_new_colors(void)
     void
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
-//    printf("%s\n",__func__);  
+//    printf("%s\n",__func__);
 }
 
 // -- Menu ------------------------------------------------------------------

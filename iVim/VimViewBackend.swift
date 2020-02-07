@@ -158,23 +158,15 @@ extension VimView {
                                    in: ctx)
             }
             
-            if f.contains(.cursor) {
-                ctx.setBlendMode(.difference)
-                ctx.fill(rect)
-            }
+//            if f.contains(.cursor) {
+//                NSLog("draw cursor \(self.fgColor)")
+//                ctx.setBlendMode(.difference)
+//                ctx.fill(rect)
+//            }
             
             return rect
         }
     }
-    
-//    private func attributedString(from string: String) -> NSAttributedString {
-//        let attributes: StringAttributes = [
-//            .font: self.font!,
-//            .foregroundColorFromContext: true,
-//        ]
-//
-//        return NSAttributedString(string: string, attributes: attributes)
-//    }
     
     private func drawUnderline(x: CGFloat, y: CGFloat,
                                cells: Int, in ctx: CGContext) {
