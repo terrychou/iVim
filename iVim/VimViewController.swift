@@ -145,11 +145,25 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.shouldTuneFrame = true
     }
     
+    private func send(mouseEvent: Int32, at point: CGPoint) {
+        if !self.isFirstResponder {
+            self.becomeFirstResponder()
+            self.reloadInputViews()
+        }
+        gui_send_mouse_event(mouseEvent,
+                             Int32(point.x),
+                             Int32(point.y),
+                             1,
+                             0)
+    }
+    
     @objc func click(_ sender: UITapGestureRecognizer) {
-        self.resetKeyboard()
+        if self.isFirstResponder {
+            self.resetKeyboard()
+        }
         self.unmarkText()
-        let clickLocation = sender.location(in: sender.view)
-        gui_send_mouse_event(0, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
+        self.send(mouseEvent: mouseLEFT,
+                  at: sender.location(in: sender.view))
     }
     
     @objc func longPress(_ sender: UILongPressGestureRecognizer) {
@@ -266,21 +280,21 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     @objc func pan(_ sender: UIPanGestureRecognizer) {
         guard let v = self.vimView else { return }
-        let clickLocation = sender.location(in: v)
         let event: Int32
         switch sender.state {
         case .began: event = mouseLEFT
         case .ended: event = mouseRELEASE
         default: event = mouseDRAG
         }
-        gui_send_mouse_event(event, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
+        self.send(mouseEvent: event,
+                  at: sender.location(in: v))
     }
     
     @objc func scroll(_ sender: UIPanGestureRecognizer) {
         if sender.state == .began {
 //            self.becomeFirstResponder()
-            let clickLocation = sender.location(in: sender.view)
-            gui_send_mouse_event(0, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
+            self.send(mouseEvent: mouseLEFT,
+                      at: sender.location(in: sender.view))
         }
         
         guard let v = self.vimView else { return }

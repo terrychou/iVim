@@ -37,6 +37,6 @@ extension VimViewController {
     
     override var inputAccessoryView: UIView? {
         return self.shouldShowExtendedBar ?
-            ExtendedKeyboardManager.shared.inputView : nil
+            ExtendedKeyboardManager.shared.inputView : UIView(frame: .zero)
     }
 }
