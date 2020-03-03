@@ -7,14 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DE070C16238F7A6F00854625 /* harfbuzz.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE070C11238F7A6E00854625 /* harfbuzz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE070C18238F7A6F00854625 /* freetype.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE070C12238F7A6E00854625 /* freetype.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE070C20238FA6B500854625 /* if_python3.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C7972347276A00F3E794 /* if_python3.c */; };
 		DE0D2EC8205A1797004C29F8 /* ArgumentToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */; };
 		DE0D2ECA205A536C004C29F8 /* URLRealizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */; };
+		DE11B88A23A32A7A0080D00E /* python3_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE7DF70B238CD48A0012A469 /* python3_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE11B88C23A32A7A0080D00E /* pythonA.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE16465F2390DB7200ADC198 /* pythonA.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE11B88E23A32A7A0080D00E /* pythonB.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE0B1DD72396577A0066E132 /* pythonB.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE16466A2391058900ADC198 /* python in Resources */ = {isa = PBXBuildFile; fileRef = DE1646692391058800ADC198 /* python */; };
 		DE1ADB792099549200B21E9E /* ExtendedKeyboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */; };
+		DE2385862372A59D00A37420 /* files.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE2385842372A59D00A37420 /* files.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE2385892372A5F400A37420 /* commandDictionary.plist in Resources */ = {isa = PBXBuildFile; fileRef = DE2385872372A5F300A37420 /* commandDictionary.plist */; };
+		DE23858A2372A5F400A37420 /* extraCommandsDictionary.plist in Resources */ = {isa = PBXBuildFile; fileRef = DE2385882372A5F400A37420 /* extraCommandsDictionary.plist */; };
 		DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */; };
 		DE33BF87214F724B009A5D5F /* VimViewBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE33BF86214F724A009A5D5F /* VimViewBackend.swift */; };
 		DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3B043B205B7087009F81E8 /* URLOpener.swift */; };
+		DE43BDDE23D96761007D5E61 /* SourceCodePro-It.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE43BDDC23D9675F007D5E61 /* SourceCodePro-It.ttf */; };
+		DE43BDDF23D96761007D5E61 /* SourceCodePro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE43BDDD23D96760007D5E61 /* SourceCodePro-Bold.ttf */; };
+		DE47B2EE2373E62E003D5BBE /* shell.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE47B2EC2373E62E003D5BBE /* shell.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE4F946623B485C800782BB4 /* VimShareActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946523B485C700782BB4 /* VimShareActions.swift */; };
+		DE4F946723B496D300782BB4 /* VimShareActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946523B485C700782BB4 /* VimShareActions.swift */; };
+		DE4F946923B4A84900782BB4 /* VimShareActions+ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946823B4A84900782BB4 /* VimShareActions+ShareExtension.swift */; };
+		DE4F946C23B4C5B900782BB4 /* VimShareActions+Host.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */; };
 		DE531B0B1F20941200D71DB3 /* iVimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B0A1F20941200D71DB3 /* iVimTests.swift */; };
 		DE531B161F20941200D71DB3 /* iVimUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE531B151F20941200D71DB3 /* iVimUITests.swift */; };
+		DE5382622396074F00E64CE5 /* lua_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE7DF70E238CE54B0012A469 /* lua_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE5382632396075D00E64CE5 /* if_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4572347275E00F3E794 /* if_lua.c */; };
 		DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50D51F6E13CD00373B92 /* ctags_ios.m */; };
 		DE5C51871F6E152500373B92 /* basic.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CC1F6E13CD00373B92 /* basic.c */; };
 		DE5C51881F6E152B00373B92 /* tex.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C512D1F6E13CD00373B92 /* tex.c */; };
@@ -67,8 +86,11 @@
 		DE5C51B71F6E171100373B92 /* parse.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C51111F6E13CD00373B92 /* parse.c */; };
 		DE5C51B81F6E171B00373B92 /* rexx.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C511E1F6E13CD00373B92 /* rexx.c */; };
 		DE5C51B91F6E172000373B92 /* asp.c in Sources */ = {isa = PBXBuildFile; fileRef = DE5C50CA1F6E13CD00373B92 /* asp.c */; };
+		DE6F352E23750D4800FCD5AB /* curl_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE6F352C23750D4700FCD5AB /* curl_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DE6F3537237515DF00FCD5AB /* ssh_cmd.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE6F3535237515DF00FCD5AB /* ssh_cmd.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DE7234531F739C640033F3E8 /* VimURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7234521F739C640033F3E8 /* VimURLHandler.swift */; };
 		DE7364851F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */; };
+		DE78B85123A48AA600688D54 /* commandPersonalities.plist in Resources */ = {isa = PBXBuildFile; fileRef = DE78B85023A48AA500688D54 /* commandPersonalities.plist */; };
 		DE7BA7911F21A75400705E67 /* VimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4201F209661007AFD63 /* VimViewController.swift */; };
 		DE7BA7921F21A75400705E67 /* VimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4211F209661007AFD63 /* VimView.swift */; };
 		DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D4221F209661007AFD63 /* VimAppDelegate.swift */; };
@@ -91,11 +113,30 @@
 		DE7BA7E21F21F57E00705E67 /* SourceCodePro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */; };
 		DE7BA7E41F21F74000705E67 /* vimrc in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E31F21F74000705E67 /* vimrc */; };
 		DE7BA7E61F22037C00705E67 /* beep-07.wav in Resources */ = {isa = PBXBuildFile; fileRef = DE7BA7E51F22037C00705E67 /* beep-07.wav */; };
+		DE7FD20A239B4B0C00ADFE2F /* ios_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE57BCAD23726B2C005DBC4B /* ios_system.framework */; };
+		DE7FD20B239B4B0C00ADFE2F /* ios_system.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE57BCAD23726B2C005DBC4B /* ios_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DE855E56236BF4F600A0EB7E /* profiler.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4562347275E00F3E794 /* profiler.c */; };
 		DE863ACF20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */; };
 		DE863AD120A18297000FC5F8 /* FileLineReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE863AD020A18297000FC5F8 /* FileLineReader.swift */; };
+		DE99CEC023C72665000098E9 /* ivish.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE99CEBE23C72664000098E9 /* ivish.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEA2B9A723D6BD5000E918B8 /* catimg_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEA2B9A523D6BD5000E918B8 /* catimg_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DEAF4E8A226EEEDB0037E0F7 /* scenes_keeper.m in Sources */ = {isa = PBXBuildFile; fileRef = DEAF4E89226EEEDB0037E0F7 /* scenes_keeper.m */; };
 		DEB2D2DB1F21A421001FDB63 /* VimFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE44D41F1F209661007AFD63 /* VimFunctions.swift */; };
+		DEBE7EB723711DD100FC887E /* channel.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4962347275E00F3E794 /* channel.c */; };
+		DEBE7EB82371258A00FC887E /* terminal.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3B62347275D00F3E794 /* terminal.c */; };
+		DEBE7EB92371295C00FC887E /* vterm.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80A2347276C00F3E794 /* vterm.c */; };
+		DEBE7EBA237137CB00FC887E /* harness.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C7E02347276B00F3E794 /* harness.c */; };
+		DEBE7EBB237137EE00FC887E /* termscreen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80B2347276C00F3E794 /* termscreen.c */; };
+		DEBE7EBC2371380F00FC887E /* pen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8122347276C00F3E794 /* pen.c */; };
+		DEBE7EBD2371383200FC887E /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8092347276C00F3E794 /* state.c */; };
+		DEBE7EBE2371385000FC887E /* unicode.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8052347276C00F3E794 /* unicode.c */; };
+		DEBE7EBF2371386A00FC887E /* keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8082347276C00F3E794 /* keyboard.c */; };
+		DEBE7EC02371388100FC887E /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8152347276C00F3E794 /* encoding.c */; };
+		DEBE7EC1237138EA00FC887E /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8132347276C00F3E794 /* parser.c */; };
+		DEBE7EC2237138F700FC887E /* termmouse.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8072347276C00F3E794 /* termmouse.c */; };
+		DEBE92E2238CFD09008F2964 /* tar.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEBE92DF238CFD08008F2964 /* tar.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEBE92E4238CFD09008F2964 /* awk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEBE92E0238CFD08008F2964 /* awk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEBE92E7238D0E37008F2964 /* bc_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEBE92E5238D0E36008F2964 /* bc_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DEBEBDB923540FD700CDAD9C /* FilesystemItemWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBEBDB823540FD700CDAD9C /* FilesystemItemWatcher.swift */; };
 		DEC1D02F23474577008DB801 /* gui_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DEC1D02E2347455A008DB801 /* gui_ios.m */; };
 		DEC1D0322347565A008DB801 /* viminfo.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3A92347275C00F3E794 /* viminfo.c */; };
@@ -189,6 +230,7 @@
 		DEC1D08E23478904008DB801 /* session.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C37A2347275C00F3E794 /* session.c */; };
 		DEC1D08F2347891B008DB801 /* pty.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4A02347275F00F3E794 /* pty.c */; };
 		DEC1D09023478939008DB801 /* xpatience.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3582347275C00F3E794 /* xpatience.c */; };
+		DEC5D41B2404CE63007B66EE /* text_cmds_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEC5D4192404CE62007B66EE /* text_cmds_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DED04866209EA7B900D744EE /* ModifiersArranger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED04865209EA7B900D744EE /* ModifiersArranger.swift */; };
 		DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */; };
 		DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */; };
@@ -204,12 +246,19 @@
 		DEEB2EB82348301700C8EF70 /* crypt_zip.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C7732347276A00F3E794 /* crypt_zip.c */; };
 		DEEB2EB92348303D00C8EF70 /* blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4A12347275F00F3E794 /* blowfish.c */; };
 		DEEB2EBA2348656B00C8EF70 /* runtime in Resources */ = {isa = PBXBuildFile; fileRef = DEC1D03023474F9B008DB801 /* runtime */; };
+		DEEB35ED23A3C72400B1B18F /* libssh2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6F353223750FCB00FCD5AB /* libssh2.framework */; };
+		DEEB35EE23A3C72400B1B18F /* libssh2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE6F353223750FCB00FCD5AB /* libssh2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEEB35EF23A3C72400B1B18F /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6F352F23750EEC00FCD5AB /* openssl.framework */; };
+		DEEB35F023A3C72400B1B18F /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE6F352F23750EEC00FCD5AB /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEEC95612392590A00458CAD /* ios_term.m in Sources */ = {isa = PBXBuildFile; fileRef = DEEC95602392590A00458CAD /* ios_term.m */; };
 		DEF17D7920B3B89F00FE0693 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D7720B3B89F00FE0693 /* DataModel.xcdatamodeld */; };
 		DEF17D8120B3BA2600FE0693 /* OldDocument+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D7F20B3BA2600FE0693 /* OldDocument+CoreDataClass.swift */; };
 		DEF17D8220B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8020B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift */; };
 		DEF17D8420B3BBF400FE0693 /* OldDocumentsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8320B3BBF400FE0693 /* OldDocumentsManager.swift */; };
 		DEF17D8720B3BD3A00FE0693 /* CoreDataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8620B3BD3A00FE0693 /* CoreDataExtension.swift */; };
 		DEF17D8920B3BEBF00FE0693 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */; };
+		DEFB9C95237A5BF200BAEDC8 /* network_ios.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEFB9C93237A5BF100BAEDC8 /* network_ios.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEFC96F82388CFAE000F22CE /* text.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEFC96F62388CFAC000F22CE /* text.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -237,6 +286,37 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		DE23858323729FD200A37420 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				DE11B88E23A32A7A0080D00E /* pythonB.framework in Embed Frameworks */,
+				DEBE92E4238CFD09008F2964 /* awk.framework in Embed Frameworks */,
+				DE6F3537237515DF00FCD5AB /* ssh_cmd.framework in Embed Frameworks */,
+				DEEB35F023A3C72400B1B18F /* openssl.framework in Embed Frameworks */,
+				DE11B88A23A32A7A0080D00E /* python3_ios.framework in Embed Frameworks */,
+				DEC5D41B2404CE63007B66EE /* text_cmds_ios.framework in Embed Frameworks */,
+				DE7FD20B239B4B0C00ADFE2F /* ios_system.framework in Embed Frameworks */,
+				DEEB35EE23A3C72400B1B18F /* libssh2.framework in Embed Frameworks */,
+				DEA2B9A723D6BD5000E918B8 /* catimg_ios.framework in Embed Frameworks */,
+				DE2385862372A59D00A37420 /* files.framework in Embed Frameworks */,
+				DEFC96F82388CFAE000F22CE /* text.framework in Embed Frameworks */,
+				DE47B2EE2373E62E003D5BBE /* shell.framework in Embed Frameworks */,
+				DEFB9C95237A5BF200BAEDC8 /* network_ios.framework in Embed Frameworks */,
+				DE070C18238F7A6F00854625 /* freetype.framework in Embed Frameworks */,
+				DE11B88C23A32A7A0080D00E /* pythonA.framework in Embed Frameworks */,
+				DEBE92E7238D0E37008F2964 /* bc_ios.framework in Embed Frameworks */,
+				DE99CEC023C72665000098E9 /* ivish.framework in Embed Frameworks */,
+				DE070C16238F7A6F00854625 /* harfbuzz.framework in Embed Frameworks */,
+				DE6F352E23750D4800FCD5AB /* curl_ios.framework in Embed Frameworks */,
+				DE5382622396074F00E64CE5 /* lua_ios.framework in Embed Frameworks */,
+				DEBE92E2238CFD09008F2964 /* tar.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DEEAD1881F23005600B4CAC9 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -251,12 +331,24 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DE070C0E238F7A5400854625 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		DE070C10238F7A6E00854625 /* openblas.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = openblas.framework; path = Frameworks/openblas.framework; sourceTree = "<group>"; };
+		DE070C11238F7A6E00854625 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
+		DE070C12238F7A6E00854625 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = Frameworks/freetype.framework; sourceTree = "<group>"; };
+		DE0B1DD72396577A0066E132 /* pythonB.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = pythonB.framework; path = Frameworks/pythonB.framework; sourceTree = "<group>"; };
 		DE0D2EC7205A1797004C29F8 /* ArgumentToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArgumentToken.swift; sourceTree = "<group>"; };
 		DE0D2EC9205A536C004C29F8 /* URLRealizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLRealizer.swift; sourceTree = "<group>"; };
+		DE16465F2390DB7200ADC198 /* pythonA.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = pythonA.framework; path = Frameworks/pythonA.framework; sourceTree = "<group>"; };
+		DE1646692391058800ADC198 /* python */ = {isa = PBXFileReference; lastKnownFileType = folder; name = python; path = Resources/python; sourceTree = "<group>"; };
 		DE1ADB782099549200B21E9E /* ExtendedKeyboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardManager.swift; sourceTree = "<group>"; };
+		DE2385842372A59D00A37420 /* files.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = files.framework; path = Frameworks/files.framework; sourceTree = "<group>"; };
+		DE2385872372A5F300A37420 /* commandDictionary.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = commandDictionary.plist; path = Resources/commandDictionary.plist; sourceTree = "<group>"; };
+		DE2385882372A5F400A37420 /* extraCommandsDictionary.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = extraCommandsDictionary.plist; path = Resources/extraCommandsDictionary.plist; sourceTree = "<group>"; };
 		DE241D0620A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardEditingHistory.swift; sourceTree = "<group>"; };
 		DE33BF86214F724A009A5D5F /* VimViewBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimViewBackend.swift; sourceTree = "<group>"; };
 		DE3B043B205B7087009F81E8 /* URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLOpener.swift; sourceTree = "<group>"; };
+		DE43BDDC23D9675F007D5E61 /* SourceCodePro-It.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-It.ttf"; sourceTree = "<group>"; };
+		DE43BDDD23D96760007D5E61 /* SourceCodePro-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Bold.ttf"; sourceTree = "<group>"; };
 		DE44D40B1F2095DB007AFD63 /* VimViewController+UITextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UITextInput.swift"; sourceTree = "<group>"; };
 		DE44D40E1F209600007AFD63 /* PickInfoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PickInfoManager.swift; sourceTree = "<group>"; };
 		DE44D40F1F209600007AFD63 /* VimViewController+UIDocumentPickerDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+UIDocumentPickerDelegate.swift"; sourceTree = "<group>"; };
@@ -272,6 +364,10 @@
 		DE44D4231F209661007AFD63 /* VimMainView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VimMainView.swift; sourceTree = "<group>"; };
 		DE44D4241F209661007AFD63 /* URLSchemeWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSchemeWorker.swift; sourceTree = "<group>"; };
 		DE44D4251F209661007AFD63 /* GlobalConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalConfiguration.swift; sourceTree = "<group>"; };
+		DE47B2EC2373E62E003D5BBE /* shell.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = shell.framework; path = Frameworks/shell.framework; sourceTree = "<group>"; };
+		DE4F946523B485C700782BB4 /* VimShareActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimShareActions.swift; sourceTree = "<group>"; };
+		DE4F946823B4A84900782BB4 /* VimShareActions+ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VimShareActions+ShareExtension.swift"; sourceTree = "<group>"; };
+		DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VimShareActions+Host.swift"; sourceTree = "<group>"; };
 		DE531AF21F20941100D71DB3 /* iVim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iVim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE531AFA1F20941100D71DB3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		DE531AFC1F20941100D71DB3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -285,6 +381,7 @@
 		DE531B171F20941200D71DB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DE531B241F20949100D71DB3 /* VimFontsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VimFontsManager.swift; sourceTree = "<group>"; };
 		DE531B251F20949100D71DB3 /* systemFonts.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = systemFonts.plist; sourceTree = "<group>"; };
+		DE57BCAD23726B2C005DBC4B /* ios_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ios_system.framework; path = Frameworks/ios_system.framework; sourceTree = "<group>"; };
 		DE5C50C51F6E13CD00373B92 /* ant.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ant.c; sourceTree = "<group>"; };
 		DE5C50C61F6E13CD00373B92 /* argproc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = argproc.c; sourceTree = "<group>"; };
 		DE5C50C71F6E13CD00373B92 /* args.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = args.c; sourceTree = "<group>"; };
@@ -388,15 +485,23 @@
 		DE5C51311F6E13CD00373B92 /* vstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vstring.c; sourceTree = "<group>"; };
 		DE5C51321F6E13CD00373B92 /* vstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vstring.h; sourceTree = "<group>"; };
 		DE5C51331F6E13CD00373B92 /* yacc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yacc.c; sourceTree = "<group>"; };
+		DE6F352C23750D4700FCD5AB /* curl_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = curl_ios.framework; path = Frameworks/curl_ios.framework; sourceTree = "<group>"; };
+		DE6F352F23750EEC00FCD5AB /* openssl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = openssl.framework; path = Frameworks/openssl.framework; sourceTree = "<group>"; };
+		DE6F353223750FCB00FCD5AB /* libssh2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libssh2.framework; path = Frameworks/libssh2.framework; sourceTree = "<group>"; };
+		DE6F3535237515DF00FCD5AB /* ssh_cmd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ssh_cmd.framework; path = Frameworks/ssh_cmd.framework; sourceTree = "<group>"; };
 		DE7234521F739C640033F3E8 /* VimURLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimURLHandler.swift; sourceTree = "<group>"; };
 		DE7364841F53A604006ACE4C /* VimViewController+ExternalKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "VimViewController+ExternalKeyboard.swift"; sourceTree = "<group>"; };
+		DE78B85023A48AA500688D54 /* commandPersonalities.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = commandPersonalities.plist; path = Resources/commandPersonalities.plist; sourceTree = "<group>"; };
 		DE7BA7A71F21AFD300705E67 /* iVim-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "iVim-Bridging-Header.h"; sourceTree = "<group>"; };
 		DE7BA7AA1F21DC8700705E67 /* ios_prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios_prefix.h; sourceTree = "<group>"; };
 		DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceCodePro-Regular.ttf"; sourceTree = "<group>"; };
 		DE7BA7E31F21F74000705E67 /* vimrc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vimrc; sourceTree = "<group>"; };
 		DE7BA7E51F22037C00705E67 /* beep-07.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "beep-07.wav"; sourceTree = "<group>"; };
+		DE7DF70B238CD48A0012A469 /* python3_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = python3_ios.framework; path = Frameworks/python3_ios.framework; sourceTree = "<group>"; };
+		DE7DF70E238CE54B0012A469 /* lua_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua_ios.framework; path = Frameworks/lua_ios.framework; sourceTree = "<group>"; };
 		DE863ACE20A1589E000FC5F8 /* ExtendedKeyboardConfigNodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeyboardConfigNodes.swift; sourceTree = "<group>"; };
 		DE863AD020A18297000FC5F8 /* FileLineReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileLineReader.swift; sourceTree = "<group>"; };
+		DE99CEBE23C72664000098E9 /* ivish.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ivish.framework; path = ../frameworks/ivish.framework; sourceTree = "<group>"; };
 		DEA0BAF32347273F00F3E794 /* gvim_version.nsh */ = {isa = PBXFileReference; lastKnownFileType = text; path = gvim_version.nsh; sourceTree = "<group>"; };
 		DEA0BAF42347273F00F3E794 /* icons.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = icons.zip; sourceTree = "<group>"; };
 		DEA0BAF62347273F00F3E794 /* danish.nsi */ = {isa = PBXFileReference; lastKnownFileType = text; path = danish.nsi; sourceTree = "<group>"; };
@@ -3609,12 +3714,18 @@
 		DEA0C8162347276C00F3E794 /* window.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = window.c; sourceTree = "<group>"; };
 		DEA0C8172347276C00F3E794 /* keymap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = keymap.h; sourceTree = "<group>"; };
 		DEA0C8182347276C00F3E794 /* gui_athena.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gui_athena.c; sourceTree = "<group>"; };
+		DEA2B97523D6AA4900E918B8 /* catimg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = catimg.framework; path = ../frameworks/catimg.framework; sourceTree = "<group>"; };
+		DEA2B9A523D6BD5000E918B8 /* catimg_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = catimg_ios.framework; path = ../frameworks/catimg_ios.framework; sourceTree = "<group>"; };
 		DEAF4E89226EEEDB0037E0F7 /* scenes_keeper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = scenes_keeper.m; sourceTree = "<group>"; };
 		DEBE45732281604D00E04A08 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		DEBE92DF238CFD08008F2964 /* tar.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = tar.framework; path = Frameworks/tar.framework; sourceTree = "<group>"; };
+		DEBE92E0238CFD08008F2964 /* awk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = awk.framework; path = Frameworks/awk.framework; sourceTree = "<group>"; };
+		DEBE92E5238D0E36008F2964 /* bc_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = bc_ios.framework; path = Frameworks/bc_ios.framework; sourceTree = "<group>"; };
 		DEBEBDB823540FD700CDAD9C /* FilesystemItemWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesystemItemWatcher.swift; sourceTree = "<group>"; };
 		DEC1D02E2347455A008DB801 /* gui_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = gui_ios.m; path = vim/src/gui_ios.m; sourceTree = SOURCE_ROOT; };
 		DEC1D03023474F9B008DB801 /* runtime */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = runtime; path = vim/runtime; sourceTree = SOURCE_ROOT; };
 		DEC1D07023477CB8008DB801 /* gui_ios.pro */ = {isa = PBXFileReference; lastKnownFileType = text; path = gui_ios.pro; sourceTree = "<group>"; };
+		DEC5D4192404CE62007B66EE /* text_cmds_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = text_cmds_ios.framework; path = ../frameworks/text_cmds_ios.framework; sourceTree = "<group>"; };
 		DED04865209EA7B900D744EE /* ModifiersArranger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModifiersArranger.swift; sourceTree = "<group>"; };
 		DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandTokenizer.swift; sourceTree = "<group>"; };
@@ -3626,12 +3737,15 @@
 		DEEAD1811F23005500B4CAC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DEEAD18A1F2300F800B4CAC9 /* iVimShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iVimShare.entitlements; sourceTree = "<group>"; };
 		DEEAD18B1F23014E00B4CAC9 /* iVim.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iVim.entitlements; sourceTree = "<group>"; };
+		DEEC95602392590A00458CAD /* ios_term.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ios_term.m; sourceTree = "<group>"; };
 		DEF17D7820B3B89F00FE0693 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		DEF17D7F20B3BA2600FE0693 /* OldDocument+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OldDocument+CoreDataClass.swift"; sourceTree = "<group>"; };
 		DEF17D8020B3BA2600FE0693 /* OldDocument+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OldDocument+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DEF17D8320B3BBF400FE0693 /* OldDocumentsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldDocumentsManager.swift; sourceTree = "<group>"; };
 		DEF17D8620B3BD3A00FE0693 /* CoreDataExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataExtension.swift; sourceTree = "<group>"; };
 		DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
+		DEFB9C93237A5BF100BAEDC8 /* network_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = network_ios.framework; path = Frameworks/network_ios.framework; sourceTree = "<group>"; };
+		DEFC96F62388CFAC000F22CE /* text.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = text.framework; path = Frameworks/text.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3646,6 +3760,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE57BCB023726B2D005DBC4B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DEEB35ED23A3C72400B1B18F /* libssh2.framework in Frameworks */,
+				DEEB35EF23A3C72400B1B18F /* openssl.framework in Frameworks */,
+				DE7FD20A239B4B0C00ADFE2F /* ios_system.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3704,9 +3828,21 @@
 			name = "Extended Keyboard";
 			sourceTree = "<group>";
 		};
+		DE4F946A23B4C58900782BB4 /* Share Extension */ = {
+			isa = PBXGroup;
+			children = (
+				DE4F946B23B4C5B900782BB4 /* VimShareActions+Host.swift */,
+			);
+			name = "Share Extension";
+			sourceTree = "<group>";
+		};
 		DE531AE91F20941100D71DB3 = {
 			isa = PBXGroup;
 			children = (
+				DE78B85023A48AA500688D54 /* commandPersonalities.plist */,
+				DE1646692391058800ADC198 /* python */,
+				DE2385872372A5F300A37420 /* commandDictionary.plist */,
+				DE2385882372A5F400A37420 /* extraCommandsDictionary.plist */,
 				DEA0BAF12347273F00F3E794 /* vim */,
 				DE5C50C41F6E13CD00373B92 /* ctags58 */,
 				DE531AF41F20941100D71DB3 /* iVim */,
@@ -3732,6 +3868,8 @@
 		DE531AF41F20941100D71DB3 /* iVim */ = {
 			isa = PBXGroup;
 			children = (
+				DE4F946A23B4C58900782BB4 /* Share Extension */,
+				DEC24CB9239373D20017A9C8 /* Shell */,
 				DEC1D03023474F9B008DB801 /* runtime */,
 				DEC1D02E2347455A008DB801 /* gui_ios.m */,
 				DE7BB52F226D5F4D00C27610 /* Scenes Keeper */,
@@ -3932,6 +4070,8 @@
 		DE7BA7DF1F21F54B00705E67 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				DE43BDDD23D96760007D5E61 /* SourceCodePro-Bold.ttf */,
+				DE43BDDC23D9675F007D5E61 /* SourceCodePro-It.ttf */,
 				DE7BA7E11F21F57E00705E67 /* SourceCodePro-Regular.ttf */,
 			);
 			name = Fonts;
@@ -8360,9 +8500,41 @@
 		DEBE45722281604D00E04A08 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DEC5D4192404CE62007B66EE /* text_cmds_ios.framework */,
+				DEA2B9A523D6BD5000E918B8 /* catimg_ios.framework */,
+				DEA2B97523D6AA4900E918B8 /* catimg.framework */,
+				DE99CEBE23C72664000098E9 /* ivish.framework */,
+				DE0B1DD72396577A0066E132 /* pythonB.framework */,
+				DE16465F2390DB7200ADC198 /* pythonA.framework */,
+				DE070C12238F7A6E00854625 /* freetype.framework */,
+				DE070C11238F7A6E00854625 /* harfbuzz.framework */,
+				DE070C10238F7A6E00854625 /* openblas.framework */,
+				DE070C0E238F7A5400854625 /* Accelerate.framework */,
+				DEBE92E5238D0E36008F2964 /* bc_ios.framework */,
+				DEBE92E0238CFD08008F2964 /* awk.framework */,
+				DEBE92DF238CFD08008F2964 /* tar.framework */,
+				DE7DF70E238CE54B0012A469 /* lua_ios.framework */,
+				DE7DF70B238CD48A0012A469 /* python3_ios.framework */,
+				DEFC96F62388CFAC000F22CE /* text.framework */,
+				DEFB9C93237A5BF100BAEDC8 /* network_ios.framework */,
+				DE6F3535237515DF00FCD5AB /* ssh_cmd.framework */,
+				DE6F353223750FCB00FCD5AB /* libssh2.framework */,
+				DE6F352F23750EEC00FCD5AB /* openssl.framework */,
+				DE6F352C23750D4700FCD5AB /* curl_ios.framework */,
+				DE47B2EC2373E62E003D5BBE /* shell.framework */,
+				DE2385842372A59D00A37420 /* files.framework */,
+				DE57BCAD23726B2C005DBC4B /* ios_system.framework */,
 				DEBE45732281604D00E04A08 /* StoreKit.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DEC24CB9239373D20017A9C8 /* Shell */ = {
+			isa = PBXGroup;
+			children = (
+				DEEC95602392590A00458CAD /* ios_term.m */,
+			);
+			name = Shell;
 			sourceTree = "<group>";
 		};
 		DEE31E921F4BF54E000CA9E8 /* Launch Arguments */ = {
@@ -8382,6 +8554,8 @@
 				DEEAD17C1F23005500B4CAC9 /* ShareViewController.swift */,
 				DEEAD17E1F23005500B4CAC9 /* MainInterface.storyboard */,
 				DEEAD1811F23005500B4CAC9 /* Info.plist */,
+				DE4F946523B485C700782BB4 /* VimShareActions.swift */,
+				DE4F946823B4A84900782BB4 /* VimShareActions+ShareExtension.swift */,
 			);
 			path = iVimShare;
 			sourceTree = "<group>";
@@ -8416,6 +8590,8 @@
 				DE531AEE1F20941100D71DB3 /* Sources */,
 				DE531AF01F20941100D71DB3 /* Resources */,
 				DEEAD1881F23005600B4CAC9 /* Embed App Extensions */,
+				DE57BCB023726B2D005DBC4B /* Frameworks */,
+				DE23858323729FD200A37420 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -8560,6 +8736,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DE43BDDF23D96761007D5E61 /* SourceCodePro-Bold.ttf in Resources */,
+				DE78B85123A48AA600688D54 /* commandPersonalities.plist in Resources */,
+				DE16466A2391058900ADC198 /* python in Resources */,
+				DE2385892372A5F400A37420 /* commandDictionary.plist in Resources */,
+				DE23858A2372A5F400A37420 /* extraCommandsDictionary.plist in Resources */,
 				DEEB2EBA2348656B00C8EF70 /* runtime in Resources */,
 				DE7BA7A21F21A85700705E67 /* Main.storyboard in Resources */,
 				DE7BA7E41F21F74000705E67 /* vimrc in Resources */,
@@ -8569,6 +8750,7 @@
 				DE7BA7A41F21A85700705E67 /* LaunchScreen.storyboard in Resources */,
 				DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */,
 				DE7BA7E61F22037C00705E67 /* beep-07.wav in Resources */,
+				DE43BDDE23D96761007D5E61 /* SourceCodePro-It.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8615,6 +8797,7 @@
 				DEC1D02F23474577008DB801 /* gui_ios.m in Sources */,
 				DEC1D07A2347841B008DB801 /* termlib.c in Sources */,
 				DEC1D06F23477AD2008DB801 /* ex_docmd.c in Sources */,
+				DEBE7EBA237137CB00FC887E /* harness.c in Sources */,
 				DEC1D08D234788EC008DB801 /* memfile.c in Sources */,
 				DE5C51AB1F6E16A000373B92 /* perl.c in Sources */,
 				DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */,
@@ -8628,8 +8811,10 @@
 				DEC1D060234777A7008DB801 /* findfile.c in Sources */,
 				DE5C51B01F6E16C500373B92 /* verilog.c in Sources */,
 				DEC1D06423477846008DB801 /* tag.c in Sources */,
+				DEBE7EB723711DD100FC887E /* channel.c in Sources */,
 				DEC1D03623475B34008DB801 /* move.c in Sources */,
 				DEC1D067234778D5008DB801 /* indent.c in Sources */,
+				DEBE7EB92371295C00FC887E /* vterm.c in Sources */,
 				DE5C51891F6E153A00373B92 /* routines.c in Sources */,
 				DEC1D0652347786C008DB801 /* syntax.c in Sources */,
 				DEC1D05D2347773B008DB801 /* popupwin.c in Sources */,
@@ -8637,20 +8822,24 @@
 				DEC1D07E2347865C008DB801 /* drawscreen.c in Sources */,
 				DEC1D05323477601008DB801 /* getchar.c in Sources */,
 				DEC1D03F23475E10008DB801 /* evalwindow.c in Sources */,
+				DE4F946C23B4C5B900782BB4 /* VimShareActions+Host.swift in Sources */,
 				DEC1D0502347756F008DB801 /* list.c in Sources */,
 				DEC1D05B23477702008DB801 /* if_cscope.c in Sources */,
 				DEC1D08923478881008DB801 /* xemit.c in Sources */,
 				DEC1D082234787C1008DB801 /* usercmd.c in Sources */,
 				DE5C51A61F6E166C00373B92 /* lregex.c in Sources */,
+				DE4F946723B496D300782BB4 /* VimShareActions.swift in Sources */,
 				DE5C518B1F6E155400373B92 /* lisp.c in Sources */,
 				DE5C51B91F6E172000373B92 /* asp.c in Sources */,
 				DE7BA7921F21A75400705E67 /* VimView.swift in Sources */,
 				DEC1D04B234774B6008DB801 /* evalbuffer.c in Sources */,
+				DEBE7EC02371388100FC887E /* encoding.c in Sources */,
 				DEC1D04D2347750B008DB801 /* filepath.c in Sources */,
 				DE5C51B51F6E16FD00373B92 /* sh.c in Sources */,
 				DEC1D079234783DB008DB801 /* term.c in Sources */,
 				DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */,
 				DE5C519A1F6E160200373B92 /* scheme.c in Sources */,
+				DEBE7EBB237137EE00FC887E /* termscreen.c in Sources */,
 				DE5C51981F6E15EA00373B92 /* slang.c in Sources */,
 				DE5C51B21F6E16D700373B92 /* ant.c in Sources */,
 				DEC1D07F23478776008DB801 /* ex_cmds.c in Sources */,
@@ -8660,6 +8849,7 @@
 				DE5C51B81F6E171B00373B92 /* rexx.c in Sources */,
 				DEE31E961F4BF712000CA9E8 /* Stack.swift in Sources */,
 				DEC1D07523478373008DB801 /* popupmenu.c in Sources */,
+				DEBE7EBD2371383200FC887E /* state.c in Sources */,
 				DE5C51921F6E15A600373B92 /* lua.c in Sources */,
 				DEC1D08823478862008DB801 /* xutils.c in Sources */,
 				DEC1D04123476A82008DB801 /* os_unix.c in Sources */,
@@ -8685,6 +8875,7 @@
 				DEE31E981F4BF9FF000CA9E8 /* LaunchArgumentsParser.swift in Sources */,
 				DE241D0720A2C19C00EB528A /* ExtendedKeyboardEditingHistory.swift in Sources */,
 				DEC1D03423475940008DB801 /* misc2.c in Sources */,
+				DEBE7EBE2371385000FC887E /* unicode.c in Sources */,
 				DE33BF87214F724B009A5D5F /* VimViewBackend.swift in Sources */,
 				DEC1D07423478359008DB801 /* cmdexpand.c in Sources */,
 				DEC1D07623478390008DB801 /* mouse.c in Sources */,
@@ -8692,10 +8883,12 @@
 				DEC1D03D23475D98008DB801 /* ex_cmds2.c in Sources */,
 				DE7BA7951F21A75400705E67 /* URLSchemeWorker.swift in Sources */,
 				DE5C519F1F6E162800373B92 /* tcl.c in Sources */,
+				DE070C20238FA6B500854625 /* if_python3.c in Sources */,
 				DEC1D05C2347771C008DB801 /* misc1.c in Sources */,
 				DEC1D08E23478904008DB801 /* session.c in Sources */,
 				DE5C51A21F6E164500373B92 /* jscript.c in Sources */,
 				DE5C51881F6E152B00373B92 /* tex.c in Sources */,
+				DEBE7EBF2371386A00FC887E /* keyboard.c in Sources */,
 				DEC1D06E23477A9F008DB801 /* ui.c in Sources */,
 				DE5C51A71F6E167A00373B92 /* python.c in Sources */,
 				DEC1D05723477673008DB801 /* cmdhist.c in Sources */,
@@ -8713,6 +8906,7 @@
 				DEF17D8420B3BBF400FE0693 /* OldDocumentsManager.swift in Sources */,
 				DE5C51AD1F6E16AB00373B92 /* ruby.c in Sources */,
 				DE3B043C205B7087009F81E8 /* URLOpener.swift in Sources */,
+				DE5382632396075D00E64CE5 /* if_lua.c in Sources */,
 				DEC1D04523477261008DB801 /* screen.c in Sources */,
 				DE5C51A81F6E168100373B92 /* strlist.c in Sources */,
 				DE5C518F1F6E158400373B92 /* eiffel.c in Sources */,
@@ -8723,6 +8917,7 @@
 				DE863AD120A18297000FC5F8 /* FileLineReader.swift in Sources */,
 				DEC1D072234781E0008DB801 /* edit.c in Sources */,
 				DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */,
+				DEEC95612392590A00458CAD /* ios_term.m in Sources */,
 				DEC1D0512347758D008DB801 /* highlight.c in Sources */,
 				DE5C51A91F6E168700373B92 /* ocaml.c in Sources */,
 				DE7BA7971F21A76100705E67 /* OptionalButton.swift in Sources */,
@@ -8731,6 +8926,7 @@
 				DE5C51941F6E15BE00373B92 /* entry.c in Sources */,
 				DE7BA7981F21A76400705E67 /* OptionalButtonsBar.swift in Sources */,
 				DEF17D8720B3BD3A00FE0693 /* CoreDataExtension.swift in Sources */,
+				DEBE7EC1237138EA00FC887E /* parser.c in Sources */,
 				DEC1D078234783BE008DB801 /* spellsuggest.c in Sources */,
 				DEC1D085234787F8008DB801 /* hashtab.c in Sources */,
 				DEC1D03A23475D3D008DB801 /* buffer.c in Sources */,
@@ -8766,6 +8962,7 @@
 				DEC1D07B234785FD008DB801 /* digraph.c in Sources */,
 				DE5C51B71F6E171100373B92 /* parse.c in Sources */,
 				DEC1D0582347768E008DB801 /* dict.c in Sources */,
+				DEBE7EBC2371380F00FC887E /* pen.c in Sources */,
 				DEC1D059234776AB008DB801 /* json.c in Sources */,
 				DE5C51A51F6E166500373B92 /* get.c in Sources */,
 				DE7BA7A01F21A78E00705E67 /* VimFontsManager.swift in Sources */,
@@ -8773,12 +8970,14 @@
 				DE5C518E1F6E157600373B92 /* flex.c in Sources */,
 				DEBEBDB923540FD700CDAD9C /* FilesystemItemWatcher.swift in Sources */,
 				DEC1D06923477959008DB801 /* normal.c in Sources */,
+				DEBE7EB82371258A00FC887E /* terminal.c in Sources */,
 				DEC1D04E2347752B008DB801 /* insexpand.c in Sources */,
 				DEC1D06A2347798F008DB801 /* register.c in Sources */,
 				DEF17D8120B3BA2600FE0693 /* OldDocument+CoreDataClass.swift in Sources */,
 				DE5C51961F6E15DF00373B92 /* make.c in Sources */,
 				DE5C518D1F6E157100373B92 /* vstring.c in Sources */,
 				DE5C51AF1F6E16BE00373B92 /* sql.c in Sources */,
+				DEBE7EC2237138F700FC887E /* termmouse.c in Sources */,
 				DEC1D06623477899008DB801 /* regexp.c in Sources */,
 				DEEB2EB623482FDE00C8EF70 /* drawline.c in Sources */,
 				DEC1D047234772A6008DB801 /* mbyte.c in Sources */,
@@ -8814,6 +9013,8 @@
 			files = (
 				DEEAD17D1F23005500B4CAC9 /* ShareViewController.swift in Sources */,
 				DEEAD1891F2300B900B4CAC9 /* GlobalConfiguration.swift in Sources */,
+				DE4F946923B4A84900782BB4 /* VimShareActions+ShareExtension.swift in Sources */,
+				DE4F946623B485C800782BB4 /* VimShareActions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8915,7 +9116,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -8969,7 +9170,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -8983,24 +9184,33 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/vim/src/proto",
 					"$(PROJECT_DIR)/vim/src",
 					"$(PROJECT_DIR)/vim/src/xdiff",
+					"$(PROJECT_DIR)/vim/src/libvterm/include",
+					"$(PROJECT_DIR)/vim/src/iviminclude/**",
 				);
 				INFOPLIST_FILE = iVim/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/vim/src/xpm/x64/lib",
 					"$(PROJECT_DIR)/vim/src/xpm/x86/lib",
 				);
-				MARKETING_VERSION = 2.00;
+				MARKETING_VERSION = 2.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/iVim-Bridging-Header.h";
@@ -9013,24 +9223,33 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				GCC_PREFIX_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/ios_prefix.h";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/vim/src/proto",
 					"$(PROJECT_DIR)/vim/src",
 					"$(PROJECT_DIR)/vim/src/xdiff",
+					"$(PROJECT_DIR)/vim/src/libvterm/include",
+					"$(PROJECT_DIR)/vim/src/iviminclude/**",
 				);
 				INFOPLIST_FILE = iVim/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/vim/src/xpm/x64/lib",
 					"$(PROJECT_DIR)/vim/src/xpm/x86/lib",
 				);
-				MARKETING_VERSION = 2.00;
+				MARKETING_VERSION = 2.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/iVim-Bridging-Header.h";
@@ -9100,12 +9319,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = iVimShare/iVimShare.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				INFOPLIST_FILE = iVimShare/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 2.00;
+				MARKETING_VERSION = 2.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -9117,12 +9336,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = iVimShare/iVimShare.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LGM6M9XA5D;
 				INFOPLIST_FILE = iVimShare/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 2.00;
+				MARKETING_VERSION = 2.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.terrychou.ivim.share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

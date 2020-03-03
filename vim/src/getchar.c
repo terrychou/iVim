@@ -2074,6 +2074,12 @@ parse_queued_messages(void)
 	channel_handle_events(FALSE);
 # endif
 
+# if defined(FEAT_JOB_CHANNEL) && defined(FEAT_GUI_IOS)
+        if (gui.in_use) {
+            ivim_cleanup_existing_jobs();
+        }
+# endif
+        
 # ifdef FEAT_NETBEANS_INTG
 	// Process the queued netbeans messages.
 	netbeans_parse_messages();

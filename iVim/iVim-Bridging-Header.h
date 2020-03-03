@@ -28,6 +28,7 @@ void input_special_key(int key);
 void input_special_name(const char * name);
 
 NSString * expand_tilde_of_path(NSString * path);
+NSString * _Nonnull ivim_escaping_filepath(NSString *path);
 
 NSString * get_current_sourcing_name(void);
 
@@ -50,8 +51,6 @@ int do_cmdline_cmd(const unsigned char *cmd);
 void add_to_input_buf(const unsigned char  *s, int len);
 void add_to_input_buf_csi(const unsigned char *s, int len);
 
-int input_available(void);
-
 void move_cursor_left(long times);
 void move_cursor_right(long times);
 
@@ -62,10 +61,12 @@ BOOL file_is_in_buffer_list(NSString * path);
 BOOL jump_to_window_with_buffer(NSString * path);
 BOOL clean_buffer_for_mirror_path(NSString * path);
 BOOL is_in_normal_mode(void);
+BOOL is_in_insert_mode(void);
 NSString * get_pattern_from_line(NSString * line);
 void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL (^matcher)(NSString *)));
 
 void gui_ios_init_bg_color(void);
+void gui_mch_flush(void);
 
 // scenes keeper
 void scenes_keeper_stash(void);

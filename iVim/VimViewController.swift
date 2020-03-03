@@ -10,21 +10,78 @@
 import UIKit
 import MobileCoreServices
 
-private enum blink_state {
-    case none     /* not blinking at all */
-    case off     /* blinking, cursor is not shown */
-    case on        /* blinking, cursor is shown */
+
+final class VimCursorBlinker {
+    var waitDuration: CLong = 1000
+    var onDuration: CLong = 1000
+    var offDuration: CLong = 1000
+    enum State {
+        case none     /* not blinking at all */
+        case off      /* blinking, cursor is not shown */
+        case on       /* blinking, cursor is shown */
+    }
+    private var state: State = .none
+    private var timer: Timer?
+    weak var controller: VimViewController?
 }
+
+extension VimCursorBlinker {
+    private func invalidateTimer() {
+        self.timer?.invalidate()
+        self.timer = nil
+    }
+    
+    private func changeCursor(after interval: CLong) {
+        self.invalidateTimer()
+        let delay = TimeInterval(interval) / 1000.0
+        self.timer = Timer.scheduledTimer(
+            timeInterval: delay,
+            target: self,
+            selector: #selector(blinkCursor),
+            userInfo: nil,
+            repeats: false)
+    }
+    
+    @objc private func blinkCursor() {
+        let duration: CLong
+        switch self.state {
+        case .on:
+            gui_undraw_cursor()
+            self.state = .off
+            duration = self.offDuration
+        case .off, .none:
+            gui_update_cursor(1, 0)
+            self.state = .on
+            duration = self.onDuration
+        }
+        self.changeCursor(after: duration)
+        self.controller?.markNeedsDisplay()
+    }
+    
+    func startBlinking(_ inFocus: Bool) {
+        self.invalidateTimer()
+        guard inFocus else { return }
+        self.state = .on
+        gui_update_cursor(1, 0)
+        self.changeCursor(after: self.waitDuration)
+    }
+    
+    func stopBlinking(_ updateCursor: Bool) {
+        if self.state == .off && updateCursor {
+            gui_update_cursor(1, 0)
+        }
+        self.invalidateTimer()
+        self.state = .none
+    }
+}
+
+var gVVC: VimViewController? = nil
 
 final class VimViewController: UIViewController, UIKeyInput, UITextInput, UITextInputTraits {
     @objc var vimView: VimView?
     var hasBeenFlushedOnce = false
     
-    @objc var blink_wait: CLong = 1000
-    @objc var blink_on: CLong = 1000
-    @objc var blink_off: CLong = 1000
-    private var state: blink_state = .none
-    var blinkTimer: Timer?
+    private let cursorBlinker = VimCursorBlinker()
     
     var documentController: UIDocumentInteractionController?
     
@@ -39,6 +96,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var currentCapslockDst: CapsLockDestination = .none
     
+    var currentPrimaryLanguage: String?
+    
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
@@ -47,6 +106,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     override func viewDidLoad() {
+        guard gVVC == nil else { return }
+        gVVC = self
         let v = VimView(frame: .zero)
         (self.view as! VimMainView).addShellView(v)
         self.vimView = v
@@ -84,11 +145,25 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.shouldTuneFrame = true
     }
     
+    private func send(mouseEvent: Int32, at point: CGPoint) {
+        if !self.isFirstResponder {
+            self.becomeFirstResponder()
+            self.reloadInputViews()
+        }
+        gui_send_mouse_event(mouseEvent,
+                             Int32(point.x),
+                             Int32(point.y),
+                             1,
+                             0)
+    }
+    
     @objc func click(_ sender: UITapGestureRecognizer) {
-        self.resetKeyboard()
+        if self.isFirstResponder {
+            self.resetKeyboard()
+        }
         self.unmarkText()
-        let clickLocation = sender.location(in: sender.view)
-        gui_send_mouse_event(0, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
+        self.send(mouseEvent: mouseLEFT,
+                  at: sender.location(in: sender.view))
     }
     
     @objc func longPress(_ sender: UILongPressGestureRecognizer) {
@@ -100,7 +175,11 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }
     }
     
-    @objc func flush() {
+    func flush() {
+        self.flush(redrawImmediately: self.isInFocus())
+    }
+    
+    @objc func flush(redrawImmediately: Bool) {
         if !self.hasBeenFlushedOnce {
             self.hasBeenFlushedOnce = true
             DispatchQueue.main.async {
@@ -108,48 +187,12 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
                 gSVO.markStart()
             }
         }
-        self.vimView?.flush()
-    }
-    
-    private func changeCursor(after timeInterval: CLong) {
-        self.blinkTimer?.invalidate()
-        let delay = TimeInterval(timeInterval) / 1000.0
-        self.blinkTimer = Timer.scheduledTimer(timeInterval: delay, target: self, selector: #selector(self.blinkCursor), userInfo: nil, repeats: false)
+        self.vimView?.flush(redrawImmediately)
     }
     
     func markNeedsDisplay() {
         self.vimView?.markNeedsDisplay()
     }
-    
-    @objc func blinkCursor() {
-        switch self.state {
-        case .on:
-            gui_undraw_cursor()
-            self.state = .off
-            self.changeCursor(after: self.blink_off)
-        case .off, .none:
-            gui_update_cursor(1, 0)
-            self.state = .on
-            self.changeCursor(after: self.blink_on)
-        }
-        self.markNeedsDisplay()
-    }
-    
-    @objc func startBlink() {
-        self.state = .on
-        gui_update_cursor(1, 0)
-        self.changeCursor(after: self.blink_wait)
-    }
-    
-    @objc func stopBlink(_ updateCursor: Bool) {
-        if self.state == .off && updateCursor {
-            self.blinkTimer?.invalidate()
-            gui_update_cursor(1, 0)
-            self.blinkTimer = nil
-        }
-        self.state = .none
-    }
-
     
     override var canBecomeFirstResponder: Bool {
         return self.hasBeenFlushedOnce
@@ -235,38 +278,23 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         self.tuneFrameAccordingToKeyboard(notification)
     }
     
-    @objc func waitForChars(_ wtime: Int) -> Bool {
-        if input_available() > 0 { return true }
-        let expirationDate = wtime != -1 ? Date(timeIntervalSinceNow: TimeInterval(wtime) * 0.001) : .distantFuture
-        let runloop = RunLoop.current
-        repeat {
-            runloop.acceptInput(forMode: .default, before: expirationDate)
-//            NSLog("gogogo \(wtime)")// \(runloop)")
-            if input_available() > 0 {
-                return true
-            }
-        } while expirationDate > Date()
-        
-        return false
-    }
-    
     @objc func pan(_ sender: UIPanGestureRecognizer) {
         guard let v = self.vimView else { return }
-        let clickLocation = sender.location(in: v)
         let event: Int32
         switch sender.state {
         case .began: event = mouseLEFT
         case .ended: event = mouseRELEASE
         default: event = mouseDRAG
         }
-        gui_send_mouse_event(event, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
+        self.send(mouseEvent: event,
+                  at: sender.location(in: v))
     }
     
     @objc func scroll(_ sender: UIPanGestureRecognizer) {
         if sender.state == .began {
 //            self.becomeFirstResponder()
-            let clickLocation = sender.location(in: sender.view)
-            gui_send_mouse_event(0, Int32(clickLocation.x), Int32(clickLocation.y), 1, 0)
+            self.send(mouseEvent: mouseLEFT,
+                      at: sender.location(in: sender.view))
         }
         
         guard let v = self.vimView else { return }
@@ -280,11 +308,18 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         if diffY >= 1 {
             sender.setTranslation(CGPoint(x: 0, y: translation.y - floor(diffY) * charHeight), in: v)
         }
+        let isInsertMode = is_in_insert_mode()
         while diffY <= -1 {
+            if isInsertMode {
+                input_special_name("<C-o>")
+            }
             input_special_name("<C-e>")
             diffY += 1
         }
         while diffY >= 1 {
+            if isInsertMode {
+                input_special_name("<C-o>")
+            }
             input_special_name("<C-y>")
             diffY -= 1
         }
@@ -301,6 +336,38 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
         }) { _ in
             fv.removeFromSuperview()
         }
+    }
+}
+
+extension VimViewController {
+    @objc func isInFocus() -> Bool {
+        return self.isFirstResponder &&
+            (self.presentedViewController == nil) &&
+            (UIApplication.shared.applicationState == .active)
+    }
+    
+    func tryResumeFocus() {
+        gui_mch_flush()
+    }
+}
+
+extension VimViewController { // cursor blinking
+    @objc func setBlinkDurationsFor(wait: CLong,
+                                    on: CLong,
+                                    off: CLong) {
+        let cb = self.cursorBlinker
+        cb.controller = self
+        cb.waitDuration = wait
+        cb.onDuration = on
+        cb.offDuration = off
+    }
+    
+    @objc func startBlink(_ inFocus: Bool) {
+        self.cursorBlinker.startBlinking(inFocus)
+    }
+    
+    @objc func stopBlink(_ updateCursor: Bool) {
+        self.cursorBlinker.stopBlinking(updateCursor)
     }
 }
 
@@ -346,12 +413,23 @@ extension VimViewController {
         if let url = url {
             self.documentController = UIDocumentInteractionController(url: url)
             self.documentController?.presentOptionsMenu(from: self.shareRect, in: self.view, animated: true)
+            self.documentController?.delegate = self
         } else if let text = text {
             let avc = UIActivityViewController(activityItems: [text], applicationActivities: nil)
             avc.popoverPresentationController?.sourceRect = self.shareRect
             avc.popoverPresentationController?.sourceView = self.view
+            avc.completionWithItemsHandler = {
+                [unowned self] _, _, _, _ in
+                self.tryResumeFocus()
+            }
             self.present(avc, animated: true)
         }
+    }
+}
+
+extension VimViewController: UIDocumentInteractionControllerDelegate {
+    func documentInteractionControllerDidDismissOptionsMenu(_ controller: UIDocumentInteractionController) {
+        self.tryResumeFocus()
     }
 }
 

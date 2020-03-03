@@ -145,7 +145,7 @@
 #define DRAW_BOLD		0x02	/* draw bold text */
 #define DRAW_UNDERL		0x04	/* draw underline text */
 #define DRAW_UNDERC		0x08	/* draw undercurl text */
-#if defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IOS)
 # define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
 #define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */

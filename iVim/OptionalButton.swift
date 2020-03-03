@@ -313,7 +313,7 @@ extension OptionalButton {
     }
     
     private func restore() {
-        DispatchQueue.main.async {
+        Thread.runOnMainThread {
             self.layer.backgroundColor = UIColor.normalBackground.cgColor
             self.reset()
         }

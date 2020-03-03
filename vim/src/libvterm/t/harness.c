@@ -452,7 +452,11 @@ VTermScreenCallbacks screen_cbs = {
   screen_sb_popline /* sb_popline */
 };
 
+#ifdef FEAT_GUI_IOS
+int themain(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
   char line[1024] = {0};
   int flag;

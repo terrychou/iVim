@@ -54,6 +54,8 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>SourceCodePro-Regular.ttf</string>
+		<string>SourceCodePro-Bold.ttf</string>
+		<string>SourceCodePro-It.ttf</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>

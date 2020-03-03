@@ -437,7 +437,11 @@ extension EKSubitems {
 
 private extension Dictionary where Key: StringProtocol {
     func anyValue<T>(for key: Key) -> T? {
-        return self[key] as? T
+        // Any could be some(nil)
+        // so "self[key] as? T" is not enough
+        let value = self[key]
+        
+        return value != nil ? value as? T : nil
     }
 }
 

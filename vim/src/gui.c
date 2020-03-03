@@ -2439,7 +2439,7 @@ gui_outstr_nowrap(
     if (back != 0 && ((draw_flags & DRAW_BOLD) || (highlight_mask & HL_ITALIC)))
 	return FAIL;
 
-#if defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IOS)
     /* If there's no italic font, then fake it.
      * For GTK2, we don't need a different font for italic style. */
     if (hl_mask_todo & HL_ITALIC)

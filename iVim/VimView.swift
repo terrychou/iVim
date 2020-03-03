@@ -11,12 +11,16 @@
 import UIKit
 import CoreText
 
+
+extension CTFontSymbolicTraits: Hashable {}
+
 final class VimView: UIView {
     private var dirtyRect: CGRect = .zero
     var fgColor: VimColor = 0
     var bgColor: VimColor = 0
     var spColor: VimColor = 0
     var font: CTFont?
+    var fontCache = [CTFontSymbolicTraits: CTFont]()
     @objc var char_ascent: CGFloat = 0
     var char_descent: CGFloat = 0
     @objc var char_width: CGFloat = 0
@@ -44,19 +48,53 @@ final class VimView: UIView {
     }()
 }
 
-extension VimView {
+extension Thread {
+    static func runOnMainThread(_ task: @escaping () -> Void) {
+        if self.isMainThread {
+            task()
+        } else {
+            DispatchQueue.main.async(execute: task)
+        }
+    }
+}
+
+private extension CGRect {
+    mutating func safeFormUnion(_ rect: CGRect) {
+        // "safe" means not to union with .zero
+        // whose result doesn't make sense here
+        self = self == .zero ? rect : self.union(rect)
+    }
+}
+
+extension VimView {    
+    private func redrawImmediately() {
+        // force the redraw happen immediately
+//        RunLoop.main.run(mode: .tracking, before: Date())
+    }
+    
     func markRectNeedsDisplay(_ rect: CGRect) {
-        self.dirtyRect = self.dirtyRect.union(rect)
-        self.markNeedsDisplay()
+//        NSLog("dirty rect \(self.dirtyRect) new rect \(rect)")
+        self.dirtyRect.safeFormUnion(rect)
+//        self.markNeedsDisplay()
     }
     
     func markNeedsDisplay() {
-        self.setNeedsDisplay(self.dirtyRect)
+        Thread.runOnMainThread {
+            self.setNeedsDisplay(self.dirtyRect)
+            self.dirtyRect = .zero
+        }
     }
     
-    func flush() {
+    func flush(_ redrawImmediately: Bool) {
         self.markNeedsDisplay()
-        self.dirtyRect = .zero
+        if redrawImmediately {
+            self.redrawImmediately()
+        }
+//        if self.dirtyRect != .zero {
+//            self.redrawImmediately()
+//            self.dirtyRect = .zero
+//        }
+//        NSLog("\(#function)")
     }
     
     @objc func initFont(_ fontInfo: String?) -> CTFont {
@@ -66,6 +104,7 @@ extension VimView {
         self.char_width = w
         self.char_height = h
         self.font = f
+        self.fontCache.removeAll()
         
         return f
     }
@@ -82,11 +121,16 @@ extension VimView {
     }
     
     override func draw(_ rect: CGRect) {
-        guard let ctx = UIGraphicsGetCurrentContext() else { return }
-        let image = self.ctx.makeImage()!
+        var image: CGImage?
+        self.ctx.saveGState()
+        image = self.ctx.makeImage()
+        self.ctx.restoreGState()
+        guard let img = image,
+            let ctx = UIGraphicsGetCurrentContext()
+            else { return }
         ctx.saveGState()
-        ctx.clip(to: self.bounds)
-        ctx.draw(image, in: self.bufferBounds)
+        ctx.clip(to: rect)
+        ctx.draw(img, in: self.bufferBounds)
         ctx.restoreGState()
     }
 }

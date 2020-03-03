@@ -79,8 +79,8 @@ extension VimViewController {
             self.becomeFirstResponder()
         }
         self.markedInfo?.didGetMarkedText(markedText, selectedRange: selectedRange, pending: self.isNormalPending)
-        self.flush()
-        self.markNeedsDisplay()
+//        self.flush()
+//        self.markNeedsDisplay()
     }
     
     func unmarkText() {
@@ -247,6 +247,8 @@ extension VimViewController {
     func cancelCurrentMarkedText() {
         self.markedInfo?.cancelled = true
         self.resetKeyboard()
+        self.markedInfo?.didUnmark()
+//        self.markedInfo = nil
     }
 }
 
@@ -340,6 +342,23 @@ extension VimViewController {
     }
 }
 
+extension VimViewController {
+    func updatePrimaryLanguage() {
+        self.currentPrimaryLanguage = self.textInputMode?.primaryLanguage
+    }
+    
+    var isDuringMultistageInput: Bool {
+        return !(self.markedInfo?.text.isEmpty ?? true)
+    }
+    
+    @objc func imState() -> Bool {
+        return (self.currentPrimaryLanguage.map {
+            !$0.hasPrefix("en")
+            } ?? false) ||
+            self.isDuringMultistageInput
+    }
+}
+
 class VimTextPosition: UITextPosition {
     var location: Int
     
@@ -390,7 +409,7 @@ class VimTextRange: UITextRange {
     }
 }
 
-struct MarkedInfo {
+final class MarkedInfo {
     var selectedRange = NSMakeRange(0, 0)
     var text = ""
     var cancelled = false
@@ -401,37 +420,41 @@ extension MarkedInfo {
         return VimTextRange(location: 0, length: self.text.nsLength)!
     }
     
-    private func deleteBackward(for times: Int) {
-        gFeedKeys("\\<BS>", for: times, mode: "n")
-//        gAddTextToInputBuffer(keyBS.unicoded, for: times)
-//        for _ in 0..<times {
-//            input_special_key(keyBS)
-//        }
-    }
+//    private func deleteBackward(for times: Int) {
+//        gFeedKeys("\\<BS>", for: times, mode: "n")
+////        gAddTextToInputBuffer(keyBS.unicoded, for: times)
+////        for _ in 0..<times {
+////            input_special_key(keyBS)
+////        }
+//    }
     
     func deleteOldMarkedText() {
         guard !self.text.isEmpty else { return }
-        let oldLen = self.text.nsLength
-        let offset = oldLen - self.selectedRange.location
-        move_cursor_right(offset)
-        self.deleteBackward(for: oldLen)
+        self.text = ""
+//        let oldLen = self.text.nsLength
+//        let offset = oldLen - self.selectedRange.location
+//        move_cursor_right(offset)
+//        self.deleteBackward(for: oldLen)
     }
     
-    mutating func didGetMarkedText(_ text: String?, selectedRange: NSRange, pending: Bool) {
+    func didGetMarkedText(_ text: String?, selectedRange: NSRange, pending: Bool) {
         guard let text = text else { return }
-        if !pending {
-            self.deleteOldMarkedText()
-            gAddNonCSITextToInputBuffer(text)
-            let offset = text.nsLength - selectedRange.location
-            move_cursor_left(offset)
-        }
+//        if !pending {
+//            self.deleteOldMarkedText()
+////            gAddNonCSITextToInputBuffer(text)
+////            let offset = text.nsLength - selectedRange.location
+////            move_cursor_left(offset)
+//        }
         self.text = text
         self.selectedRange = selectedRange
     }
     
-    mutating func didUnmark() {
-        guard self.cancelled else { return }
-        self.deleteOldMarkedText()
-        self.cancelled = false
+    func didUnmark() {
+        if self.cancelled {
+            self.cancelled = false
+        } else if !self.text.isEmpty {
+            gAddNonCSITextToInputBuffer(self.text)
+        }
+        self.text = ""
     }
 }

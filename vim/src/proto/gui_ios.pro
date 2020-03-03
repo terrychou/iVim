@@ -15,6 +15,7 @@ void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags);
 void gui_mch_delete_lines(int row, int num_lines);
 void gui_mch_insert_lines(int row, int num_lines);
+guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
@@ -68,7 +69,7 @@ char_u * gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, ch
 int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd);
 void gui_mch_flash(int msec);
 guicolor_T gui_mch_get_color(char_u *name);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_mch_get_screen_dimensions(int *screen_w, int *screen_h);
 int gui_mch_haskey(char_u *name);
 void gui_mch_iconify(void);
@@ -93,5 +94,28 @@ void gui_mch_post_balloon(BalloonEval *beval, char_u *mesg);
 void ex_ios_cmds(exarg_T *eap);
 
 void enumerate_bufs_with_corrected(void (^task)(buf_T *, char_u *, BOOL));
+void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches);
 
+// input method
+int im_get_status(void);
+void im_set_active(int active_arg);
+void im_set_position(int row, int col);
+
+// channel and job
+int gui_ivim_has_channel(channel_T *channel, ch_part_T part);
+void gui_ivim_add_channel(channel_T *channel, ch_part_T part);
+void gui_ivim_remove_channel(channel_T *channel, ch_part_T part);
+void ivim_cleanup_existing_jobs(void);
+
+void scenes_keeper_stash(void);
+// ios_term.m
+void ios_term_register_process_signal_handlers(pid_t pid);
+void ios_term_setenv(const char *name, const char *value);
+void ios_term_cmd_execv(const char *path, char * const argv[], pid_t pid, int in_fd, int out_fd, int err_fd, channel_T *channel);
+void ios_term_run_shell_cmd(char_u *cmd, pid_t pid, int toshell_fd, int fromshell_fd);
+int ios_term_null_fd(void);
+void ios_term_readline(char_u *ta_buf, int len, int *got_int, pid_t pid, int *toshell_fd);
+char_u *ios_term_translate_msg(char_u *msg);
+pid_t ios_term_waitpid(pid_t pid, int *stat_loc, int options);
+int ios_term_handle_channel_input(channel_T *channel, char_u *buf, size_t len);
 /* vim: set ft=c : */

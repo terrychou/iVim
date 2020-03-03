@@ -186,9 +186,12 @@ extension VimFontsManager {
     }
     
     private func uncacheUserFont(with name: String) {
-        guard let font = self.cache[name]?.cgFont else { return }
-        if !CTFontManagerUnregisterGraphicsFont(font, nil) {
-            NSLog("Failed to unregistered font \(name)")
+        guard let url = self.cache[name]?.url else { return }
+        var err: Unmanaged<CFError>?
+        if !CTFontManagerUnregisterFontsForURL(url, .none, &err) {
+            let e = err?.nsError
+            NSLog("failed to unregister font '\(name)': " +
+                "\(e?.localizedDescription ?? "unknown reason")")
         }
         self.cache[name] = nil
     }
@@ -225,16 +228,37 @@ extension VimFontsManager {
     }
     
     private func prepareUserFont(with name: String) -> String? {
-        guard let path = userFontsURL?.appendingPathComponent(name),
-            let dp = CGDataProvider(url: path as CFURL)
-            else { return nil }
-        _ = UIFont() //to overcome the CGFontCreate hanging bug: http://stackoverflow.com/a/40256390/723851
-        let font = CGFont(dp)
-        guard let psName = font?.postScriptName as String?,
-            CTFontManagerRegisterGraphicsFont(font!, nil) else { return nil }
-        self.cache[name] = FontCache(postScriptName: psName, cgFont: font)
+        guard let fontURL = userFontsURL?.appendingPathComponent(name) else { return nil }
+        let url = fontURL as CFURL
+        // to overcome the CGFontCreate hanging bug:
+        // http://stackoverflow.com/a/40256390/723851
+        _ = UIFont()
+        var err: Unmanaged<CFError>?
+        if !CTFontManagerRegisterFontsForURL(url, .none, &err) {
+            let e = err?.nsError
+            if e?.isCTFontManagerError(.alreadyRegistered) != true {
+                NSLog("failed to register font '\(name)': " +
+                    "\(e?.localizedDescription ?? "unknown reason")")
+                return nil
+            }
+        }
+        var ret: String?
+        if let ds = CTFontManagerCreateFontDescriptorsFromURL(url) as? [CTFontDescriptor] {
+            for d in ds {
+                if let n = CTFontDescriptorCopyAttribute(d, kCTFontNameAttribute) as? String {
+                    ret = n
+                    if n.hasSuffix("Regular") {
+                        break
+                    }
+                }
+            }
+        }
+        if let psName = ret {
+            self.cache[name] = FontCache(postScriptName: psName,
+                                         url: url)
+        }
         
-        return psName
+        return ret
     }
     
     private func postScriptName(for name: String) -> String? {
@@ -267,6 +291,19 @@ extension VimFontsManager {
         
         return (CTFontCreateCopyWithAttributes(rawFont, fs, &transform, nil),
                 char_ascent, descent, char_width, char_height)
+    }
+}
+
+private extension Unmanaged where Instance == CFError {
+    var nsError: NSError? {
+        return (self.takeRetainedValue() as Error) as NSError
+    }
+}
+
+private extension NSError {
+    func isCTFontManagerError(_ err: CTFontManagerError) -> Bool {
+        return (self.domain == kCTFontManagerErrorDomain as String) &&
+            self.code == err.rawValue
     }
 }
 
@@ -338,11 +375,11 @@ func ==(lfi: FontInfo, rfi: FontInfo) -> Bool {
 
 struct FontCache {
     let postScriptName: String
-    let cgFont: CGFont?
+    let url: CFURL?
     
-    init(postScriptName: String, cgFont: CGFont? = nil) {
+    init(postScriptName: String, url: CFURL? = nil) {
         self.postScriptName = postScriptName
-        self.cgFont = cgFont
+        self.url = url
     }
 }
 
@@ -363,7 +400,7 @@ extension String {
 extension URL {
     var isSupportedFont: Bool {
         switch self.pathExtension {
-        case "ttf", "otf": return true
+        case "ttf", "otf", "ttc": return true
         default: return false
         }
     }

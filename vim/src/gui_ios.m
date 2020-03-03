@@ -114,7 +114,7 @@ void input_special_key(int key) {
 void input_special_name(const char * name) {
     char_u * n = (char_u *)name;
     char_u re[6];
-    int len = trans_special(&n, re, TRUE, FALSE);
+    int len = trans_special(&n, re, FALSE, FALSE);
     for (int i = 0; i < len; i += 3) {
         if (re[i] == K_SPECIAL) { re[i] = CSI; }
     }
@@ -149,6 +149,17 @@ NSString * expand_tilde_of_path(NSString * path) {
     expand_env(p, buf, len);
     
     return TONSSTRING(buf);
+}
+
+/*
+ * escape a path string for using with vim command
+ */
+NSString * _Nonnull ivim_escaping_filepath(NSString *path) {
+    char_u *escaped = vim_strsave_fnameescape(TOCHARS(path), FALSE);
+    NSString *ret = TONSSTRING(escaped);
+    vim_free(escaped);
+    
+    return ret;
 }
 
 /*
@@ -334,16 +345,15 @@ static NSString * bundle_info_for_name(NSString * name) {
  * gui version info line
  */
 char_u * gui_version_info(void) {
-    static char_u * info;
+    static NSString *info;
     if (info == NULL) {
         NSString * name = bundle_info_for_name(@"CFBundleName");
         NSString * version = bundle_info_for_name(@"CFBundleShortVersionString");
         NSString * build = bundle_info_for_name((NSString *)kCFBundleVersionKey);
-        NSString * line = [NSString stringWithFormat:@"%@ version %@(%@)", name, version, build];
-        info = TOCHARS(line);
+        info = [NSString stringWithFormat:@"%@ %@(%@)", name, version, build];
     }
     
-    return info;
+    return TOCHARS(info);
 }
 
 //CGColorRef CGColorCreateFromVimColor(guicolor_T color)  {
@@ -867,6 +877,14 @@ BOOL is_in_normal_mode(void) {
 }
 
 /*
+ * if currently in insert mode
+ */
+BOOL is_in_insert_mode(void)
+{
+    return State & INSERT;
+}
+
+/*
  * Get the regex pattern from *line*
  * return last_search_pat() if itself isn't a valid pattern
  */
@@ -899,6 +917,143 @@ void ivim_match_regex(NSString * pattern, BOOL ignore_case, void (^worker)(BOOL 
     };
     worker(m);
     vim_regfree(regmatch.regprog);
+}
+
+/*
+ * append "shell command names" matching *pat* to *matches*
+ * called by expand_shellcmd()
+ */
+static BOOL is_file_executable(NSString *path)
+{
+    struct stat st;
+    if (stat([path UTF8String], &st)) {
+        return NO;
+    }
+    
+    return (S_ISREG(st.st_mode) &&
+            (st.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)));
+}
+
+static NSArray<NSString *> *executables_under_dir(NSString *path, BOOL should_be_x)
+{
+    static NSMutableSet<NSString *> *not_permitted;
+    if (not_permitted == nil) {
+        not_permitted = [NSMutableSet set];
+    }
+    if ([not_permitted containsObject:path]) {
+        return @[];
+    }
+    NSMutableArray<NSString *> *ret = [NSMutableArray array];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    BOOL is_dir = NO;
+    if ([fm fileExistsAtPath:path isDirectory:&is_dir] && is_dir) {
+        NSError *error = nil;
+        NSArray<NSString *> *contents = [fm contentsOfDirectoryAtPath:path
+                                                                error:&error];
+        if (error == nil) {
+            for (NSString *item in contents) {
+                NSString *p = [path stringByAppendingPathComponent:item];
+                is_dir = NO;
+                if ([fm fileExistsAtPath:p isDirectory:&is_dir] && !is_dir &&
+                    (!should_be_x || is_file_executable(p))) {
+                    [ret addObject:item];
+                }
+            }
+        } else {
+            if ([error code] == 257) {
+                [not_permitted addObject:path];
+            } else {
+                NSLog(@"failed to load contents of dir: %@", error);
+            }
+        }
+    }
+    
+    return ret;
+}
+
+static BOOL executables_should_be_x_under(NSString *path)
+{
+    // permission "x" of files under the resource dir always
+    // gets removed while being installed
+    return ![path hasPrefix:[[NSBundle mainBundle] resourcePath]];
+}
+
+static NSSet<NSString *> *cmds_from_env_paths(void)
+{
+    NSMutableSet<NSString *> *ret = [NSMutableSet set];
+    NSString *envPath = [NSString stringWithUTF8String:getenv("PATH")];
+    NSArray<NSString *> *paths = nil;
+    if (![envPath isEqualToString:@""]) {
+        paths = [envPath componentsSeparatedByString:@":"];
+    }
+    if (paths != nil) {
+        for (NSString *path in paths) {
+            BOOL should_be_x = executables_should_be_x_under(path);
+            [ret addObjectsFromArray:executables_under_dir(path, should_be_x)];
+        }
+    }
+    
+    return ret;
+}
+
+static NSArray<NSString *> *available_shell_cmds() {
+    static NSArray<NSString *> *cmds;
+    static NSArray<NSSortDescriptor *> *descriptors;
+    if (cmds == NULL) {
+        NSURL *cPath = [[[NSBundle mainBundle] resourceURL]
+                        URLByAppendingPathComponent:
+                        @"runtime/doc/ios_shell_cmds"];
+        NSError *err;
+        NSString *content = [NSString
+                             stringWithContentsOfURL:cPath
+                             encoding:NSUTF8StringEncoding
+                             error:&err];
+        if (err == nil) {
+            cmds = [content componentsSeparatedByCharactersInSet:
+                    [NSCharacterSet newlineCharacterSet]];
+        } else {
+            cmds = @[];
+            NSLog(@"failed to read shell cmds list: %@",
+                  [err localizedDescription]);
+        }
+    }
+    if (descriptors == nil) {
+        descriptors = @[[NSSortDescriptor
+                         sortDescriptorWithKey:@"description"
+                         ascending:YES]];
+    }
+    NSSet<NSString *> *searched = cmds_from_env_paths();
+    NSSet<NSString *> *ret = [searched setByAddingObjectsFromArray:cmds];
+    
+    return [ret sortedArrayUsingDescriptors:descriptors];
+}
+
+void shell_cmds_matching(const char *pat, void (^task)(NSString *)) {
+    // vim tries to collect commands from directories
+    // in 'path', so it appends a '*' to any pattern.
+    // as a result, need to remove it first
+    NSString *nspat = @"";
+    BOOL matchAll = YES;
+    if (pat != NULL) {
+        nspat = TONSSTRING(pat);
+        if ([nspat hasSuffix:@"*"]) {
+            nspat = [nspat substringToIndex:[nspat length] - 1];
+        }
+        if ([nspat length] > 0) {
+            matchAll = NO;
+        }
+    }
+    for (NSString *cmd in available_shell_cmds()) {
+        if (matchAll || [cmd hasPrefix:nspat]) {
+            task(cmd);
+        }
+    }
+}
+
+void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches) {
+    shell_cmds_matching((char *)pat, ^(NSString *cmd) {
+        ga_add_string(matches, TOCHARS(cmd));
+    });
 }
 
 /*
@@ -952,39 +1107,24 @@ gui_mch_init(void)
 {
 //    printf("%s\n",__func__);
     set_option_value((char_u *)"termencoding", 0L, (char_u *)"utf-8", 0);
-    
     gui_mch_def_colors();
-    
-    set_normal_colors();
-
-    gui_check_colors();
-//    gui.def_norm_pixel = gui.norm_pixel;
-//    gui.def_back_pixel = gui.back_pixel;
-    do_cmdline_cmd((char_u *)"highlight Cursor guifg=bg guibg=fg");
-    do_cmdline_cmd((char_u *)"highlight lCursor guifg=bg guibg=fg");
     
     bg_color_ready = YES;
     if (shellViewController()) {
         gui_ios_init_bg_color();
     }
-
-//#ifdef FEAT_GUI_SCROLL_WHEEL_FORCE
-   // gui.scroll_wheel_force = 1;
-    //gui
-//#endif
+    
+    highlight_gui_started();
 
     return OK;
 }
 
-
-void scenes_keeper_stash(void);
     void
 gui_mch_exit(int rc)
 {
 //    printf("%s\n",__func__);
     //save old documents
     [[OldDocumentsManager shared] wrapUp];
-    scenes_keeper_stash();
     //unregister file presenters
     [[PickInfoManager shared] wrapUp];
 }
@@ -1032,6 +1172,8 @@ gui_mch_update(void)
 
 
 /* Flush any output to the screen */
+extern int ivim_post_done;
+extern BOOL should_auto_restore(void);
     void
 gui_mch_flush(void)
 {
@@ -1039,7 +1181,18 @@ gui_mch_flush(void)
     // flushing.  If we were to flush every time it was called the screen would
     // flicker.
 //    printf("%s\n",__func__);
-   [shellViewController() flush];
+    if (!ivim_post_done && should_auto_restore()) {
+        // if needs auto-restore, only flush after
+        // restore is done
+        return;
+    }
+    BOOL in_focus = [shellViewController() isInFocus];
+    BOOL was_in_focus = (gui.in_focus == TRUE);
+    BOOL focus_changed = (in_focus != was_in_focus);
+    if (focus_changed) {
+        gui_focus_change(in_focus);
+    }
+    [shellViewController() flushWithRedrawImmediately:in_focus];
 }
 
 
@@ -1053,10 +1206,47 @@ gui_mch_flush(void)
  * or FAIL otherwise.
  */
 //TODO: Move to VC
+static BOOL got_input(void) {
+    return (input_available() || got_int);
+}
+
     int
 gui_mch_wait_for_chars(int wtime)
 {
-    return [shellViewController() waitForChars:wtime];
+    parse_queued_messages();
+    if (got_input()) {
+        return OK;
+    }
+    NSTimer *timer = nil;
+    CFTimeInterval ti = (wtime >= 0 ? 0.001 * wtime : 1e8);
+    if (ti > 0.1 && (has_any_channel() || has_pending_job())) {
+        timer = [NSTimer
+                 scheduledTimerWithTimeInterval:0.1
+                 repeats:YES
+                 block:^(NSTimer * _Nonnull tr) {
+            parse_queued_messages();
+            if (input_available()) {
+                CFRunLoopStop(CFRunLoopGetCurrent());
+            }
+        }];
+    }
+    int char_found = FAIL;
+    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, ti, true)
+           == kCFRunLoopRunHandledSource) {
+        ti = 0.0;
+        if (got_input()) {
+            char_found = OK;
+        }
+    }
+    if (got_input()) {
+        char_found = OK;
+    }
+    
+    [timer invalidate];
+    
+    return char_found;
+    
+//    return [shellViewController() waitForChars:wtime];
 }
 
 
@@ -1117,10 +1307,7 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
                       pos_y: TEXT_Y(row)
                        rect: rect
                 p_antialias: true
-                transparent: flags & DRAW_TRANSP
-                  underline: flags & DRAW_UNDERL
-                  undercurl: flags & DRAW_UNDERC
-                     cursor: flags & DRAW_CURSOR];
+                      flags: flags];
 }
 
 
@@ -1176,6 +1363,12 @@ gui_mch_insert_lines(int row, int num_lines)
                     row + num_lines - 1, gui.scroll_region_right);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
 /*
  * Set the current text foreground color.
  */
@@ -1226,9 +1419,9 @@ void gui_mch_def_colors(void) {
     void
 gui_mch_new_colors(void)
 {
-//    printf("%s\n",__func__);  
-    gui.def_back_pixel = gui.back_pixel;
+//    printf("%s\n",__func__);
     gui.def_norm_pixel = gui.norm_pixel;
+    gui.def_back_pixel = gui.back_pixel;
     gui_ios_sync_bg_color(NO);
 }
 
@@ -1238,7 +1431,7 @@ gui_mch_new_colors(void)
     void
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
-//    printf("%s\n",__func__);  
+//    printf("%s\n",__func__);
 }
 
 // -- Menu ------------------------------------------------------------------
@@ -1500,10 +1693,10 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 #endif
     CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), cw * gui.char_width, gui.char_height);
 //    CGColorRef cgColor = CGColorCreateFromVimColor(color);
-//    rect.size.width += 1;
-//    rect.size.height += 1;
-//    rect.origin.x -= 0.5;
-//    rect.origin.y -= 0.5;
+    rect.size.width -= 1;
+    rect.size.height -= 1;
+    rect.origin.x += 0.5;
+    rect.origin.y += 0.5;
     [shellView() strokeRect:rect with:(uint32_t)color];
 }
 
@@ -1545,10 +1738,9 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 gui_mch_set_blinking(long wait, long on, long off)
 {
 //    printf("%s\n",__func__);
-    VimViewController * vc = shellViewController();
-    vc.blink_wait = wait;
-    vc.blink_on   = on;
-    vc.blink_off  = off;
+    [shellViewController() setBlinkDurationsForWait:wait
+                                                 on:on
+                                                off:off];
 }
 
 
@@ -1559,7 +1751,7 @@ gui_mch_set_blinking(long wait, long on, long off)
     void
 gui_mch_start_blink(void)
 {
-    [shellViewController() startBlink];
+    [shellViewController() startBlink:gui.in_focus];
 //    printf("%s\n",__func__);
  //   if (gui_ios.blink_timer != nil)
  //       [gui_ios.blink_timer invalidate];
@@ -1600,12 +1792,14 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
 int
 gui_mch_is_blinking(void)
 {
+//    NSLog(@"%s\n", __func__);
     return FALSE;
 }
 
 int
 gui_mch_is_blink_off(void)
 {
+//    NSLog(@"%s\n", __func__);
     return FALSE;
 }
 
@@ -2027,7 +2221,7 @@ gui_mch_get_color(char_u *name)
 /*
  * Return the RGB value of a pixel as long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
 //    printf("%s\n",__func__);  
@@ -2157,7 +2351,117 @@ gui_mch_settitle(char_u *title, char_u *icon)
 }
 #endif
 
+// ----------------- Input Method -----------------
+// Not really support HAVE_INPUT_METHOD
+// just provide support to "CursorIM" for now
+    int
+im_get_status(void)
+{
+    return [shellViewController() imState];
+}
 
+    void
+im_set_active(int active_arg)
+{
+    // set language programmatically not supported in iOS
+}
+
+    void
+im_set_position(int row, int col)
+{
+    // not implemented
+}
+
+#if defined(FEAT_JOB_CHANNEL)
+// ----------------- Channel and job support ------------------
+void ivim_read_channel(channel_T *channel, ch_part_T part, char *func);
+typedef NSMutableDictionary<NSString *, NSDictionary *> ChannelTable;
+static NSString *kVCIChannelPointer = @"ch_ptr";
+static NSString *kVCIChannelPart = @"ch_part";
+static NSString *kVCIFileDescriptor = @"fd";
+static ChannelTable *channel_table(void)
+{
+    static ChannelTable *table;
+    if (table == nil) {
+        table = [NSMutableDictionary dictionary];
+    }
+    
+    return table;
+}
+
+static NSString *key_for_channel(channel_T *channel, ch_part_T part)
+{
+    return [NSString stringWithFormat:@"c%dp%d", channel->ch_id, part];
+}
+
+static void note_channel_read(CFFileDescriptorRef fd_ref,
+                              CFOptionFlags callback_types,
+                              void *info)
+{
+    NSString *key = (__bridge NSString *)info;
+//    NSLog(@"channel read for key: %@", key);
+    NSDictionary *ch_info = channel_table()[key];
+    if (ch_info == nil) {
+        return;
+    }
+    channel_T *channel = (channel_T *)[ch_info[kVCIChannelPointer] pointerValue];
+    ch_part_T part = (ch_part_T)[ch_info[kVCIChannelPart] intValue];
+    ivim_read_channel(channel, part, "note_channel_read");
+    // re-enable the file descriptor read callback
+    CFFileDescriptorEnableCallBacks(fd_ref, kCFFileDescriptorReadCallBack);
+}
+
+    int
+gui_ivim_has_channel(channel_T *channel, ch_part_T part)
+{
+    return (channel_table()[key_for_channel(channel, part)] != nil);
+}
+
+    void
+gui_ivim_add_channel(channel_T *channel, ch_part_T part)
+{
+    NSString *key = key_for_channel(channel, part);
+    ChannelTable *ch_table = channel_table();
+    if (gui_ivim_has_channel(channel, part)) {
+        // already registered
+        return;
+    }
+    CFFileDescriptorContext ctx = {
+        0, (__bridge void *)(key), NULL, NULL, NULL
+    };
+    CFFileDescriptorRef fd_ref =
+    CFFileDescriptorCreate(kCFAllocatorDefault,
+                           channel->ch_part[part].ch_fd,
+                           false,
+                           note_channel_read,
+                           &ctx);
+    ch_table[key] = @{
+        kVCIChannelPointer: [NSValue valueWithPointer:channel],
+        kVCIChannelPart: [NSNumber numberWithInt:part],
+        kVCIFileDescriptor: [NSValue valueWithPointer:fd_ref],
+    };
+    CFFileDescriptorEnableCallBacks(fd_ref, kCFFileDescriptorReadCallBack);
+    CFRunLoopSourceRef s = CFFileDescriptorCreateRunLoopSource(NULL, fd_ref, 0);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), s, kCFRunLoopDefaultMode);
+    CFRelease(s);
+}
+
+    void
+gui_ivim_remove_channel(channel_T *channel, ch_part_T part)
+{
+    if (!gui_ivim_has_channel(channel, part)) {
+        return;
+    }
+    NSString *key = key_for_channel(channel, part);
+    ChannelTable *ch_table = channel_table();
+    NSDictionary *ch_info = ch_table[key];
+    [ch_table removeObjectForKey:key];
+    CFFileDescriptorRef fd_ref = (CFFileDescriptorRef)[ch_info[kVCIFileDescriptor] pointerValue];
+    CFFileDescriptorInvalidate(fd_ref);
+    CFRelease(fd_ref);
+}
+
+#endif
 
     void
 gui_mch_toggle_tearoffs(int enable)

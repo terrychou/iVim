@@ -22,7 +22,11 @@ extension VimViewController {
     
     func pressESC() {
         if self.markedInfo != nil {
+            let insertESC = self.markedInfo!.text.isEmpty
             self.cancelCurrentMarkedText()
+            if insertESC {
+                self.insertText(keyESC.unicoded)
+            }
         } else if self.dictationHypothesis != nil {
             self.cleanupDictationHypothesis()
             self.resetKeyboard()
@@ -33,6 +37,6 @@ extension VimViewController {
     
     override var inputAccessoryView: UIView? {
         return self.shouldShowExtendedBar ?
-            ExtendedKeyboardManager.shared.inputView : nil
+            ExtendedKeyboardManager.shared.inputView : UIView(frame: .zero)
     }
 }

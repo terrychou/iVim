@@ -2421,6 +2421,9 @@ expand_shellcmd(
 	if (*e != NUL)
 	    ++e;
     }
+#ifdef FEAT_GUI_IOS
+    ivim_append_shell_cmds_matching(filepat, &ga);
+#endif
     *file = ga.ga_data;
     *num_file = ga.ga_len;
 

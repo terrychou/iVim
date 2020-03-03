@@ -1,0 +1,283 @@
+*ios_external_cmds.txt*     For Vim version 8.1.    Last change: 2020 Jan 20
+
+			iVim REFERENCE MANUAL	by Terry Chou
+
+
+					        *ios-external-cmds* 
+
+This file documents the particularities of the external commands support
+provided by iVim.
+
+1. Concepts                             |ios-exter-cmds-concepts|
+2. Available Commands                   |ios-exter-cmds-list|
+3. Command Personalities                |ios-exter-cmds-personalities|
+4. CA Certificates                      |ios-exter-cmds-ca-certs|
+5. Input & Output                       |ios-exter-cmds-io|
+6. Terminal                             |ios-exter-cmds-term|
+7. ivish                                |ivish|
+
+
+==============================================================================
+1. Concepts                                     *ios-exter-cmds-concepts*
+
+To enhance some of its plugins and its whole editing workflow, iVim includes 
+some external commands as the auxiliary tools.
+
+How it works ~
+
+An "external command" here means a complete program on its own. It does not
+depend on the function of vim. Vim communicates with it only through the 
+input and output.
+
+For security's sake, iOS does not allow an app to launch a new program by 
+itself. However, the project `ios_system` provides a brilliant workaround 
+model to overcome this and make the program launching possible. Special thanks 
+and cheers to `ios_system`!
+
+Based on `ios_system`, iVim includes some external commands, and make them
+look like coming from a shell. Therefore, you can use them like a shell
+command, such as via |:!cmd|, |:write_c| or |:read!|.
+
+Plugins ~
+
+Since the external commands are integrated into iVim in the "standard" way
+somehow, those plugins that didn't work or work properly due to the lack of
+certain external command, may work or work better now.
+
+For example, |netrw| can now edit remote files on a network computer via the
+`scp://` protocol thanks to the availability of the command `scp`.
+
+Some tech details ~
+
+Normally, a program needs to become a process in the system to run. To prevent 
+apps from launching new programs, iOS disables, from the bottom level, the 
+ability of starting new processes. On the other hand, the project `ios_system` 
+(https://github.com/holzschu/ios_system) makes it possible by changing to put
+the program into a thread instead. Of course, the program needs to be modified
+correspondingly somehow to fit this model.
+
+
+==============================================================================
+2. Available Commands                           *ios-exter-cmds-list*
+
+The external commands that iVim provides, are useful command line tools that 
+most users are familiar with and happy to have. Moreover, new commands could
+be added and old ones could be removed in future updates. 
+
+As a result, the inventory of available external commands are not given in 
+details in this document.
+
+However, as how it works for shell commands for vim on other platforms, you
+can always use ^D (|c_CTRL-D|) after having input `:!` in the cmdline to list 
+all available external commands in current version. Also, it lists external
+commands that have the prefix you have input after `:!` in this way.
+
+
+==============================================================================
+3. Command Personalities                        *ios-exter-cmds-personalities*
+
+Since the external commands have been modified somehow in order to run in the 
+`ios_system` model, and iVim is not providing a genuine shell after all, they
+may unavoidably have some particularities that users have to pay attention to.
+
+However, for the reason of being subject to change in future updates, the 
+details of external commands' personalities are not given in this document.
+Instead, it is available in iVim's project wiki page |ios-exter-cmds-wiki|.
+
+Environment variables ~
+                                                *ios-exter-cmds-env*
+As usual, one external command may respect certain environment variables. In
+other words, the values of certain environment variables change the behavior
+of the command. So this is a way to configurate the external commands. You can
+also find related information on the wiki page |ios-exter-cmds-wiki|.
+
+External commands wiki page ~
+                                                *ios-exter-cmds-wiki*
+To provide updated information on external commands, iVim has a specific wiki
+page: https://github.com/terrychou/iVim/wiki/External-Commands
+
+There, you can find useful information about external commands, such as their 
+usage, configuration, etc.
+
+
+==============================================================================
+4. CA Certificates                              *ios-exter-cmds-ca-certs*
+
+If you communicate with HTTPS or other TLS(SSL)-using servers via an external
+command, it may need a CA certificate to do the SSL verification. Otherwise,
+the communication may fail.
+
+The location of the CA certificate file is given by the environment varibale
+`$SSL_CERT_FILE`. 
+
+Because it is kind of private, iVim does not provide this file by default. 
+Therefore, you may have to obtain and deploy it by yourself. If you do not 
+have clues on how to do this, there is a wiki page giving related suggestion 
+and instructions:
+https://github.com/terrychou/iVim/wiki/External-Command:-curl#ca-certificate
+
+
+==============================================================================
+5. Input & Output                               *ios-exter-cmds-io*
+
+Editing ~
+
+iVim provides an interactive line mode for running external commands. Which 
+means that it waits and accepts your input if the command expects so. 
+
+During the input:
+
+a) it collects and reflects what you have input so far. 
+
+b) you can delete the character before the cursor one by one, but cannot jump 
+among them with the arrow keys. 
+
+c) you confirm your input by inputting a return (new line). When that happens, 
+iVim sends the content collected so far as a whole line to the command.
+
+Control inputs ~
+
+While the external command is running, iVim only accepts two control inputs:
+
+1) `Ctrl-C`
+it interrupts the running command. Different commands respond in their 
+different respective ways to this input.
+
+2) `Ctrl-D`
+it means the end of the whole input. The command responds in the way when it 
+gets EOF (End Of File).
+
+Command output ~
+
+iVim gets all the content that the command outputs to the standard output or 
+the standard error, and prints it in the message window. Note that you cannot
+scroll back when the output is more than one screen.
+
+
+==============================================================================
+6. Terminal                                     *ios-exter-cmds-term*
+
+iVim enables the |+terminal| feature. Which means you can also run external
+commands in a |terminal-window|.
+
+The easiest way to run an external command in a terminal window, is to invoke
+it via the |:terminal| command: >
+        :terminal pwd               "open a terminal window and show current
+                                    "directory in it
+<
+The advantages of running commands in a terminal window include:
+
+a) colors 
+the terminal window support the ANSI colors. Commands' output including them
+will be displayed correctly. Note that iVim also enables |+termguicolors|, so
+you can set the default 16 ANSI colors used by the terminal via the variable
+|g:terminal_ansi_colors|.
+
+b) multiple commands simultaneously
+unlike running via ex command line, you can open multiple terminal windows
+and run one command in each, at the same time.
+
+c) more convenient output browsing
+While you cannot scroll back to see the earlier output if it exceeds one page
+in the ex command line, a terminal window, by default, will be kept open after
+its command is finished. As a result, you are able to browse the whole output 
+as easily as reading a normal document in vim.
+
+d) auto-restore support
+if a command was still running in a terminal window when iVim terminated, the
+related window will be restored automatically at the next launch, with the 
+right command started within it.
+
+See |terminal| for details about the terminal window.
+
+            
+==============================================================================
+7. ivish                                        *ivish*
+
+To make running external commands in a more continous way, iVim includes a 
+simple shell named `ivish`. You can launch it via: >
+        :terminal ivish
+<
+or just simply: >
+        :terminal
+<
+the difference between them is that in the latter case, the terminal window 
+will be closed automatically when `ivish` exits.
+
+Input & output ~
+
+After `ivish` started, it shows a prompt `$ ` and waits for you to offer a 
+command. `ivish` won't handle your input until you confirm by pressing enter.
+After it started, the running command takes over the input and output. Only 
+when it is done, `ivish` comes out again and expects your next command.
+
+Line editing ~
+                                                    *ivish-editing*
+`ivish` provides a powerful line editing mode for you to edit your input.
+
+`^A`: jump to the start of the line;
+`^B`: move one character backward;
+`^C`: cancel the current line and start a new prompt;
+`^D`: delete the character under the cursor; act like enter if cursor at the
+end; Note that if the current line is empty, it exits `ivish`;
+`^E`: jump to the end of the line;
+`^F`: move one character forward;
+`^K`: delete all since the cursor;
+`^T`: move one word backward;
+`^U`: delete all before the cursor;
+`^W`: delete one previous word; Note that since the terminal window eats `^W`
+use `^W.` to do this;
+`^Y`: move one word forward.
+
+Hints & completion ~
+                                                    *ivish-completion*
+Right now, `ivish` provides completion for the following types:
+
+a) command names
+b) file or directory names
+
+During your input, `ivish` watches the cursor position and gives the first of
+all possible completion candidates as a hint. 
+
+When you press the `tab` key:
+
+a) if there are more than one completion candidates available, `ivish` lists 
+them and complete the word to their longest common prefix;
+b) if there is only one candidate, the whole word gets completed;
+c) if no candidates available, nothing happens.
+
+Note that hints and completion only work in `ivish` right now, not the running
+commands.
+
+History ~
+                                                    *ivish-history*
+Every confirmed line in `ivish` will be recorded as one history item. You can
+navigate the list via:
+
+`^P` or `up-arrow`: move to the previous line if available;
+`^N` or `down-arrow`: move to the next line if available, otherwise return to
+the current input;
+`esc`: restore to the current input.
+
+You can list the current history items via the internal command `history`.
+
+There are some notes worth mentioning:
+
+a) repeated lines are allowed;
+b) at most 100 items are kept in the history;
+c) if the env variable `IVISH_HISTORY_FILE` exists, `ivish` loads lines from
+it everytime it starts, and saves history into it everytime it terminates;
+d) running commands in `ivish` share one history, and it's not saving to a
+file.
+
+Internal commands ~
+                                                    *ivish-internal-cmds*
+`ivish` also provides some internal commands:
+
+`exit`: terminate the current `ivish`;
+`help`: show this documentation;
+`history`: list the current history.
+
+
+==============================================================================
+ vim:tw=78:ts=8:noet:ft=help:norl:

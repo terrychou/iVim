@@ -7393,6 +7393,16 @@ ios-auto-restore	os_ios.txt	/*ios-auto-restore*
 ios-commands	ios_commands.txt	/*ios-commands*
 ios-dictation	os_ios.txt	/*ios-dictation*
 ios-extended-keyboard	os_ios.txt	/*ios-extended-keyboard*
+ios-exter-cmds-ca-certs	ios_external_cmds.txt	/*ios-exter-cmds-ca-certs*
+ios-exter-cmds-concepts	ios_external_cmds.txt	/*ios-exter-cmds-concepts*
+ios-exter-cmds-env	ios_external_cmds.txt	/*ios-exter-cmds-env*
+ios-exter-cmds-io	ios_external_cmds.txt	/*ios-exter-cmds-io*
+ios-exter-cmds-list	ios_external_cmds.txt	/*ios-exter-cmds-list*
+ios-exter-cmds-personalities	ios_external_cmds.txt	/*ios-exter-cmds-personalities*
+ios-exter-cmds-term	ios_external_cmds.txt	/*ios-exter-cmds-term*
+ios-exter-cmds-wiki	ios_external_cmds.txt	/*ios-exter-cmds-wiki*
+ios-external-cmds	ios_external_cmds.txt	/*ios-external-cmds*
+ios-external-commands	os_ios.txt	/*ios-external-commands*
 ios-external-keyboard	os_ios.txt	/*ios-external-keyboard*
 ios-exuberant-ctags	os_ios.txt	/*ios-exuberant-ctags*
 ios-file-system	os_ios.txt	/*ios-file-system*
@@ -7404,6 +7414,7 @@ ios-open-url	os_ios.txt	/*ios-open-url*
 ios-settings	os_ios.txt	/*ios-settings*
 ios-share	os_ios.txt	/*ios-share*
 ios_commands.txt	ios_commands.txt	/*ios_commands.txt*
+ios_external_cmds.txt	ios_external_cmds.txt	/*ios_external_cmds.txt*
 ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
@@ -7437,6 +7448,11 @@ it	motion.txt	/*it*
 italic	syntax.txt	/*italic*
 items()	eval.txt	/*items()*
 ivim-old-documents	os_ios.txt	/*ivim-old-documents*
+ivish	ios_external_cmds.txt	/*ivish*
+ivish-completion	ios_external_cmds.txt	/*ivish-completion*
+ivish-editing	ios_external_cmds.txt	/*ivish-editing*
+ivish-history	ios_external_cmds.txt	/*ivish-history*
+ivish-internal-cmds	ios_external_cmds.txt	/*ivish-internal-cmds*
 iw	motion.txt	/*iw*
 i{	motion.txt	/*i{*
 i}	motion.txt	/*i}*
