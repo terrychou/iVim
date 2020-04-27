@@ -16,6 +16,7 @@ private let specialKeys = [UIKeyCommand.inputEscape, UIKeyCommand.inputUpArrow, 
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
 private let kUDOptionMapping = "kUDOptionMapping"
 private let kUDKeyRepeating = "kUDKeyRepeating"
+private let kUDCtrlToEscOnRelease = "kUDCtrlToEscOnRelease"
 
 extension VimViewController {
     override var keyCommands: [UIKeyCommand]? {
@@ -32,6 +33,9 @@ extension VimViewController {
         }
         if self.isKeyRepeating {
             keys.append(contentsOf: VimViewController.keysForRepeating)
+        }
+        if self.shouldMapCtrlToEscOnRelease {
+            keys.append(contentsOf: VimViewController.ctrlToEscOnRelease)
         }
         
         return keys
@@ -116,6 +120,15 @@ extension VimViewController {
             keys: alphabetaKeys + numericKeys + symbolKeys + escapedKeys,
             modifierFlags: [.alphaShift])
     
+    private static let ctrlToEscOnRelease: [UIKeyCommand] =
+        VimViewController.externalKeys +
+        VimViewController.optionKeys +
+        VimViewController.keyCommands(keys: alphabetaKeys, modifierFlags: [[]]) +
+        [VimViewController.keyCommand(input: "", modifierFlags: .control)] +
+        VimViewController.keyCommands(inputs: specialKeys, modifierFlags: [.control]) +
+        VimViewController.keyCommands(
+            keys: alphabetaKeys + numericKeys + symbolKeys + escapedKeys, modifierFlags: [.control])
+
     private var isOptionMappingEnabled: Bool {
         return UserDefaults.standard.bool(forKey: kUDOptionMapping)
     }
@@ -126,6 +139,10 @@ extension VimViewController {
             !self.isDuringMultistageInput // don't repeat if inputting accented chars
     }
     
+    private var shouldMapCtrlToEscOnRelease: Bool {
+        return UserDefaults.standard.bool(forKey: kUDCtrlToEscOnRelease)
+    }
+
     private static func keyCommand(input: String, modifierFlags: UIKeyModifierFlags = [], title: String? = nil) -> UIKeyCommand {
         let re = UIKeyCommand(input: input, modifierFlags: modifierFlags, action: #selector(self.keyCommandTriggered(_:)))
         re.discoverabilityTitle = title
@@ -171,6 +188,9 @@ extension VimViewController {
     }
         
     private func handleKeyCommand(_ command: UIKeyCommand) {
+        if !(command.input ?? "").isEmpty {
+            self.noKeyPressesSinceLastCtrlPress = false
+        }
         let flags = command.modifierFlags
         if flags.rawValue == 0 {
             guard let input = command.input else { return }
@@ -299,7 +319,14 @@ extension VimViewController {
         switch key.keyCode {
         case .keyboardCapsLock:
             self.capsLockIsBeingPressed = true
+            if self.currentCapslockDst == .ctrl {
+                self.ctrlPressed()
+            }
             break
+        case .keyboardLeftControl:
+            self.ctrlPressed()
+        case .keyboardRightControl:
+            self.ctrlPressed()
         default:
             break
         }
@@ -309,9 +336,27 @@ extension VimViewController {
         switch key.keyCode {
         case .keyboardCapsLock:
             self.capsLockIsBeingPressed = false
+            if self.currentCapslockDst == .ctrl {
+                self.maybeMapCtrlToEsc()
+            }
             break
+        case .keyboardLeftControl:
+            self.maybeMapCtrlToEsc()
+        case .keyboardRightControl:
+            self.maybeMapCtrlToEsc()
         default:
             break
+        }
+    }
+
+    private func ctrlPressed() {
+        self.noKeyPressesSinceLastCtrlPress = true
+    }
+
+    private func maybeMapCtrlToEsc() {
+        if self.shouldMapCtrlToEscOnRelease && self.noKeyPressesSinceLastCtrlPress {
+            let newCommand = VimViewController.keyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [])
+            self.handleKeyCommand(newCommand)
         }
     }
 }

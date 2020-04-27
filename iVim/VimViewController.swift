@@ -99,6 +99,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var currentPrimaryLanguage: String?
     
     var capsLockIsBeingPressed = false
+    var noKeyPressesSinceLastCtrlPress = false
 
     private func registerNotifications() {
         let nfc = NotificationCenter.default

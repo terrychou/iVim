@@ -92,6 +92,16 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
+			<string>Map [ctrl] to [esc] on release</string>
+			<key>Key</key>
+			<string>kUDCtrlToEscOnRelease</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
 			<string>Enable [alt] Mapping</string>
 			<key>Key</key>
 			<string>kUDOptionMapping</string>
