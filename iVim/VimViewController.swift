@@ -98,6 +98,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var currentPrimaryLanguage: String?
     
+    var capsLockIsBeingPressed = false
+
     private func registerNotifications() {
         let nfc = NotificationCenter.default
         nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)

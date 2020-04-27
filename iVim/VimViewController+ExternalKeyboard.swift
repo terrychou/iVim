@@ -159,7 +159,14 @@ extension VimViewController {
     
     @objc func keyCommandTriggered(_ sender: UIKeyCommand) {
         DispatchQueue.main.async {
-            self.handleKeyCommand(sender)
+            var newModifierFlags = sender.modifierFlags
+            if self.capsLockIsBeingPressed {
+                newModifierFlags.formUnion(.alphaShift)
+            } else {
+                newModifierFlags.remove(.alphaShift)
+            }
+            let newCommand = VimViewController.keyCommand(input: sender.input ?? "", modifierFlags: newModifierFlags)
+            self.handleKeyCommand(newCommand)
         }
     }
         
@@ -266,5 +273,43 @@ extension VimViewController {
     override func selectAll(_ sender: Any?) {
         //handle <D-a>
         self.triggerReservedKeyCommand(input: "a", modifierFlags: .command)
+    }
+
+    override func pressesBegan(_ presses: Set<UIPress>,
+                               with event: UIPressesEvent?) {
+        super.pressesBegan(presses, with: event)
+        presses.first?.key.map(keyPressed)
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>,
+                               with event: UIPressesEvent?) {
+        super.pressesEnded(presses, with: event)
+        presses.first?.key.map(keyReleased)
+    }
+
+    override func pressesCancelled(_ presses: Set<UIPress>,
+                                   with event: UIPressesEvent?) {
+        super.pressesCancelled(presses, with: event)
+        presses.first?.key.map(keyReleased)
+    }
+
+    func keyPressed(_ key: UIKey) {
+        switch key.keyCode {
+        case .keyboardCapsLock:
+            self.capsLockIsBeingPressed = true
+            break
+        default:
+            break
+        }
+    }
+
+    func keyReleased(_ key: UIKey) {
+        switch key.keyCode {
+        case .keyboardCapsLock:
+            self.capsLockIsBeingPressed = false
+            break
+        default:
+            break
+        }
     }
 }
