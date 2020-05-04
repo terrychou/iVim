@@ -244,7 +244,9 @@ extension VimViewController {
             newInput = UIKeyCommand.inputEscape
         } else {
             if newInput.isEmpty { return }
-            newModifierFlags.formUnion(.control)
+            if dst == .ctrl {
+                newModifierFlags.formUnion(.control)
+            }
         }
         let newCommand = VimViewController.keyCommand(input: newInput, modifierFlags: newModifierFlags)
         self.handleKeyCommand(newCommand)
