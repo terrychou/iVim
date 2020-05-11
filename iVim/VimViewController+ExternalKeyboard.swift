@@ -121,13 +121,7 @@ extension VimViewController {
             modifierFlags: [.alphaShift])
     
     private static let ctrlToEscOnRelease: [UIKeyCommand] =
-        VimViewController.externalKeys +
-        VimViewController.optionKeys +
-        VimViewController.keyCommands(keys: alphabetaKeys, modifierFlags: [[]]) +
-        [VimViewController.keyCommand(input: "", modifierFlags: .control)] +
-        VimViewController.keyCommands(inputs: specialKeys, modifierFlags: [.control]) +
-        VimViewController.keyCommands(
-            keys: alphabetaKeys + numericKeys + symbolKeys + escapedKeys, modifierFlags: [.control])
+        [VimViewController.keyCommand(input: "", modifierFlags: .control)]
 
     private var isOptionMappingEnabled: Bool {
         return UserDefaults.standard.bool(forKey: kUDOptionMapping)
@@ -321,14 +315,13 @@ extension VimViewController {
             self.capsLockIsBeingPressed = true
             if self.currentCapslockDst == .ctrl {
                 self.ctrlPressed()
+            } else {
+              self.noKeyPressesSinceLastCtrlPress = false
             }
-            break
-        case .keyboardLeftControl:
-            self.ctrlPressed()
-        case .keyboardRightControl:
+        case .keyboardLeftControl, .keyboardRightControl:
             self.ctrlPressed()
         default:
-            break
+            self.noKeyPressesSinceLastCtrlPress = false
         }
     }
 
@@ -339,10 +332,7 @@ extension VimViewController {
             if self.currentCapslockDst == .ctrl {
                 self.maybeMapCtrlToEsc()
             }
-            break
-        case .keyboardLeftControl:
-            self.maybeMapCtrlToEsc()
-        case .keyboardRightControl:
+        case .keyboardLeftControl, .keyboardRightControl:
             self.maybeMapCtrlToEsc()
         default:
             break
