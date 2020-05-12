@@ -9203,7 +9203,7 @@
 					"$(PROJECT_DIR)/vim/src/iviminclude/**",
 				);
 				INFOPLIST_FILE = iVim/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -9242,7 +9242,7 @@
 					"$(PROJECT_DIR)/vim/src/iviminclude/**",
 				);
 				INFOPLIST_FILE = iVim/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
