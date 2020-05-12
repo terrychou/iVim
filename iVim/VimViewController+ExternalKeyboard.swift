@@ -170,14 +170,7 @@ extension VimViewController {
     
     @objc func keyCommandTriggered(_ sender: UIKeyCommand) {
         DispatchQueue.main.async {
-            var newModifierFlags = sender.modifierFlags
-            if self.capsLockIsBeingPressed {
-                newModifierFlags.formUnion(.alphaShift)
-            } else {
-                newModifierFlags.remove(.alphaShift)
-            }
-            let newCommand = VimViewController.keyCommand(input: sender.input ?? "", modifierFlags: newModifierFlags)
-            self.handleKeyCommand(newCommand)
+            self.handleKeyCommand(sender)
         }
     }
         
@@ -258,9 +251,7 @@ extension VimViewController {
             newInput = UIKeyCommand.inputEscape
         } else {
             if newInput.isEmpty { return }
-            if dst == .ctrl {
-                newModifierFlags.formUnion(.control)
-            }
+            newModifierFlags.formUnion(.control)
         }
         let newCommand = VimViewController.keyCommand(input: newInput, modifierFlags: newModifierFlags)
         self.handleKeyCommand(newCommand)
@@ -311,13 +302,6 @@ extension VimViewController {
 
     func keyPressed(_ key: UIKey) {
         switch key.keyCode {
-        case .keyboardCapsLock:
-            self.capsLockIsBeingPressed = true
-            if self.currentCapslockDst == .ctrl {
-                self.ctrlPressed()
-            } else {
-              self.noKeyPressesSinceLastCtrlPress = false
-            }
         case .keyboardLeftControl, .keyboardRightControl:
             self.ctrlPressed()
         default:
@@ -327,11 +311,6 @@ extension VimViewController {
 
     func keyReleased(_ key: UIKey) {
         switch key.keyCode {
-        case .keyboardCapsLock:
-            self.capsLockIsBeingPressed = false
-            if self.currentCapslockDst == .ctrl {
-                self.maybeMapCtrlToEsc()
-            }
         case .keyboardLeftControl, .keyboardRightControl:
             self.maybeMapCtrlToEsc()
         default:
