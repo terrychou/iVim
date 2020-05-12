@@ -301,8 +301,8 @@ extension VimViewController {
     func keyReleased() {
         if self.shouldMapCtrlToEscOnRelease && self.onlyCtrlIsBeingPressed {
             let newCommand = VimViewController.keyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [])
-            self.onlyCtrlIsBeingPressed = false
             self.handleKeyCommand(newCommand)
         }
+        self.onlyCtrlIsBeingPressed = false
     }
 }
