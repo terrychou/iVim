@@ -164,7 +164,14 @@ extension VimViewController {
     
     @objc func keyCommandTriggered(_ sender: UIKeyCommand) {
         DispatchQueue.main.async {
-            self.handleKeyCommand(sender)
+            if self.capsLockIsBeingPressed {
+                var newModifierFlags = sender.modifierFlags
+                newModifierFlags.formUnion(.alphaShift)
+                let newCommand = VimViewController.keyCommand(input: sender.input ?? "", modifierFlags: newModifierFlags)
+                self.handleKeyCommand(newCommand)
+            } else {
+                self.handleKeyCommand(sender)
+            }
         }
     }
         
@@ -300,6 +307,9 @@ extension VimViewController {
     @available(iOS 13.4, *)
     func keyPressed(_ key: UIKey) {
         switch key.keyCode {
+        case .keyboardCapsLock:
+            self.capsLockIsBeingPressed = true
+            self.onlyCtrlIsBeingPressed = self.currentCapslockDst == .ctrl
         case .keyboardLeftControl, .keyboardRightControl:
             self.onlyCtrlIsBeingPressed = true
         default:
@@ -310,14 +320,23 @@ extension VimViewController {
     @available(iOS 13.4, *)
     func keyReleased(_ key: UIKey) {
         switch key.keyCode {
-        case .keyboardLeftControl, .keyboardRightControl:
-            if self.shouldMapCtrlToEscOnRelease && self.onlyCtrlIsBeingPressed {
-                let newCommand = VimViewController.keyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [])
-                self.handleKeyCommand(newCommand)
+        case .keyboardCapsLock:
+            self.capsLockIsBeingPressed = false
+            if self.currentCapslockDst == .ctrl {
+                self.maybeMapCtrlToEsc()
             }
-            self.onlyCtrlIsBeingPressed = false
+        case .keyboardLeftControl, .keyboardRightControl:
+            self.maybeMapCtrlToEsc()
         default:
             break
         }
+    }
+
+    private func maybeMapCtrlToEsc() {
+        if self.shouldMapCtrlToEscOnRelease && self.onlyCtrlIsBeingPressed {
+            let newCommand = VimViewController.keyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [])
+            self.handleKeyCommand(newCommand)
+        }
+        self.onlyCtrlIsBeingPressed = false
     }
 }
