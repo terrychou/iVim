@@ -16,6 +16,7 @@ private let specialKeys = [UIKeyCommand.inputEscape, UIKeyCommand.inputUpArrow, 
 private let kUDCapsLockMapping = "kUDCapsLockMapping"
 private let kUDOptionMapping = "kUDOptionMapping"
 private let kUDKeyRepeating = "kUDKeyRepeating"
+private let kUDCtrlToEscOnRelease = "kUDCtrlToEscOnRelease"
 
 extension VimViewController {
     override var keyCommands: [UIKeyCommand]? {
@@ -126,6 +127,10 @@ extension VimViewController {
             !self.isDuringMultistageInput // don't repeat if inputting accented chars
     }
     
+    private var shouldMapCtrlToEscOnRelease: Bool {
+        return UserDefaults.standard.bool(forKey: kUDCtrlToEscOnRelease)
+    }
+
     private static func keyCommand(input: String, modifierFlags: UIKeyModifierFlags = [], title: String? = nil) -> UIKeyCommand {
         let re = UIKeyCommand(input: input, modifierFlags: modifierFlags, action: #selector(self.keyCommandTriggered(_:)))
         re.discoverabilityTitle = title
@@ -266,5 +271,53 @@ extension VimViewController {
     override func selectAll(_ sender: Any?) {
         //handle <D-a>
         self.triggerReservedKeyCommand(input: "a", modifierFlags: .command)
+    }
+
+    override func pressesBegan(_ presses: Set<UIPress>,
+                               with event: UIPressesEvent?) {
+        super.pressesBegan(presses, with: event)
+        if #available(iOS 13.4, *) {
+            presses.first?.key.map(keyPressed)
+        }
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>,
+                               with event: UIPressesEvent?) {
+        super.pressesEnded(presses, with: event)
+        if #available(iOS 13.4, *) {
+            presses.first?.key.map(keyReleased)
+        }
+    }
+
+    override func pressesCancelled(_ presses: Set<UIPress>,
+                                   with event: UIPressesEvent?) {
+        super.pressesCancelled(presses, with: event)
+        if #available(iOS 13.4, *) {
+            presses.first?.key.map(keyReleased)
+        }
+    }
+
+    @available(iOS 13.4, *)
+    func keyPressed(_ key: UIKey) {
+        switch key.keyCode {
+        case .keyboardLeftControl, .keyboardRightControl:
+            self.onlyCtrlIsBeingPressed = true
+        default:
+            self.onlyCtrlIsBeingPressed = false
+        }
+    }
+
+    @available(iOS 13.4, *)
+    func keyReleased(_ key: UIKey) {
+        switch key.keyCode {
+        case .keyboardLeftControl, .keyboardRightControl:
+            if self.shouldMapCtrlToEscOnRelease && self.onlyCtrlIsBeingPressed {
+                let newCommand = VimViewController.keyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [])
+                self.handleKeyCommand(newCommand)
+            }
+            self.onlyCtrlIsBeingPressed = false
+        default:
+            break
+        }
     }
 }
