@@ -27,11 +27,19 @@ Via the document picker, you can also import or edit files or directories in iCl
 
 ### External hardware keyboard
 
-iVim supports external hardware keyboards well, just connect your favorite one to the device and start typing. If you are using a standard English keyboard, you can remap the `caps lock` key, too.
+iVim supports external hardware keyboards well, just connect your favorite one to the device and start typing. With the native modifier keys mapping option from the system, you can even make the "caps lock" key act both as "ctrl" and "esc" in iOS 13.4 and above.
 
 ### Auto restore
 
 After an app termination, iVim restores the last editing session automatically on launch. So you don't have to worry about data losing any more. And you can disable it in Settings.app if you prefer the old way.
+
+### External commands
+
+iVim includes some useful external commands that you are familiar with and integrates powerful scripting languages such as Python and Lua. With +terminal feature enabled and a simple shell named "ivish" included, you can run the commands in terminal windows like on a computer.
+
+### Plugins Management
+
+iVim provides a plugins manager, "iplug", for you to install and manage plugins easily.
 
 ## How to install it
 
@@ -44,13 +52,12 @@ iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=
 3. Connect your device via USB to your computer, and select it as the Destination of iVim
 4. Run iVim, Xcode will install it onto your device
 5. A free Apple ID may need to do this every 7 days
+6. **Note** that the source code may not be updated as the App Store version.
 
-## Caveats
+## Quick tips
 
-Normally, you can use iVim as vim on other platforms.
-However, there are some points worth mentioning due to iOS system's personality:
-1. there is no shell. You cannot call external shell commands.
-2. iVim is sandboxed. It means you don't have direct access to files of other apps if not via the sharing feature.
+### My .vimrc file was messed up, now iVim won't start. What can I do other than reinstall it?
+You can go to `iVim` in the system's `Settings` app, put `-u None` into `Arguments` of `LAUNCH OPTIONS` section to tell `iVim` not to load config files next time. Then try and launch `iVim`.
 
 ## Giants' shoulders
 
