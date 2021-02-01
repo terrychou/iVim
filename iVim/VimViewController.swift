@@ -98,6 +98,7 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     
     var currentPrimaryLanguage: String?
     
+    var capsLockIsBeingPressed = false
     var onlyCtrlIsBeingPressed = false
 
     private func registerNotifications() {
